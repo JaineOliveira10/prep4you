@@ -10,7 +10,7 @@
 
     @include('partials.dashboard._head')
 </head>
-<body class="" >
+<body class="theme-color-yellow" >
 @include('partials.dashboard._body')
 </body>
 

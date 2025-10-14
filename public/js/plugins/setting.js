@@ -349,6 +349,12 @@ Index Of Script
     const color = sessionStorage.getItem('colorcustomchart-mode')
     if(custombodyclass !== null && custombodyclass !== undefined && colors !== null && colors !== undefined){
         customizerMode(custombodyclass,colors,color)     
+    } else {
+        // Define tema yellow como padrão se não houver configuração salva
+        customizerMode('theme-color-yellow', '#6410F1', '#EA6A12')
+        sessionStorage.setItem('colorcustom-mode', 'theme-color-yellow')
+        sessionStorage.setItem('colorcustominfo-mode', '#6410F1')
+        sessionStorage.setItem('colorcustomchart-mode', '#EA6A12')
     }
 
     

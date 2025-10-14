@@ -12,12 +12,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::resource('users', UserController::class);
 
-Route::get('/dashboard', function () {
+Route::get('/', function () {
     return view('dashboards.dashboard');
 })->middleware('auth')->name('dashboard');
-
-//UI Pages Routs
-Route::get('/', [HomeController::class, 'uisheet'])->name('uisheet');
 
 //App Details Page => 'Dashboard'], function() {
 Route::group(['prefix' => 'menu-style'], function() {
