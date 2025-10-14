@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
+    nodejs npm \
     && docker-php-ext-install pdo pdo_pgsql \
     && apt-get clean
 
@@ -31,11 +32,12 @@ RUN sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available
 # Instala dependências PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Roda todas as migrations
-RUN php artisan migrate --force
+# Build dos assets front-end (Vite)
+RUN npm install
+RUN npm run build
 
 # Expõe porta padrão do Render
 EXPOSE 10000
 
 # Comando padrão do container
-CMD ["apache2-foreground"]
+CMD ["./start.sh"]
