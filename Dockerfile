@@ -31,6 +31,9 @@ RUN sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available
 # Instala dependências PHP
 RUN composer install --no-dev --optimize-autoloader
 
+# Roda todas as migrations
+RUN php artisan migrate --force
+
 # Expõe porta padrão do Render
 EXPOSE 10000
 
