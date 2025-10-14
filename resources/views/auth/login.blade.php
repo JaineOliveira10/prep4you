@@ -21,7 +21,7 @@
 
                         <!-- Validation Errors -->
                         <x-auth-validation-errors class="mb-4" :errors="$errors" />
-                        <form method="POST" action="#" data-toggle="validator">
+                        <form method="POST" action="{{ route('login') }}" data-toggle="validator">
                             {{csrf_field()}}
                            <div class="row">
                               <div class="col-lg-12">
@@ -35,9 +35,6 @@
                                     <label for="password" class="form-label">Password</label>
                                     <input class="form-control" type="password" placeholder="********"  name="password" value="{{ env('IS_DEMO') ? 'password' : '' }}" required autocomplete="current-password">
                                  </div>
-                              </div>
-                              <div class="col-lg-12 mb-3">
-                                 <a href="#"  class="float-end text-warning">Esqueceu a senha?</a>
                               </div>
                            </div>
                            <div class="d-flex justify-content-center">
