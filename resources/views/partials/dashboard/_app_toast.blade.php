@@ -3,7 +3,7 @@
     @if (Session::has('success'))
     Swal.fire({
     icon: 'success',
-    title: 'Done',
+    title: 'Sucesso',
     text: '{{ Session::get("success") }}',
     confirmButtonColor: "#3a57e8"
     });
@@ -12,7 +12,7 @@
     @if (Session::has('error'))
     Swal.fire({
     icon: 'error',
-    title: 'Opps!!!',
+    title: 'Oops!!!',
     text: '{{Session::get("error")}}',
     confirmButtonColor: "#3a57e8"
     });
@@ -20,7 +20,7 @@
     @if(Session::has('errors') || ( isset($errors) && is_array($errors) && $errors->any()))
     Swal.fire({
     icon: 'error',
-    title: 'Opps!!!',
+    title: 'Oops!!!',
     text: '{{Session::get("errors")->first() }}',
     confirmButtonColor: "#3a57e8"
     });

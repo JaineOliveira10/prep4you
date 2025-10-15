@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\AuthService;
-use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Exception;
 
 class AuthController extends Controller
@@ -18,20 +19,15 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(UserRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6|confirmed',
-            'type' => 'in:Admin,Cliente'
-        ]);
-
-        $user = $this->authService->register($data);
+        $user = $this->authService->register($request->validated());
 
         Auth::login($user);
 
-        return redirect()->route('home')->with('success', 'Cadastro realizado com sucesso!');
+        return redirect()
+            ->route('home')
+            ->with('success', 'Cadastro realizado com sucesso!');
     }
 
     public function showLoginForm()
@@ -39,17 +35,15 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
         try {
-            $this->authService->login($credentials);
+            $this->authService->login($request->validated());
             $request->session()->regenerate();
-            return redirect()->route('dashboard')->with('success', 'Login realizado com sucesso!');
+
+            return redirect()
+                ->route('dashboard')
+                ->with('success', 'Login realizado com sucesso!');
         } catch (Exception $e) {
             return back()->withErrors(['email' => $e->getMessage()]);
         }
@@ -58,8 +52,12 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         $this->authService->logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login')->with('success', 'Logout realizado.');
+
+        return redirect()
+            ->route('login')
+            ->with('success', 'Logout realizado.');
     }
 }
