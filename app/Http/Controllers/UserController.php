@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Services\UserService;
+use App\DataTables\UsersDataTable;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -18,7 +19,8 @@ class UserController extends Controller
     public function index()
     {
         $users = $this->userService->getAll();
-        return view('users.index', compact('users'));
+        $assets = ['data-table'];
+        return view('users.index', compact('users', 'assets'));
     }
 
     public function create()

@@ -1,7 +1,7 @@
 <nav class="nav navbar navbar-expand-lg navbar-light iq-navbar">
   <div class="container-fluid navbar-inner">
     <a href="{{route('dashboard')}}" class="navbar-brand">
-      <img src="{{asset('images/icons/logo.png')}}" width="100" alt="fb">
+      <img src="{{asset('images/icons/icon-logo.png')}}" width="45" alt="fb">
       <h4 class="logo-title">{{env('APP_NAME')}}</h4>
     </a>
     <div class="sidebar-toggle bg-warning" data-toggle="sidebar" data-active="true">
@@ -35,7 +35,7 @@
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="{{route('users.show', auth()->id() || 1)}}">Perfik</a></li>
+            <li><a class="dropdown-item" href="{{route('users.show', auth()->id() || 1)}}">Perfil</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><form method="POST" action="{{route('logout')}}">
               @csrf
