@@ -7,7 +7,7 @@
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
                     <div>
                         <h1>Bem-vindo {{ auth()->user()->name ?? 'Usuário'  }}!</h1>
-                        <p>We are on a mission to help developers like you build successful projects for FREE.</p>
+                        <p>Sistema de gerenciamento de remessas para o Amazon FBA.</p>
                     </div>
                 </div>
             </div>
