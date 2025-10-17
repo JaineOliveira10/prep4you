@@ -32,7 +32,28 @@
                         <tr>
                            <td>{{ $user->name }}</td>
                            <td>{{ $user->email }}</td>
-                           <td><span class="badge bg-primary">{{ ucfirst($user->type ?? 'user') }}</span></td>
+                           <td>
+                              @php
+                                 $type = $user->type ?? '';
+
+                                 // Definindo cores
+                                 $badgeClass = match($type) {
+                                       'admin' => 'bg-secondary',
+                                       'client' => 'bg-primary',
+                                        default => 'bg-danger',
+                                 };
+
+                                 // Tradução do tipo
+                                 $typeLabel = match($type) {
+                                       'admin' => 'Administrador',
+                                       'client' => 'Cliente',
+                                       default => ucfirst($type),
+                                 };
+                              @endphp
+
+                              <span class="badge {{ $badgeClass }}">{{ $typeLabel }}</span>
+                           </td>
+
                            <td>{{ $user->created_at->format('d/m/Y') }}</td>
                            <td>
                               @include('users.action', ['id' => $user->id])

@@ -25,7 +25,12 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('users.form');
+        $roles = [
+            'client' => 'Cliente',
+            'admin' => 'Administrador'            
+        ];
+
+        return view('users.form', compact('roles'));
     }
 
     public function store(UserRequest $request)
@@ -48,7 +53,12 @@ class UserController extends Controller
     {
         $user = $this->userService->findById($id);
 
-        return view('users.form', compact('user'));
+        $roles = [
+            'client' => 'Cliente',
+            'admin' => 'Administrador'
+         ];
+
+        return view('users.form',  ['data' => $user, 'roles' => $roles]);
     }
 
     public function update(UserRequest $request, $id)

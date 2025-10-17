@@ -5,7 +5,7 @@
     icon: 'success',
     title: 'Sucesso',
     text: '{{ Session::get("success") }}',
-    confirmButtonColor: "#3a57e8"
+    confirmButtonColor: "#f27916ff"
     });
     @endif
     {{-- Errors Message --}}
@@ -14,7 +14,7 @@
     icon: 'error',
     title: 'Oops!!!',
     text: '{{Session::get("error")}}',
-    confirmButtonColor: "#3a57e8"
+    confirmButtonColor: "#f27916ff"
     });
     @endif
     @if(Session::has('errors') || ( isset($errors) && is_array($errors) && $errors->any()))
@@ -22,7 +22,7 @@
     icon: 'error',
     title: 'Oops!!!',
     text: '{{Session::get("errors")->first() }}',
-    confirmButtonColor: "#3a57e8"
+    confirmButtonColor: "#f27916ff"
     });
     @endif
 </script>
