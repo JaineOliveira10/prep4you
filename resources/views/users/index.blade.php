@@ -23,7 +23,6 @@
                            <th>Nome</th>
                            <th>Email</th>
                            <th>Tipo</th>
-                           <th>Data de Criação</th>
                            <th style="min-width: 100px">Ações</th>
                         </tr>
                      </thead>
@@ -53,8 +52,6 @@
 
                               <span class="badge {{ $badgeClass }}">{{ $typeLabel }}</span>
                            </td>
-
-                           <td>{{ $user->created_at->format('d/m/Y') }}</td>
                            <td>
                               @include('users.action', ['id' => $user->id])
                            </td>
