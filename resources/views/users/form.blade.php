@@ -57,7 +57,7 @@
                                           $userType = old('type', $data->type ?? 'user');
                                        @endphp
                                        <select name="type" class="form-control" required>
-                                          <option value="" disabled>Selecione o Tipo de Usuário</option>
+                                          <option value="">Selecione o Tipo de Usuário</option>
                                           @foreach($roles as $key => $role)
                                                 <option value="{{ $key }}" {{ $userType === $key ? 'selected' : '' }}>{{ $role }}</option>
                                           @endforeach
@@ -71,33 +71,46 @@
                                        <div class="row mt-3">
                                           <div class="form-group col-md-6">
                                                 <label for="client_name">Nome:</label>
-                                                <input type="text" name="client[name]" id="client_name" class="form-control" placeholder="Nome do cliente" value="{{ old('client.name') }}">
+                                                <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome do cliente" value="{{ old('client_name', $data->client->name ?? '') }}" disabled>
                                           </div>
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_city">Cidade:</label>
-                                                <input type="text" name="client[city]" id="client_city" class="form-control" placeholder="Cidade" value="{{ old('client.city') }}">
+                                                <input type="text" name="city" id="client_city" class="form-control" placeholder="Cidade" value="{{ old('city',  $data->client->city ?? '') }}">
                                           </div>
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_uf">Estado (Sigla):</label>
-                                                <input type="text" name="client[uf]" id="client_uf" class="form-control" placeholder="Sigla Estado" value="{{ old('client.state') }}">
+                                                <input type="text" name="uf" id="client_uf" class="form-control" placeholder="Sigla Estado" value="{{ old('uf', $data->client->uf ?? '') }}">
                                           </div>
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_telefone">Telefone:</label>
-                                                <input type="text" name="client[phone]" id="client_phone" class="form-control" placeholder="Telefone" value="{{ old('client.phone') }}">
+                                                <input type="text" name="phone" id="client_phone" class="form-control" placeholder="Telefone" value="{{ old('phone', $data->client->phone ?? '') }}">
                                           </div>
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_email">E-mail:</label>
-                                                <input type="email" name="client[email]" id="client_email" class="form-control" placeholder="E-mail" value="{{ old('client.email') }}">
+                                                <input type="email" name="client_email" id="client_email" class="form-control" placeholder="E-mail" value="{{ old('client_email', $data->client->email ?? '') }}" disabled>
+                                          </div>
+
+                                          {{-- Tabela de preço --}}
+                                          <div class="form-group col-md-6">
+                                             <label for="price_table_id">Tabela de Preço: *</label>
+                                             @php
+                                                $selectedPriceTable = old('price_table_id', $data->client->price_table_id ?? '');
+                                             @endphp
+                                             <select name="price_table_id" id="price_table_id" class="form-control" required>
+                                                <option value="">Selecione a tabela</option>
+                                                @foreach($priceTables as $priceTable)
+                                                      <option value="{{ $priceTable->id }}" {{ $selectedPriceTable == $priceTable->id ? 'selected' : '' }}>
+                                                         {{ $priceTable->name }}
+                                                      </option>
+                                                @endforeach
+                                             </select>
                                           </div>
                                        </div>
-                                    </div>
-
-
-
+</div>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary mt-3">{{ $id ? 'Atualizar' : 'Adicionar' }} Usuário</button>
@@ -127,6 +140,22 @@
 
          // Mostra os campos se já estiver editando e tipo for cliente
          toggleClienteFields();
+
+
+         const userName = document.getElementById('fname');
+         const userEmail = document.getElementById('email');
+         const clientName = document.getElementById('client_name');
+         const clientEmail = document.getElementById('client_email');
+
+         // Sempre que digitar no campo nome do usuário, atualiza o nome do cliente
+         userName.addEventListener('input', () => {
+            clientName.value = userName.value;
+         });
+
+         // Sempre que digitar no campo email do usuário, atualiza o email do cliente
+         userEmail.addEventListener('input', () => {
+            clientEmail.value = userEmail.value;
+         });
       });
    </script>
 

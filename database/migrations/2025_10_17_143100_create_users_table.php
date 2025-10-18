@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('password');
             $table->enum('type', ['admin', 'client'])->default('client');
             $table->foreignId('client_id')->nullable()->constrained('clients')->onDelete('cascade');
+            $table->softDeletes();
             $table->rememberToken();
             $table->timestamps();
         });

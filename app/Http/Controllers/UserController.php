@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Models\User;
+use App\Models\PriceTable;
+use App\Models\Client;
 use App\Services\UserService;
 use App\DataTables\UsersDataTable;
 use Illuminate\Http\Request;
@@ -30,7 +33,9 @@ class UserController extends Controller
             'admin' => 'Administrador'            
         ];
 
-        return view('users.form', compact('roles'));
+        $priceTables = PriceTable::all();
+
+        return view('users.form', compact('roles', 'priceTables'));
     }
 
     public function store(UserRequest $request)
@@ -51,14 +56,16 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        $user = $this->userService->findById($id);
+        $user = User::with('client.priceTable')->findOrFail($id);
 
         $roles = [
             'client' => 'Cliente',
             'admin' => 'Administrador'
          ];
 
-        return view('users.form',  ['data' => $user, 'roles' => $roles]);
+        $priceTables = PriceTable::all();
+
+        return view('users.form',  ['id' => $id, 'data' => $user, 'roles' => $roles, 'priceTables' => $priceTables]);
     }
 
     public function update(UserRequest $request, $id)
