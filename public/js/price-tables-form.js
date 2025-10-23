@@ -52,9 +52,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     container.addEventListener('click', function(e) {
         if (e.target.closest('.remove-range')) {
-            if (confirm('Deseja realmente remover esta faixa de preço?')) {
-                e.target.closest('.price-range-row').remove();
-            }
+            Swal.fire({
+                icon: 'warning',
+                title: 'Confirmar Exclusão',
+                text: 'Deseja realmente remover esta faixa de preço?',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sim, excluir!',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    e.target.closest('.price-range-row').remove();
+                }
+            });
         }
     });
 });

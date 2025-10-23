@@ -35,7 +35,9 @@ class UserController extends Controller
 
         $priceTables = PriceTable::all();
 
-        return view('users.form', compact('roles', 'priceTables'));
+        $estados = \App\Models\Client::ESTADOS;
+
+        return view('users.form', compact('roles', 'priceTables', 'estados'));
     }
 
     public function store(UserRequest $request)
@@ -49,7 +51,12 @@ class UserController extends Controller
 
     public function show($id)
     {
-         $user = User::with('client.priceTable')->findOrFail($id);
+        // Se o usuário é cliente, só pode ver seu próprio perfil
+        if (strtolower(auth()->user()->type) === 'client' && auth()->id() != $id) {
+            $id = auth()->id();
+        }
+        
+        $user = User::with('client.priceTable')->findOrFail($id);
 
         return view('users.show', compact('user'));
     }
@@ -63,9 +70,11 @@ class UserController extends Controller
             'admin' => 'Administrador'
          ];
 
+         $estados = \App\Models\Client::ESTADOS;
+
         $priceTables = PriceTable::all();
 
-        return view('users.form',  ['id' => $id, 'data' => $user, 'roles' => $roles, 'priceTables' => $priceTables]);
+        return view('users.form',  ['id' => $id, 'data' => $user, 'roles' => $roles, 'priceTables' => $priceTables, 'estados' => $estados]);
     }
 
     public function update(UserRequest $request, $id)
@@ -88,6 +97,11 @@ class UserController extends Controller
 
     public function updatePassword(Request $request, $id)
     {
+        // Se o usuário é cliente, só pode alterar sua própria senha
+        if (strtolower(auth()->user()->type) === 'client' && auth()->id() != $id) {
+            abort(403, 'Acesso negado.');
+        }
+        
         $request->validate([
             'current_password' => 'required',
             'password' => 'required|min:6|confirmed',

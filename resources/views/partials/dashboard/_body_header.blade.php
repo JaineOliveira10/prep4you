@@ -31,11 +31,11 @@
           <img src="{{asset('images/avatars/avtar_3.png')}}" alt="User-Profile" class="theme-color-pink-img img-fluid avatar avatar-50 avatar-rounded">
             <div class="caption ms-3 d-none d-md-block ">
               <h6 class="mb-0 caption-title">{{ auth()->user()->name ?? 'Usuário'  }}</h6>
-              <p class="mb-0 caption-sub-title text-capitalize">{{ auth()->user()->type === 'Client' ? 'Cliente' : str_replace('_',' ',auth()->user()->type) ?? '' }}</p>
+              <p class="mb-0 caption-sub-title text-capitalize">{{ strtolower(auth()->user()->type) === 'client' ? 'Cliente' : str_replace('_',' ',auth()->user()->type) ?? '' }}</p>
             </div>
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="{{route('users.show', auth()->id() || 1)}}">Perfil</a></li>
+            <li><a class="dropdown-item" href="{{route('users.show', auth()->id())}}">Perfil</a></li>
             <li><hr class="dropdown-divider"></li>
             <li><form method="POST" action="{{route('logout')}}">
               @csrf

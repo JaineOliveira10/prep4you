@@ -25,19 +25,19 @@
          <div class="card">
          <div class="card-header">
             <div class="header-title">
-               <h4 class="card-title">Meu Perfil</h4>
+               <h4 class="card-title">{{auth()->id() != $user->id ? 'Informações do usuário' : 'Meu Perfil'}}</h4>
             </div>
          </div>
          <div class="card-body">
-            <p>Aqui você pode visualizar e gerenciar as informações do seu perfil de usuário.</p>
-            <div class="mb-1">Email: {{ $user->email }}</div>
+            <div class="mb-1"><span class="fw-bold">Email:</span> {{ $user->email }}</div>
             @if($user->type == 'client')
-                <div class="mb-1">Telefone: {{ $user->client->phone }}</div>
-                <div>Residem em: <span class="ms-3">{{ $user->client->city }} - {{ $user->client->uf }}</span></div>
+                <div class="mb-1"><span class="fw-bold">Telefone:</span> {{ $user->client->phone }}</div>
+                <div class="mb-1"><span class="fw-bold">Reside em:</span> {{ $user->client->city }} - {{ $user->client->uf }}</div>
             @endif
          </div>
          </div>
       </div>
+      @if(auth()->id() == $user->id)
       <div class="col-lg-12">
          <div class="card">
          <div class="card-header">
@@ -70,6 +70,7 @@
          </div>
          </div>
       </div>
+      @endif
    </div>
 
    @include('partials.components.share-offcanvas')

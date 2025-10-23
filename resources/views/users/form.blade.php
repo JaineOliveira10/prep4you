@@ -33,20 +33,20 @@
                                     {{-- Name fields --}}
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="fname">Nome <span class="text-danger">*</span></label>
-                                        <input type="text" name="first_name" id="fname" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o nome" required>
+                                        <input type="text" name="first_name" id="fname" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Nome completo" required>
                                     </div>
 
                                     {{-- E-mail --}}
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="email">Email <span class="text-danger">*</span></label>
-                                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $data->email ?? '') }}" placeholder="Digite o e-mail" required>
+                                        <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $data->email ?? '') }}" placeholder="exemplo@email.com" required>
                                     </div>
 
                                     {{-- Password --}}
 
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="pass">Senha <span class="text-danger">*</span></label>
-                                        <input type="password" name="password" id="pass" class="form-control" placeholder="Password">
+                                        <input type="password" name="password" id="pass" class="form-control" placeholder="Digite sua senha" required>
                                     </div>
 
                                     {{-- Tipo Usuário --}}
@@ -57,7 +57,7 @@
                                           $userType = old('type', $data->type ?? 'user');
                                        @endphp
                                        <select name="type" class="form-control" required>
-                                          <option value="">Selecione o Tipo de Usuário</option>
+                                          <option value="">Selecione o tipo</option>
                                           @foreach($roles as $key => $role)
                                                 <option value="{{ $key }}" {{ $userType === $key ? 'selected' : '' }}>{{ $role }}</option>
                                           @endforeach
@@ -71,27 +71,37 @@
                                        <div class="row mt-3">
                                           <div class="form-group col-md-6">
                                                 <label for="client_name">Nome<span class="text-danger">*</span></label>
-                                                <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome do cliente" value="{{ old('client_name', $data->client->name ?? '') }}" disabled>
+                                                <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome completo do cliente" value="{{ old('client_name', $data->client->name ?? '') }}" disabled>
                                           </div>
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_city">Cidade</label>
-                                                <input type="text" name="city" id="client_city" class="form-control" placeholder="Cidade" value="{{ old('city',  $data->client->city ?? '') }}">
+                                                <input type="text" name="city" id="client_city" class="form-control" placeholder="Nome da cidade" value="{{ old('city',  $data->client->city ?? '') }}">
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                                <label for="client_uf">Estado (Sigla)</label>
-                                                <input type="text" name="uf" id="client_uf" class="form-control" placeholder="Sigla Estado" value="{{ old('uf', $data->client->uf ?? '') }}">
+                                               <label for="estado" class="form-label">Estado</label>
+                                                @php
+                                                    $selectedUf = old('uf', $data->client->uf ?? '');
+                                                @endphp
+                                                <select name="uf" id="uf" class="form-select" required>
+                                                    <option value="">Selecione...</option>
+                                                    @foreach($estados as $key => $nome)
+                                                        <option value="{{ $key }}" {{ $selectedUf == $key ? 'selected' : '' }}>
+                                                            {{ $nome }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
                                           </div>
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_telefone">Telefone<span class="text-danger">*</span></label>
-                                                <input type="text" name="phone" id="client_phone" class="form-control" placeholder="Telefone" value="{{ old('phone', $data->client->phone ?? '') }}" required>
+                                                <input type="text" name="phone" id="client_phone" class="form-control" placeholder="(11) 99999-9999" value="{{ old('phone', $data->client->phone ?? '') }}" required>
                                           </div>
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_email">E-mail<span class="text-danger">*</span></label>
-                                                <input type="email" name="client_email" id="client_email" class="form-control" placeholder="E-mail" value="{{ old('client_email', $data->client->email ?? '') }}" disabled>
+                                                <input type="email" name="client_email" id="client_email" class="form-control" placeholder="cliente@email.com" value="{{ old('client_email', $data->client->email ?? '') }}" disabled>
                                           </div>
 
                                           {{-- Tabela de preço --}}
@@ -101,7 +111,7 @@
                                                 $selectedPriceTable = old('price_table_id', $data->client->price_table_id ?? '');
                                              @endphp
                                              <select name="price_table_id" id="price_table_id" class="form-control" required>
-                                                <option value="">Selecione a tabela</option>
+                                                <option value="">Selecione uma tabela</option>
                                                 @foreach($priceTables as $priceTable)
                                                       <option value="{{ $priceTable->id }}" {{ $selectedPriceTable == $priceTable->id ? 'selected' : '' }}>
                                                          {{ $priceTable->name }}

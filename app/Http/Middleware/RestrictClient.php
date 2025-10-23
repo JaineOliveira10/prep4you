@@ -9,7 +9,7 @@ class RestrictClient
 {
     public function handle(Request $request, Closure $next)
     {
-        if (auth()->user()->type === 'Client') {
+        if (strtolower(auth()->user()->type) === 'client') {
             abort(403, 'Acesso negado.');
         }
 

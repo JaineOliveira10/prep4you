@@ -524,3 +524,10 @@ body.uikit .btn-download {
 .top-1 {
   top: 1rem;
 }
+
+/* Custom submenu active styling */
+.sidebar-default .navbar-nav .nav-item .sub-nav .nav-item .nav-link.active {
+  background-color: rgba(226, 142, 32, 0.1) !important;
+  color: #e87025 !important;
+  box-shadow: none !important;
+}

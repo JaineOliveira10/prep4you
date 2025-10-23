@@ -17,13 +17,13 @@ class UserRequest extends FormRequest
 
         return [
             'first_name' => 'required|string|max:255',
-            'email' => $id ? "required|email|unique:users,email,{$id}" : 'required|email|unique:users,email',
+            'email' => $id ? "required|email|unique:users,email,{$id},id,deleted_at,NULL" : 'required|email|unique:users,email,NULL,id,deleted_at,NULL',
             'password' => $this->isMethod('post')
                 ? 'required|min:6'
                 : 'nullable|min:6',
             'type' => 'required|in:admin,client',
             'city' => 'nullable|string|max:255',
-            'uf' => 'nullable|string|max:2',
+            'uf' => 'nullable|string|size:2|in:' . implode(',', array_keys(\App\Models\Client::ESTADOS)),
             'phone' => 'nullable|string|max:20',
             'price_table_id' => 'nullable|exists:price_tables,id'
         ];

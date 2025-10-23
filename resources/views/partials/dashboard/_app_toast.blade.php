@@ -25,4 +25,21 @@
     confirmButtonColor: "#f27916ff"
     });
     @endif
+    
+    function confirmDelete(formId, message = 'Tem certeza que deseja excluir este item?') {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Confirmar Exclusão',
+            text: message,
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(formId).submit();
+            }
+        });
+    }
 </script>
