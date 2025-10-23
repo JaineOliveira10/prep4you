@@ -28,6 +28,7 @@ class PriceTableSeeder extends Seeder
                 'min_value' => 1,
                 'max_value' => 499,
                 'price' => 0.80, // Etiqueta
+                'price_kit' => 1.00,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -36,6 +37,7 @@ class PriceTableSeeder extends Seeder
                 'min_value' => 500,
                 'max_value' => 999,
                 'price' => 0.65, // Etiqueta
+                'price_kit' => 0.95,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -44,34 +46,7 @@ class PriceTableSeeder extends Seeder
                 'min_value' => 1000,
                 'max_value' => 5000,
                 'price' => 0.50, // Etiqueta
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-
-        // Faixas de preço - Tabela padrão (Kit)
-        DB::table('price_ranges')->insert([
-            [
-                'price_table_id' => $defaultTableId,
-                'min_value' => 1,
-                'max_value' => 499,
-                'price' => 1.00, // Kit
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'price_table_id' => $defaultTableId,
-                'min_value' => 500,
-                'max_value' => 999,
-                'price' => 0.95, // Kit
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'price_table_id' => $defaultTableId,
-                'min_value' => 1000,
-                'max_value' => 5000,
-                'price' => 0.90, // Kit
+                'price_kit' => 0.90,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -92,6 +67,7 @@ class PriceTableSeeder extends Seeder
                 'min_value' => 1,
                 'max_value' => 499,
                 'price' => 0.50,
+                'price_kit' => 0.80,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -100,6 +76,7 @@ class PriceTableSeeder extends Seeder
                 'min_value' => 500,
                 'max_value' => 999,
                 'price' => 0.45,
+                'price_kit' => 0.95,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -108,34 +85,7 @@ class PriceTableSeeder extends Seeder
                 'min_value' => 1000,
                 'max_value' => 5000,
                 'price' => 0.50,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-
-        // Faixas de preço - Simone e Gui (Kit)
-        DB::table('price_ranges')->insert([
-            [
-                'price_table_id' => $simoneGuiId,
-                'min_value' => 1,
-                'max_value' => 499,
-                'price' => 0.80,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'price_table_id' => $simoneGuiId,
-                'min_value' => 500,
-                'max_value' => 999,
-                'price' => 0.95,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'price_table_id' => $simoneGuiId,
-                'min_value' => 1000,
-                'max_value' => 5000,
-                'price' => 0.90,
+                'price_kit' => 0.90,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

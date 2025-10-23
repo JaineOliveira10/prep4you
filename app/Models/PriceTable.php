@@ -14,4 +14,9 @@ class PriceTable extends Model
     {
         return $this->hasMany(Client::class);
     }
+
+    public function priceRanges()
+    {
+        return $this->hasMany(PriceRange::class);
+    }
 }

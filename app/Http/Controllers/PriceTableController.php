@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\PriceTableRequest;
 use App\Services\PriceTableService;
 
 class PriceTableController extends Controller
@@ -32,9 +32,10 @@ class PriceTableController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(PriceTableRequest $request)
     {
-        //
+        $this->priceTableService->create($request->validated());
+        return redirect()->route('price-tables.index')->with('success', 'Tabela de preço criada com sucesso!');
     }
 
     /**
@@ -50,15 +51,17 @@ class PriceTableController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $data = $this->priceTableService->findById($id);
+        return view('price-tables.form', compact('data', 'id'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(PriceTableRequest $request, string $id)
     {
-        //
+        $this->priceTableService->update($id, $request->validated());
+        return redirect()->route('price-tables.index')->with('success', 'Tabela de preço atualizada com sucesso!');
     }
 
     /**
@@ -66,6 +69,10 @@ class PriceTableController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $this->priceTableService->delete($id);
+
+        return redirect()
+            ->route('price-tables.index')
+            ->withSuccess(__('Tabela de preço removida com sucesso.'));
     }
 }

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->decimal('min_value', 10, 2);
             $table->decimal('max_value', 10, 2)->nullable();
             $table->decimal('price', 10, 2);
+            $table->decimal('price_kit', 10, 2);
             $table->timestamps();
         });
     }

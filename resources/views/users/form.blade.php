@@ -32,26 +32,26 @@
                                 <div class="row">
                                     {{-- Name fields --}}
                                     <div class="form-group col-md-6">
-                                        <label class="form-label" for="fname">Nome: <span class="text-danger">*</span></label>
+                                        <label class="form-label" for="fname">Nome <span class="text-danger">*</span></label>
                                         <input type="text" name="first_name" id="fname" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o nome" required>
                                     </div>
 
                                     {{-- E-mail --}}
                                     <div class="form-group col-md-6">
-                                        <label class="form-label" for="email">Email: <span class="text-danger">*</span></label>
+                                        <label class="form-label" for="email">Email <span class="text-danger">*</span></label>
                                         <input type="email" name="email" id="email" class="form-control" value="{{ old('email', $data->email ?? '') }}" placeholder="Digite o e-mail" required>
                                     </div>
 
                                     {{-- Password --}}
 
                                     <div class="form-group col-md-6">
-                                        <label class="form-label" for="pass">Senha: <span class="text-danger">*</span></label>
+                                        <label class="form-label" for="pass">Senha <span class="text-danger">*</span></label>
                                         <input type="password" name="password" id="pass" class="form-control" placeholder="Password">
                                     </div>
 
                                     {{-- Tipo Usuário --}}
                                     <div class="form-group col-md-6">
-                                       <label class="form-label">Tipo Usuário: <span class="text-danger">*</span></label>
+                                       <label class="form-label">Tipo Usuário <span class="text-danger">*</span></label>
                                        @php
                                           // Pega o valor antigo do formulário ou do modelo (edit), padrão 'user'
                                           $userType = old('type', $data->type ?? 'user');
@@ -70,33 +70,33 @@
                                        <h5>Dados do Cliente</h5>
                                        <div class="row mt-3">
                                           <div class="form-group col-md-6">
-                                                <label for="client_name">Nome:</label>
+                                                <label for="client_name">Nome<span class="text-danger">*</span></label>
                                                 <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome do cliente" value="{{ old('client_name', $data->client->name ?? '') }}" disabled>
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                                <label for="client_city">Cidade:</label>
+                                                <label for="client_city">Cidade</label>
                                                 <input type="text" name="city" id="client_city" class="form-control" placeholder="Cidade" value="{{ old('city',  $data->client->city ?? '') }}">
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                                <label for="client_uf">Estado (Sigla):</label>
+                                                <label for="client_uf">Estado (Sigla)</label>
                                                 <input type="text" name="uf" id="client_uf" class="form-control" placeholder="Sigla Estado" value="{{ old('uf', $data->client->uf ?? '') }}">
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                                <label for="client_telefone">Telefone:</label>
-                                                <input type="text" name="phone" id="client_phone" class="form-control" placeholder="Telefone" value="{{ old('phone', $data->client->phone ?? '') }}">
+                                                <label for="client_telefone">Telefone<span class="text-danger">*</span></label>
+                                                <input type="text" name="phone" id="client_phone" class="form-control" placeholder="Telefone" value="{{ old('phone', $data->client->phone ?? '') }}" required>
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                                <label for="client_email">E-mail:</label>
+                                                <label for="client_email">E-mail<span class="text-danger">*</span></label>
                                                 <input type="email" name="client_email" id="client_email" class="form-control" placeholder="E-mail" value="{{ old('client_email', $data->client->email ?? '') }}" disabled>
                                           </div>
 
                                           {{-- Tabela de preço --}}
                                           <div class="form-group col-md-6">
-                                             <label for="price_table_id">Tabela de Preço: *</label>
+                                             <label for="price_table_id">Tabela de Preço<span class="text-danger">*</span></label>
                                              @php
                                                 $selectedPriceTable = old('price_table_id', $data->client->price_table_id ?? '');
                                              @endphp
