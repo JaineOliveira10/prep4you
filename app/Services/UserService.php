@@ -100,4 +100,17 @@ class UserService
         
         return $this->userRepository->delete($id);
     }
+
+    public function updatePassword($id, $currentPassword, $newPassword)
+    {
+        $user = $this->userRepository->find($id);
+        
+        if (!Hash::check($currentPassword, $user->password)) {
+            throw new \Exception('Senha atual incorreta.');
+        }
+        
+        return $this->userRepository->update($id, [
+            'password' => Hash::make($newPassword)
+        ]);
+    }
 }

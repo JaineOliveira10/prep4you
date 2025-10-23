@@ -45,7 +45,7 @@
             </i>
         </a>
         <ul class="sub-nav collapse" id="sidebar-user" data-bs-parent="#sidebar">
-            <!-- <li class="nav-item">
+            <li class="nav-item">
                 <a class="nav-link {{activeRoute(route('users.show', 1))}}" href="{{route('users.show', 1)}}">
                     <i class="icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="10" viewBox="0 0 24 24" fill="currentColor">
@@ -57,7 +57,8 @@
                     <i class="sidenav-mini-icon"> U </i>
                     <span class="item-name">Meu Perfil</span>
                 </a>
-            </li> -->
+            </li> 
+            @if(auth()->user()->type === 'admin')
             <li class="nav-item">
                 <a class="nav-link {{activeRoute(route('users.index'))}}" href="{{route('users.index')}}">
                     <i class="icon">
@@ -84,5 +85,6 @@
                     <span class="item-name">Tabelas de Preço</span>
                 </a>
             </li>
+            @endif
         </ul>
     </li>

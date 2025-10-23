@@ -49,7 +49,7 @@ class UserController extends Controller
 
     public function show($id)
     {
-        $user = $this->userService->findById($id);
+         $user = User::with('client.priceTable')->findOrFail($id);
 
         return view('users.show', compact('user'));
     }
@@ -84,5 +84,24 @@ class UserController extends Controller
         return redirect()
             ->route('users.index')
             ->withSuccess(__('Usuário removido com sucesso.'));
+    }
+
+    public function updatePassword(Request $request, $id)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:6|confirmed',
+        ]);
+
+        try {
+            $this->userService->updatePassword($id, $request->current_password, $request->password);
+            return redirect()
+                ->route('users.show', $id)
+                ->withSuccess(__('Senha atualizada com sucesso.'));
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('users.show', $id)
+                ->withError($e->getMessage());
+        }
     }
 }
