@@ -12,7 +12,7 @@
     {{ $slot }}
     </div>
     
-    <!-- @include('partials.dashboard._body_footer') -->
+    @include('partials.dashboard._body_footer')
 </main>
 <!-- <a class="btn btn-fixed-end btn-warning btn-icon btn-setting" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" role="button" aria-controls="offcanvasExample">
     <svg width="24" viewBox="0 0 24 24" class="animated-rotate" fill="none" xmlns="http://www.w3.org/2000/svg">
