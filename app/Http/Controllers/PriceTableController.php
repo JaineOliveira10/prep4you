@@ -43,7 +43,8 @@ class PriceTableController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $priceTable = $this->priceTableService->findById($id);
+        return view('price-tables.show', compact('priceTable'));
     }
 
     /**

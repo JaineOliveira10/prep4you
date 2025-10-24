@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\PriceTableRepository;
+use App\Models\PriceTable;
 
 class PriceTableService
 {
@@ -20,7 +21,7 @@ class PriceTableService
 
     public function findById($id)
     {
-        return $this->priceTableRepository->find($id);
+        return $this->priceTableRepository->find($id)->load('priceRanges');
     }
 
     public function create(array $data)

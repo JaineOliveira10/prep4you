@@ -3,10 +3,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const addButton = document.getElementById('add-range');
     const container = document.getElementById('price-ranges-container');
 
-    // Load existing ranges if editing
-    if (window.existingRanges) {
-        window.existingRanges.forEach(range => {
-            addRangeRow(range.min_value, range.max_value, range.price, range.price_kit);
+    // Load existing ranges from data attribute
+    const existingRangesData = container.getAttribute('data-existing-ranges');
+    if (existingRangesData && existingRangesData !== '[]') {
+        try {
+            const existingRanges = JSON.parse(existingRangesData);
+            existingRanges.forEach(range => {
+                addRangeRow(range.min_value, range.max_value, range.price, range.price_kit);
+            });
+            
+            // Aplicar formatação aos campos existentes
+            container.querySelectorAll('.price-input').forEach(input => {
+                applyPriceFormatting(input);
+            });
+        } catch (e) {
+            console.error('Erro ao carregar faixas existentes:', e);
+        }
+    }
+
+    function formatCurrency(value) {
+        // Remove tudo exceto números
+        value = value.replace(/\D/g, '');
+        
+        // Converte para centavos
+        value = (parseInt(value) || 0) / 100;
+        
+        // Formata como moeda brasileira
+        return value.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function applyPriceFormatting(input) {
+        input.addEventListener('input', function(e) {
+            const cursorPosition = e.target.selectionStart;
+            const oldValue = e.target.value;
+            const newValue = formatCurrency(oldValue);
+            
+            e.target.value = newValue;
+            
+            // Ajusta posição do cursor
+            const newCursorPosition = Math.min(cursorPosition + (newValue.length - oldValue.length), newValue.length);
+            e.target.setSelectionRange(newCursorPosition, newCursorPosition);
         });
     }
 
@@ -23,11 +62,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="form-group col-md-3">
                     <label>Valor Etiqueta (R$)</label>
-                    <input type="text" name="ranges[${rangeIndex}][price]" class="form-control" placeholder="Ex: 0,80" value="${price}">
+                    <input type="text" name="ranges[${rangeIndex}][price]" class="form-control price-input" placeholder="Ex: 0,80" value="${price}">
                 </div>
                 <div class="form-group col-md-3">
                     <label>Valor Kit (R$)</label>
-                    <input type="text" name="ranges[${rangeIndex}][price_kit]" class="form-control" placeholder="Ex: 1,00" value="${priceKit}">
+                    <input type="text" name="ranges[${rangeIndex}][price_kit]" class="form-control price-input" placeholder="Ex: 1,00" value="${priceKit}">
                 </div>
                 <div class="form-group col-md-2 d-flex align-items-end">
                     <button type="button" class="btn btn-danger btn-sm remove-range w-100 py-2">
@@ -43,6 +82,13 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         container.insertAdjacentHTML('beforeend', newRange);
+        
+        // Aplicar formatação aos novos campos de preço
+        const newPriceInputs = container.querySelectorAll('.price-range-row:last-child .price-input');
+        newPriceInputs.forEach(input => {
+            applyPriceFormatting(input);
+        });
+        
         rangeIndex++;
     }
 

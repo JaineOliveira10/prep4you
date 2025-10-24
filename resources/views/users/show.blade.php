@@ -23,16 +23,29 @@
       </div>
       <div class="col-lg-12">
          <div class="card">
-         <div class="card-header">
+         <div class="card-header d-flex justify-content-between"">
             <div class="header-title">
                <h4 class="card-title">{{auth()->id() != $user->id ? 'Informações do usuário' : 'Meu Perfil'}}</h4>
+            </div>            
+             @if(auth()->user()->type == 'admin')
+            <div class="card-action">
+               <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">Voltar</a>
+               <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-warning">Editar</a>
             </div>
+             @endif
          </div>
          <div class="card-body">
             <div class="mb-1"><span class="fw-bold">Email:</span> {{ $user->email }}</div>
             @if($user->type == 'client')
                 <div class="mb-1"><span class="fw-bold">Telefone:</span> {{ $user->client->phone }}</div>
                 <div class="mb-1"><span class="fw-bold">Reside em:</span> {{ $user->client->city }} - {{ $user->client->uf }}</div>
+                <div class="mb-1"><span class="fw-bold">Tabela de preço:</span> 
+                    @if($user->client && $user->client->priceTable)
+                        {{ $user->client->priceTable->name }}
+                    @else
+                        Não definida
+                    @endif
+                </div>
             @endif
          </div>
          </div>

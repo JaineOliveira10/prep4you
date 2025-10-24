@@ -46,7 +46,7 @@
 
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="pass">Senha <span class="text-danger">*</span></label>
-                                        <input type="password" name="password" id="pass" class="form-control" placeholder="Digite sua senha" required>
+                                        <input type="password" name="password" id="pass" class="form-control" placeholder="Digite sua senha" {{ !$id ? 'required' : '' }} {{ $id ? 'readonly' : '' }} >
                                     </div>
 
                                     {{-- Tipo Usuário --}}
@@ -71,7 +71,7 @@
                                        <div class="row mt-3">
                                           <div class="form-group col-md-6">
                                                 <label for="client_name">Nome<span class="text-danger">*</span></label>
-                                                <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome completo do cliente" value="{{ old('client_name', $data->client->name ?? '') }}" disabled>
+                                                <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome completo do cliente" value="{{ old('client_name', $data->client->name ?? '') }}" readonly>
                                           </div>
 
                                           <div class="form-group col-md-6">
@@ -101,7 +101,7 @@
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_email">E-mail<span class="text-danger">*</span></label>
-                                                <input type="email" name="client_email" id="client_email" class="form-control" placeholder="cliente@email.com" value="{{ old('client_email', $data->client->email ?? '') }}" disabled>
+                                                <input type="email" name="client_email" id="client_email" class="form-control" placeholder="cliente@email.com" value="{{ old('client_email', $data->client->email ?? '') }}" readonly>
                                           </div>
 
                                           {{-- Tabela de preço --}}

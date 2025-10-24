@@ -43,7 +43,17 @@
 
                                     <div id="price-ranges-fields">
                                        <h5>Faixas de Preço</h5>
-                                       <div id="price-ranges-container"></div>
+                                       @if($errors->any())
+                                           <div class="alert alert-danger mt-2">
+                                               <ul class="mb-0">
+                                                   @foreach($errors->all() as $error)
+                                                       <li>{{ $error }}</li>
+                                                   @endforeach
+                                               </ul>
+                                           </div>
+                                       @endif
+                                       <div id="price-ranges-container" 
+                                            data-existing-ranges='@if(old("ranges")){{ json_encode(collect(old("ranges"))->map(function($range) { return ["min_value" => $range["min_value"] ?? "", "max_value" => $range["max_value"] ?? "", "price" => $range["price"] ?? "", "price_kit" => $range["price_kit"] ?? ""]; })) }}@elseif(isset($data) && $data->priceRanges){{ json_encode($data->priceRanges->map(function($range) { return ["min_value" => $range->min_value, "max_value" => $range->max_value, "price" => number_format($range->price, 2, ",", ""), "price_kit" => number_format($range->price_kit, 2, ",", "")]; })) }}@else[]@endif'></div>
                                        <button type="button" id="add-range" class="btn btn-secondary btn-sm mt-3 mb-4">+ Adicionar Faixa</button>
                                     </div>
                                 </div>
@@ -57,17 +67,6 @@
         </form>
     </div>
 
-    @if(isset($data) && $data->priceRanges)
-        <script>
-            window.existingRanges = {!! json_encode($data->priceRanges->map(function($range) {
-                return [
-                    'min_value' => $range->min_value,
-                    'max_value' => $range->max_value,
-                    'price' => number_format($range->price, 2, ',', ''),
-                    'price_kit' => number_format($range->price_kit, 2, ',', '')
-                ];
-            })) !!};
-        </script>
-    @endif
+
     <script src="{{ asset('js/price-tables-form.js') }}"></script>
 </x-app-layout>

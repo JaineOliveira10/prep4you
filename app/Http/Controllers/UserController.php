@@ -53,12 +53,14 @@ class UserController extends Controller
     {
         // Se o usuário é cliente, só pode ver seu próprio perfil
         if (strtolower(auth()->user()->type) === 'client' && auth()->id() != $id) {
-            $id = auth()->id();
+            return redirect()->route('users.show', auth()->id());
         }
         
         $user = User::with('client.priceTable')->findOrFail($id);
 
-        return view('users.show', compact('user'));
+        $priceTables = PriceTable::all();
+
+        return view('users.show', compact('user', 'priceTables'));
     }
 
     public function edit($id)
