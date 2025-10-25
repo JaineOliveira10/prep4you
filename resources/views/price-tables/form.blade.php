@@ -5,7 +5,6 @@
             $data = $data ?? null;
             $profileImage = $profileImage ?? asset('images/avatars/01.png');
         @endphp
-
         <form 
             action="{{ $id ? route('price-tables.update', $id) : route('price-tables.store') }}" 
             method="POST" 
