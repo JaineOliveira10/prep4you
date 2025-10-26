@@ -8,5 +8,8 @@ class DistributionCenter extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['acronym', 'name'];
+    protected $fillable = [
+        'acronym', 
+        'name'
+    ];
 }

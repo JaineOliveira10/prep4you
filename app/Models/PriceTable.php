@@ -8,7 +8,11 @@ class PriceTable extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'user_type'];
+    protected $fillable = [
+        'name', 
+        'description', 
+        'user_type'
+    ];
 
     public function clients()
     {
