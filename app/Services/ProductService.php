@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\ProductRepository;
 use App\Models\Product;
+use Illuminate\Support\Facades\Storage;
 
 class ProductService
 {
@@ -19,6 +20,14 @@ class ProductService
         return $this->productRepository->all();
     }
 
+    public function getByClient($clientId = null)
+    {
+        if ($clientId) {
+            return $this->productRepository->getByClient($clientId);
+        }
+        return $this->productRepository->all();
+    }
+
     public function findById($id)
     {
         return $this->productRepository->find($id);
@@ -26,42 +35,61 @@ class ProductService
 
     public function create(array $data)
     {
-        $product = $this->productRepository->create([
-            'name' => $data['name'],
-            'asin' => $data['asin'], 
-            'fsnku' => $data['fsnku'], 
-            'sku' => $data['sku'], 
-            'photo_path' => $data['photo_path'], 
-            'observation' => $data['observation'], 
-            'type' => $data['type'], 
-            'kit_units' => $data['kit_units'], 
-            'unit_price' => $data['unit_price'], 
-            'client_id' => $data['client_id']
-        ]);
+        $photoPath = null;
+        if (isset($data['photo']) && $data['photo']) {
+            $photoPath = $data['photo']->store('products', 'public');
+        }
 
-        return $product;
+        $productData = [
+            'name' => $data['name'],
+            'asin' => $data['asin'] ?? null,
+            'fsnku' => $data['fsnku'] ?? null,
+            'sku' => $data['sku'] ?? null,
+            'photo_path' => $photoPath,
+            'observation' => $data['observation'] ?? null,
+            'type' => $data['type'],
+            'kit_units' => $data['type'] != 'simple' ? $data['kit_units'] : null,
+            'unit_price' => $data['type'] == 'super_kit' ? $data['unit_price'] : null,
+            'client_id' => $data['client_id']
+        ];
+
+        return $this->productRepository->create($productData);
     }
 
     public function update($id, array $data)
     {
-        $product = $this->productRepository->update($id, [
-            'name' => $data['name'],
-            'asin' => $data['asin'], 
-            'fsnku' => $data['fsnku'], 
-            'sku' => $data['sku'], 
-            'photo_path' => $data['photo_path'], 
-            'observation' => $data['observation'], 
-            'type' => $data['type'], 
-            'kit_units' => $data['kit_units'], 
-            'unit_price' => $data['unit_price'], 
-            'client_id' => $data['client_id']
-        ]);
+        $product = $this->findById($id);
+        $photoPath = $product->photo_path;
+        
+        if (isset($data['photo']) && $data['photo']) {
+            if ($photoPath) {
+                Storage::disk('public')->delete($photoPath);
+            }
+            $photoPath = $data['photo']->store('products', 'public');
+        }
 
-        return $product;
+        $productData = [
+            'name' => $data['name'],
+            'asin' => $data['asin'] ?? null,
+            'fsnku' => $data['fsnku'] ?? null,
+            'sku' => $data['sku'] ?? null,
+            'photo_path' => $photoPath,
+            'observation' => $data['observation'] ?? null,
+            'type' => $data['type'],
+            'kit_units' => $data['type'] != 'simple' ? $data['kit_units'] : null,
+            'unit_price' => $data['type'] == 'super_kit' ? $data['unit_price'] : null,
+            'client_id' => $data['client_id']
+        ];
+
+        return $this->productRepository->update($id, $productData);
     }
 
     public function delete($id)
     {
+        $product = $this->findById($id);
+        if ($product->photo_path) {
+            Storage::disk('public')->delete($product->photo_path);
+        }
         return $this->productRepository->delete($id);
     }
 }

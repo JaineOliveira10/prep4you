@@ -16,7 +16,12 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function all()
     {
-        return $this->model->all();
+        return $this->model->with('client')->get();
+    }
+
+    public function getByClient($clientId)
+    {
+        return $this->model->with('client')->where('client_id', $clientId)->get();
     }
 
     public function find($id)

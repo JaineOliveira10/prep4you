@@ -101,27 +101,6 @@
     <li><hr class="hr-horizontal"></li>
     <li class="nav-item static-item">
         <a class="nav-link static-item disabled" href="#" tabindex="-1">
-            <span class="default-icon">Produtos</span>
-            <span class="mini-icon">-</span>
-        </a>
-    </li>
-
-     <li class="nav-item">
-        <a class="nav-link {{activeRoute(route('products.index'))}}" href="{{route('products.index')}}">
-            <i class="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M21 6.5 12 2 3 6.5V17.5L12 22l9-4.5V6.5zM12 4.15 18.74 7.5 12 10.85 5.26 7.5 12 4.15zm-7 5.47 6 3v6.83l-6-3V9.62zm8 9.83v-6.83l6-3v6.83l-6 3z"/>
-                </svg>
-
-            </i>
-            <i class="sidenav-mini-icon"> U </i>
-            <span class="item-name">Produtos</span>
-        </a>
-    </li>
-
-    <li><hr class="hr-horizontal"></li>
-    <li class="nav-item static-item">
-        <a class="nav-link static-item disabled" href="#" tabindex="-1">
             <span class="default-icon">Centros de Distribuição</span>
             <span class="mini-icon">-</span>
         </a>
@@ -141,3 +120,24 @@
         </a>
     </li>
     @endif
+
+        <li><hr class="hr-horizontal"></li>
+    <li class="nav-item static-item">
+        <a class="nav-link static-item disabled" href="#" tabindex="-1">
+            <span class="default-icon">Produtos</span>
+            <span class="mini-icon">-</span>
+        </a>
+    </li>
+
+     <li class="nav-item">
+        <a class="nav-link {{activeRoute(route('products.index'))}}" href="{{route('products.index')}}">
+            <i class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21 6.5 12 2 3 6.5V17.5L12 22l9-4.5V6.5zM12 4.15 18.74 7.5 12 10.85 5.26 7.5 12 4.15zm-7 5.47 6 3v6.83l-6-3V9.62zm8 9.83v-6.83l6-3v6.83l-6 3z"/>
+                </svg>
+
+            </i>
+            <i class="sidenav-mini-icon"> U </i>
+            <span class="item-name">Produtos</span>
+        </a>
+    </li>

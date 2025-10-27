@@ -21,4 +21,9 @@ class Product extends Model
         'unit_price', 
         'client_id'
     ];
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
+    }
 }

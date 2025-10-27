@@ -22,13 +22,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
     Route::patch('/users/{user}/update-password', [UserController::class, 'updatePassword'])->name('users.update-password');
 
+    Route::resource('products', ProductController::class);
+
     Route::middleware(['restrict.client'])->group(function () {
 
         Route::resource('users', UserController::class)->except(['show']);
 
         Route::resource('price-tables', PriceTableController::class);
-
-        Route::resource('products', ProductController::class);
 
         Route::resource('distribution-centers', DistributionCenterController::class);
     });

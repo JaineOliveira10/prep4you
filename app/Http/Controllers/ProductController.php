@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\ProductService;
+use App\Http\Requests\ProductRequest;
+use App\Models\Client;
 
 class ProductController extends Controller
 {
@@ -13,58 +16,89 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $products = $this->productsService->getAll();
+        $clients = [];
+        $products = [];
+        
+        if (auth()->user()->role == 'admin') {
+            $clients = Client::all();
+            $products = $this->productService->getByClient($request->client_id);
+        } else {
+            $products = $this->productService->getByClient(auth()->user()->client_id);
+        }
+        
         $assets = ['data-table'];
-        return view('products.index', compact('products', 'assets'));
+        return view('products.index', compact('products', 'assets', 'clients'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        //
+        if (auth()->user()->type != 'client') {
+            abort(403, 'Apenas clientes podem criar produtos.');
+        }
+        
+        $clients = auth()->user()->type == 'admin' ? Client::all() : [];
+        $assets = [];
+        return view('products.form', compact('assets', 'clients'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
-        //
+        if (auth()->user()->type != 'client') {
+            abort(403, 'Apenas clientes podem criar produtos.');
+        }
+        
+        $product = $this->productService->create($request->validated());
+        return redirect()->route('products.index')->with('success', 'Produto criado com sucesso!');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        $product = $this->productService->findById($id);
+        $assets = [];
+        return view('products.show', compact('product', 'assets'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        //
+        $product = $this->productService->findById($id);
+        
+        if (auth()->user()->type == 'client' && $product->client_id != auth()->user()->client_id) {
+            abort(403, 'Você não pode editar este produto.');
+        }
+        
+        $clients = auth()->user()->type == 'admin' ? Client::all() : [];
+        $data = $product;
+        $assets = [];
+        return view('products.form', compact('data', 'id', 'assets', 'clients'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(ProductRequest $request, string $id)
     {
-        //
+        $product = $this->productService->findById($id);
+        
+        if (auth()->user()->type == 'client' && $product->client_id != auth()->user()->client_id) {
+            abort(403, 'Você não pode editar este produto.');
+        }
+        
+        $this->productService->update($id, $request->validated());
+        return redirect()->route('products.index')->with('success', 'Produto atualizado com sucesso!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        if (auth()->user()->type != 'client') {
+            abort(403, 'Apenas clientes podem excluir produtos.');
+        }
+        
+        $product = $this->productService->findById($id);
+        
+        if ($product->client_id != auth()->user()->client_id) {
+            abort(403, 'Você não pode excluir este produto.');
+        }
+        
+        $this->productService->delete($id);
+        return redirect()->route('products.index')->with('success', 'Produto excluído com sucesso!');
     }
 }

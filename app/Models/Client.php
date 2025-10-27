@@ -58,4 +58,9 @@ class Client extends Model
     {
         return $this->belongsTo(PriceTable::class);
     }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
 }
