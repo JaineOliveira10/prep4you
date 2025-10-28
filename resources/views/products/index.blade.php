@@ -17,30 +17,45 @@
                   @endif
                </div>
             </div>
-            @if(auth()->user()->role == 'admin')
-               <div class="card-body pb-0">
-                  <form method="GET" action="{{ route('products.index') }}">
-                     <div class="row">
-                        <div class="col-md-4">
-                           <select name="client_id" class="form-control" onchange="this.form.submit()">
+           
+            <div class="card-body pb-2">
+               <form method="GET" action="{{ route('products.index') }}">
+                  <div class="row">
+                     <div class="col-md-12">
+                        <label id="client_id" class="pb-2">Cliente</label>
+                        <select name="client_id" id="client_id" class="form-select"  onchange="this.form.submit()"
+                           {{ auth()->user()->type == 'client' ? 'disabled' : '' }}>
+                           @if(auth()->user()->type == 'client')
+                              <option value="{{ auth()->user()->client->id }}" selected>
+                                 {{ auth()->user()->client->name }}
+                              </option>
+                           @else 
                               <option value="">Todos os clientes</option>
-                              @foreach($clients as $client)
-                                 <option value="{{ $client->id }}" {{ request('client_id') == $client->id ? 'selected' : '' }}>{{ $client->name }}</option>
-                              @endforeach
-                           </select>
-                        </div>
+                           @endif
+
+                           @foreach($clients as $client)
+                              <option value="{{ $client->id }}" 
+                                 {{ request('client_id') == $client->id ? 'selected' : '' }}>
+                                 {{ $client->name }}
+                              </option>
+                           @endforeach
+                        </select>
+
                      </div>
-                  </form>
-               </div>
-            @endif
+                  </div>
+               </form>
+            </div>
+
+            <hr class="hr-horizontal">
+            
             <div class="card-body px-0">
                <div class="table-responsive">
                   <table id="product-list-table" class="table table-striped" role="grid" data-toggle="data-table">
                      <thead>
                         <tr class="ligth">
+                           <th>Imagem</th>
                            <th>Nome</th>
                            <th>Tipo</th>
-                           <th>ASIN</th>
                            <th>SKU</th>
                            <th style="min-width: 100px">Ações</th>
                         </tr>
@@ -48,6 +63,15 @@
                      <tbody>
                         @foreach($products as $product)
                         <tr>
+                           <td>
+                              @if($product->photo_path)
+                                 <img src="{{ asset('storage/' . $product->photo_path) }}" alt="Product-Photo" class="img-fluid rounded avatar-50" style="object-fit: cover;">
+                              @else
+                                 <div class="bg-light rounded d-flex align-items-center justify-content-center avatar-100">
+                                    <i class="bi bi-image fs-1 text-muted"></i>
+                                 </div>
+                              @endif
+                           </td>
                            <td>{{ $product->name }}</td>
                            <td>
                                @if($product->type == 'simple')
@@ -58,7 +82,6 @@
                                    <span class="badge bg-success">Super Kit</span>
                                @endif
                            </td>
-                           <td>{{ $product->asin ?? '-' }}</td>
                            <td>{{ $product->sku ?? '-' }}</td>
                            <td>
                               @include('products.action', ['id' => $product->id])

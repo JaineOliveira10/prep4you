@@ -21,10 +21,11 @@ class ProductController extends Controller
         $clients = [];
         $products = [];
         
-        if (auth()->user()->role == 'admin') {
+        if (auth()->user()->type == 'admin') {
             $clients = Client::all();
             $products = $this->productService->getByClient($request->client_id);
         } else {
+            $clients = Client::where('id', auth()->user()->client_id)->get();
             $products = $this->productService->getByClient(auth()->user()->client_id);
         }
         

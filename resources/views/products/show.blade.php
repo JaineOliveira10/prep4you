@@ -37,9 +37,7 @@
                </div>            
                <div class="card-action">
                   <a href="{{ route('products.index') }}" class="btn btn-sm btn-primary">Voltar</a>
-                  @if(auth()->user()->type == 'client' || (auth()->user()->type == 'client' && $product->client_id == auth()->user()->client_id))
-                     <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-warning">Editar</a>
-                  @endif
+                  <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-warning">Editar</a>
                </div>
             </div>
             <div class="card-body">
