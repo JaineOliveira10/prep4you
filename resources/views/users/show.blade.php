@@ -35,17 +35,62 @@
              @endif
          </div>
          <div class="card-body">
-            <div class="mb-1"><span class="fw-bold">Email:</span> {{ $user->email }}</div>
+            <!-- Informações Básicas -->
+            <div class="row mb-4">
+               <div class="col-12">
+                  <h6 class="text-primary border-bottom pb-2 mb-3">Informações Básicas</h6>
+               </div>
+               <div class="col-md-6">
+                  <div class="mb-3">
+                     <label class="form-label fw-bold text-muted">Email</label>
+                     <p class="mb-0">{{ $user->email }}</p>
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="mb-3">
+                     <label class="form-label fw-bold text-muted">Tipo de Usuário</label>
+                     <p class="mb-0">
+                        @if($user->type == 'admin')
+                           <span class="badge bg-secondary">Administrador</span>
+                        @else
+                           <span class="badge bg-primary">Cliente</span>
+                        @endif
+                     </p>
+                  </div>
+               </div>
+            </div>
+
             @if($user->type == 'client')
-                <div class="mb-1"><span class="fw-bold">Telefone:</span> {{ $user->client->phone }}</div>
-                <div class="mb-1"><span class="fw-bold">Reside em:</span> {{ $user->client->city }} - {{ $user->client->uf }}</div>
-                <div class="mb-1"><span class="fw-bold">Tabela de preço:</span> 
-                    @if($user->client && $user->client->priceTable)
-                        {{ $user->client->priceTable->name }}
-                    @else
-                        Não definida
-                    @endif
-                </div>
+            <!-- Informações do Cliente -->
+            <div class="row mb-4">
+               <div class="col-12">
+                  <h6 class="text-primary border-bottom pb-2 mb-3">Informações do Cliente</h6>
+               </div>
+               <div class="col-md-6">
+                  <div class="mb-3">
+                     <label class="form-label fw-bold text-muted">Telefone</label>
+                     <p class="mb-0">{{ $user->client->phone ?? 'Não informado' }}</p>
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="mb-3">
+                     <label class="form-label fw-bold text-muted">Localização</label>
+                     <p class="mb-0">{{ $user->client->city ?? 'Não informado' }} - {{ $user->client->uf ?? '' }}</p>
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="mb-3">
+                     <label class="form-label fw-bold text-muted">Tabela de Preço</label>
+                     <p class="mb-0">
+                        @if($user->client && $user->client->priceTable)
+                           <span class="badge bg-success">{{ $user->client->priceTable->name }}</span>
+                        @else
+                           <span class="badge bg-secondary">Não definida</span>
+                        @endif
+                     </p>
+                  </div>
+               </div>
+            </div>
             @endif
          </div>
          </div>
