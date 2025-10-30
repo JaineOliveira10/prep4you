@@ -22,7 +22,7 @@
                                 <h4 class="card-title">{{ $id ? 'Editar' : 'Novo' }} Produto</h4>
                             </div>
                             <div class="card-action">
-                                <a href="{{ route('products.index') }}" class="btn btn-sm btn-primary">Voltar</a>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="window.location.href = document.referrer">Voltar</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -41,7 +41,7 @@
                                 <div class="row">
                                     <div class="form-group col-md-12">
                                         <label class="form-label" for="client_id">Cliente <span class="text-danger">*</span></label>
-                                        <select name="client_id" id="client_id" class="form-control" required {{ auth()->user()->role == 'client' ? 'disabled' : '' }}>
+                                        <select name="client_id" id="client_id" class="form-control" required {{ auth()->user()->type == 'client' ? 'disabled' : '' }}>
                                             @if(auth()->user()->type == 'admin')
                                                 <option value="">Selecione um cliente</option>
                                                 @foreach($clients as $client)

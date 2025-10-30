@@ -36,7 +36,7 @@
                   <h4 class="card-title">Informações do Produto</h4>
                </div>            
                <div class="card-action">
-                  <a href="{{ route('products.index') }}" class="btn btn-sm btn-primary">Voltar</a>
+                  <button type="button" class="btn btn-sm btn-primary" onclick="window.location.href = document.referrer">Voltar</button>
                   <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-warning">Editar</a>
                </div>
             </div>

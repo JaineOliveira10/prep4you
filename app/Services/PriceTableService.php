@@ -52,7 +52,7 @@ class PriceTableService
             'description' => $data['description'],
         ]);
 
-        $priceTable->priceRanges()->delete();
+        $priceTable->priceRanges()->forceDelete();
 
         if (isset($data['ranges'])) {
             foreach ($data['ranges'] as $range) {

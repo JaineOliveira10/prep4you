@@ -19,10 +19,13 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboards.dashboard');
     })->name('dashboard');
 
-    Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
-    Route::patch('/users/{user}/update-password', [UserController::class, 'updatePassword'])->name('users.update-password');
+    Route::middleware(['restrict.admin'])->group(function () {
+        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    });
 
-    Route::resource('products', ProductController::class);
+    Route::resource('products', ProductController::class)->except(['create', 'store', 'destroy']);
 
     Route::middleware(['restrict.client'])->group(function () {
 
@@ -32,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('distribution-centers', DistributionCenterController::class);
     });
+
+    Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+    Route::patch('/users/{user}/update-password', [UserController::class, 'updatePassword'])->name('users.update-password');
 
     Route::prefix('menu-style')->group(function () {
         Route::get('horizontal', [HomeController::class, 'horizontal'])->name('menu-style.horizontal');

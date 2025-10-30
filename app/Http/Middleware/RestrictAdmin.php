@@ -5,12 +5,12 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class RestrictClient
+class RestrictAdmin
 {
     public function handle(Request $request, Closure $next)
     {
-        if (strtolower(auth()->user()->type) === 'client') {
-            return redirect()->route('dashboard');
+        if (strtolower(auth()->user()->type) === 'admin') {
+            return redirect()->route('products.index');
         }
 
         return $next($request);

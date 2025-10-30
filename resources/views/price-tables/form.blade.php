@@ -23,7 +23,7 @@
                                 <h4 class="card-title">{{ $id ? 'Editar' : 'Nova' }} Tabela de Preço</h4>
                             </div>
                             <div class="card-action">
-                                <a href="{{ route('price-tables.index') }}" class="btn btn-sm btn-primary">Voltar</a>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="window.location.href = document.referrer">Voltar</button>
                             </div>
                         </div>
                         <div class="card-body">

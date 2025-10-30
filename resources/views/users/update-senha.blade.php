@@ -7,7 +7,7 @@
                         <h4 class="card-title">Atualizar Senha - {{ $user->name }}</h4>
                     </div>
                     <div class="card-action">
-                        <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">Voltar</a>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="window.location.href = document.referrer">Voltar</button>
                     </div>
                 </div>
                 <div class="card-body">

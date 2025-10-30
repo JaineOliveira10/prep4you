@@ -25,7 +25,7 @@
             </div>                  
          </div>
          <div class="col-md-6 d-md-block d-none bg-primary p-0 mt-n1 vh-100 overflow-hidden">
-            <img src="{{asset('images/auth/03.png')}}" class="img-fluid gradient-main animated-scaleX" alt="images">
+            <img src="{{asset('images/auth/03.png')}}" class="img-fluid gradient-main animated-scaleX" alt="Ilustração Autenticação">
          </div>
       </div>
    </section>

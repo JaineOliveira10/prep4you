@@ -29,7 +29,7 @@
             </div>            
              @if(auth()->user()->type == 'admin')
             <div class="card-action">
-               <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">Voltar</a>
+               <button type="button" class="btn btn-sm btn-primary" onclick="window.location.href = document.referrer">Voltar</button>
                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-warning">Editar</a>
             </div>
              @endif

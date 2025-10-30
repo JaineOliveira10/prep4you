@@ -8,7 +8,7 @@
                   <p class="mt-2">{{ $priceTable->description }}</p> 
                </div>
                <div class="card-action">
-                  <a href="{{ route('price-tables.index') }}" class="btn btn-sm btn-primary">Voltar</a>
+                  <button type="button" class="btn btn-sm btn-primary" onclick="window.location.href = document.referrer">Voltar</button>
                   <a href="{{ route('price-tables.edit', $priceTable->id) }}" class="btn btn-sm btn-warning">Editar</a>
                </div>
             </div>

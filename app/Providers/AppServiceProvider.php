@@ -3,21 +3,18 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-
-use App\Interfaces\UserRepositoryInterface;
+use Illuminate\Support\Facades\URL;
+use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\UserRepository;
-use App\Interfaces\PriceTableRepositoryInterface;
+use App\Repositories\Interfaces\PriceTableRepositoryInterface;
 use App\Repositories\PriceTableRepository;
-use App\Interfaces\DistributionCenterRepositoryInterface;
+use App\Repositories\Interfaces\DistributionCenterRepositoryInterface;
 use App\Repositories\DistributionCenterRepository;
-use App\Interfaces\ProductRepositoryInterface;
+use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\ProductRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
@@ -26,11 +23,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
     }
 }

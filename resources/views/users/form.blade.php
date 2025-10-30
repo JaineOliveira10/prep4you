@@ -24,7 +24,7 @@
                                 <h4 class="card-title">{{ $id ? 'Editar' : 'Novo' }} Usuário</h4>
                             </div>
                             <div class="card-action">
-                                <a href="{{ route('users.index') }}" class="btn btn-sm btn-primary">Voltar</a>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="window.location.href = document.referrer">Voltar</button>
                             </div>
                         </div>
                         <div class="card-body">
@@ -71,16 +71,16 @@
                                        <div class="row mt-3">
                                           <div class="form-group col-md-6">
                                                 <label for="client_name">Nome<span class="text-danger">*</span></label>
-                                                <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome completo do cliente" value="{{ old('client_name', $data->client->name ?? '') }}" readonly>
+                                                <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome completo" value="{{ old('client_name', $data->client->name ?? '') }}" readonly>
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                                <label for="client_city">Cidade</label>
-                                                <input type="text" name="city" id="client_city" class="form-control" placeholder="Nome da cidade" value="{{ old('city',  $data->client->city ?? '') }}">
+                                                <label for="client_city">Cidade<span class="text-danger">*</span></label>
+                                                <input type="text" name="city" id="client_city" class="form-control" placeholder="Nome da cidade" value="{{ old('city',  $data->client->city ?? '') }}" required>
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                               <label for="estado" class="form-label">Estado</label>
+                                               <label for="estado" class="form-label">Estado<span class="text-danger">*</span></label>
                                                 @php
                                                     $selectedUf = old('uf', $data->client->uf ?? '');
                                                 @endphp
@@ -101,7 +101,7 @@
 
                                           <div class="form-group col-md-6">
                                                 <label for="client_email">E-mail<span class="text-danger">*</span></label>
-                                                <input type="email" name="client_email" id="client_email" class="form-control" placeholder="cliente@email.com" value="{{ old('client_email', $data->client->email ?? '') }}" readonly>
+                                                <input type="email" name="client_email" id="client_email" class="form-control" placeholder="exemplo@email.com" value="{{ old('client_email', $data->client->email ?? '') }}" readonly>
                                           </div>
 
                                           {{-- Tabela de preço --}}
