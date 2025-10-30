@@ -4,13 +4,13 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
-use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Interfaces\UserRepositoryInterface;
 use App\Repositories\UserRepository;
-use App\Repositories\Interfaces\PriceTableRepositoryInterface;
+use App\Interfaces\PriceTableRepositoryInterface;
 use App\Repositories\PriceTableRepository;
-use App\Repositories\Interfaces\DistributionCenterRepositoryInterface;
+use App\Interfaces\DistributionCenterRepositoryInterface;
 use App\Repositories\DistributionCenterRepository;
-use App\Repositories\Interfaces\ProductRepositoryInterface;
+use App\Interfaces\ProductRepositoryInterface;
 use App\Repositories\ProductRepository;
 
 class AppServiceProvider extends ServiceProvider
