@@ -15,6 +15,13 @@ class PriceTable extends Model
         'user_type'
     ];
 
+    protected static function booted()
+    {
+        static::deleting(function ($priceTable) {
+            $priceTable->priceRanges()->delete();
+        });
+    }
+
     public function clients()
     {
         return $this->hasMany(Client::class);

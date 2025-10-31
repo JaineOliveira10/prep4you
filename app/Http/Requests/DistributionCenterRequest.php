@@ -14,9 +14,11 @@ class DistributionCenterRequest extends FormRequest
 
     public function rules()
     {
+        $id = $this->route('distribution_center');
+        
         return [
-            'acronym' => 'required|string|max:7',
-            'name' => 'required|string|max:255|unique:distribution_centers,name',
+            'acronym' => $id ? "required|string|max:7|unique:distribution_centers,acronym,{$id},id,deleted_at,NULL" : 'required|string|max:7|unique:distribution_centers,acronym,NULL,id,deleted_at,NULL',
+            'name' => 'required|string|max:255',
         ];
     }
 }

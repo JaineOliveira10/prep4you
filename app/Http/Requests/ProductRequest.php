@@ -19,24 +19,9 @@ class ProductRequest extends FormRequest
 
         $rules = [
             'name' => 'required|string|max:50',
-            'asin' => [
-                'nullable',
-                'string',
-                'max:15',
-                Rule::unique('products', 'asin')->ignore($productId),
-            ],
-            'fsnku' => [
-                'nullable',
-                'string',
-                'max:15',
-                Rule::unique('products', 'fsnku')->ignore($productId),
-            ],
-            'sku' => [
-                'nullable',
-                'string',
-                'max:40',
-                Rule::unique('products', 'sku')->ignore($productId),
-            ],
+            'asin' => $productId ? "nullable|string|max:15|unique:products,asin,{$productId},id,deleted_at,NULL" : 'nullable|string|max:15|unique:products,asin,NULL,id,deleted_at,NULL',
+            'fsnku' => $productId ? "nullable|string|max:15|unique:products,fsnku,{$productId},id,deleted_at,NULL" : 'nullable|string|max:15|unique:products,fsnku,NULL,id,deleted_at,NULL',
+            'sku' => $productId ? "nullable|string|max:40|unique:products,sku,{$productId},id,deleted_at,NULL" : 'nullable|string|max:40|unique:products,sku,NULL,id,deleted_at,NULL',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'observation' => 'nullable|string|max:200',
             'type' => 'required|in:simple,kit,super_kit',
