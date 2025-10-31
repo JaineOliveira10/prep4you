@@ -95,8 +95,8 @@
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                                <label for="client_telefone">Telefone<span class="text-danger">*</span></label>
-                                                <input type="text" name="phone" id="client_phone" class="form-control" placeholder="(11) 99999-9999" value="{{ old('phone', $data->client->phone ?? '') }}" required>
+                                                <label for="client_telefone">Telefone</label>
+                                                <input type="text" name="phone" id="client_phone" class="form-control" placeholder="(11) 99999-9999" value="{{ old('phone', $data->client->phone ?? '') }}">
                                           </div>
 
                                           <div class="form-group col-md-6">

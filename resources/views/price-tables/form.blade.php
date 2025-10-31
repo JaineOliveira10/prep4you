@@ -31,7 +31,7 @@
                                 <div class="row">
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="name">Nome <span class="text-danger">*</span></label>
-                                        <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o nome" required>
+                                        <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o nome">
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="description">Descrição</label>

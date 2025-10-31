@@ -64,16 +64,16 @@
 
                                 <div class="row">
                                     <div class="form-group col-md-4">
-                                        <label class="form-label" for="asin">ASIN</label>
-                                        <input type="text" name="asin" id="asin" class="form-control" value="{{ old('asin', $data->asin ?? '') }}" placeholder="Ex: B0FDRCTH8H" maxlength="15">
+                                        <label class="form-label" for="asin">ASIN <span class="text-danger">*</span></label>
+                                        <input type="text" name="asin" id="asin" class="form-control" value="{{ old('asin', $data->asin ?? '') }}" placeholder="Ex: B0FDRCTH8H" maxlength="15" required>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label class="form-label" for="fsnku">FSNKU</label>
-                                        <input type="text" name="fsnku" id="fsnku" class="form-control" value="{{ old('fsnku', $data->fsnku ?? '') }}" placeholder="Ex: X004SC7I0R" maxlength="15">
+                                        <label class="form-label" for="fsnku">FSNKU <span class="text-danger">*</span></label>
+                                        <input type="text" name="fsnku" id="fsnku" class="form-control" value="{{ old('fsnku', $data->fsnku ?? '') }}" placeholder="Ex: X004SC7I0R" maxlength="15" required>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label class="form-label" for="sku">SKU</label>
-                                        <input type="text" name="sku" id="sku" class="form-control" value="{{ old('sku', $data->sku ?? '') }}" placeholder="Ex: 0054-Generico-BolsaTermica-Azul" maxlength="40">
+                                        <label class="form-label" for="sku">SKU <span class="text-danger">*</span></label>
+                                        <input type="text" name="sku" id="sku" class="form-control" value="{{ old('sku', $data->sku ?? '') }}" placeholder="Ex: 0054-Generico-BolsaTermica-Azul" maxlength="40" required>
                                     </div>
                                     <div class="form-group col-md-12">
                                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
