@@ -69,6 +69,13 @@
                                     <div id="cliente-fields" style="display: none; margin-top: 20px;">
                                        <h5>Dados do Cliente</h5>
                                        <div class="row mt-3">
+                                         @if($id)
+                                          <div class="form-group col-md-6">
+                                                <label for="client_id">ID Sequencial</label>
+                                                <input type="text" class="form-control" value="{{ $data->client->id ?? '' }}" readonly>
+                                          </div>
+                                          @endif
+
                                           <div class="form-group col-md-6">
                                                 <label for="client_name">Nome<span class="text-danger">*</span></label>
                                                 <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome completo" value="{{ old('client_name', $data->client->name ?? '') }}" readonly>
@@ -80,7 +87,7 @@
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                               <label for="estado" class="form-label">Estado<span class="text-danger">*</span></label>
+                                               <label for="estado">Estado<span class="text-danger">*</span></label>
                                                 @php
                                                     $selectedUf = old('uf', $data->client->uf ?? '');
                                                 @endphp

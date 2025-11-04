@@ -17,7 +17,7 @@ class PriceTableRequest extends FormRequest
         $id = $this->route('price_table');
         
         return [
-            'name' => $id ? "required|string|max:255|unique:price_tables,name,{$id},id,deleted_at,NULL" : 'required|string|max:255|unique:price_tables,name,NULL,id,deleted_at,NULL',
+            'name' => $id ? 'required|string|max:255|unique:price_tables,name,' . $id . ',id' : 'required|string|max:255|unique:price_tables,name',
             'description' => 'nullable|string|max:255',
             'ranges' => 'required|array|min:1',
             'ranges.*.min_value' => 'required|integer|min:0',

@@ -19,8 +19,12 @@ class ProductRequest extends FormRequest
 
         $rules = [
             'name' => 'required|string|max:50',
-            'asin' => $productId ? "nullable|string|max:15|unique:products,asin,{$productId},id,deleted_at,NULL" : 'nullable|string|max:15|unique:products,asin,NULL,id,deleted_at,NULL',
-            'fsnku' => $productId ? "nullable|string|max:15|unique:products,fsnku,{$productId},id,deleted_at,NULL" : 'nullable|string|max:15|unique:products,fsnku,NULL,id,deleted_at,NULL',
+            'asin' => $productId
+                ? 'nullable|string|max:15|unique:products,asin,' . $productId
+                : 'nullable|string|max:15|unique:products,asin',
+            'fsnku' => $productId
+                ? 'nullable|string|max:15|unique:products,fsnku,' . $productId
+                : 'nullable|string|max:15|unique:products,fsnku',
             'sku' => 'required|string|max:40',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'observation' => 'nullable|string|max:200',

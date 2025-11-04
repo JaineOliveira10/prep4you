@@ -86,15 +86,10 @@ class ProductService
 
     public function delete($id)
     {
-        return $this->productRepository->delete($id);
-    }
-
-    public function forceDelete($id)
-    {
         $product = $this->findById($id);
         if ($product->photo_path) {
             Storage::disk('public')->delete($product->photo_path);
         }
-        return $product->forceDelete();
+        return $this->productRepository->delete($id);
     }
 }

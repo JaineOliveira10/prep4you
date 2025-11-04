@@ -52,7 +52,7 @@ class PriceTableService
             'description' => $data['description'],
         ]);
 
-        $priceTable->priceRanges()->forceDelete();
+        $priceTable->priceRanges()->delete();
 
         if (isset($data['ranges'])) {
             foreach ($data['ranges'] as $range) {
@@ -70,6 +70,12 @@ class PriceTableService
 
     public function delete($id)
     {
+        $priceTable = $this->priceTableRepository->find($id);
+        
+        if ($priceTable->clients()->count() > 0) {
+            throw new \Exception('Não é possível excluir esta tabela de preço pois ela está vinculada a um ou mais clientes.');
+        }
+        
         return $this->priceTableRepository->delete($id);
     }
 }

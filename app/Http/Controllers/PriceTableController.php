@@ -70,10 +70,15 @@ class PriceTableController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->priceTableService->delete($id);
-
-        return redirect()
-            ->route('price-tables.index')
-            ->withSuccess(__('Tabela de preço removida com sucesso.'));
+        try {
+            $this->priceTableService->delete($id);
+            return redirect()
+                ->route('price-tables.index')
+                ->withSuccess(__('Tabela de preço removida com sucesso.'));
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('price-tables.index')
+                ->withError($e->getMessage());
+        }
     }
 }

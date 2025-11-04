@@ -94,11 +94,13 @@ class UserService
     {
         $user = $this->userRepository->find($id);
         
+        $result = $this->userRepository->delete($id);
+        
         if ($user->client) {
             $user->client->delete();
         }
         
-        return $this->userRepository->delete($id);
+        return $result;
     }
 
     public function updatePassword($id, $currentPassword, $newPassword)

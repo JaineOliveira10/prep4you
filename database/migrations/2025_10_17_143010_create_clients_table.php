@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('phone')->nullable();        
             $table->string('email');      
             $table->foreignId('price_table_id')->nullable()->constrained('price_tables')->onDelete('set null'); 
-            $table->softDeletes();
             $table->timestamps();
         });
     }

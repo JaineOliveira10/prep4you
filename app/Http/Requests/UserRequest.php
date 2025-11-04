@@ -17,7 +17,9 @@ class UserRequest extends FormRequest
 
         return [
             'first_name' => 'required|string|max:255',
-            'email' => $id ? "required|email|unique:users,email,{$id},id,deleted_at,NULL" : 'required|email|unique:users,email,NULL,id,deleted_at,NULL',
+            'email' => $id
+                ? 'required|email|unique:users,email,' . $id . ',id'
+                : 'required|email|unique:users,email',
             'password' => $this->isMethod('post')
                 ? 'required|min:6'
                 : 'nullable|min:6',

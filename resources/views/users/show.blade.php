@@ -66,13 +66,19 @@
                <div class="col-12">
                   <h6 class="text-primary border-bottom pb-2 mb-3">Informações do Cliente</h6>
                </div>
-               <div class="col-md-6">
+               <div class="col-md-4">
+                  <div class="mb-3">
+                     <label class="form-label fw-bold text-muted">ID Sequencial</label>
+                     <p class="mb-0">{{ $user->client->id ?? 'Não informado' }}</p>
+                  </div>
+               </div>
+               <div class="col-md-4">
                   <div class="mb-3">
                      <label class="form-label fw-bold text-muted">Telefone</label>
                      <p class="mb-0">{{ $user->client->phone ?? 'Não informado' }}</p>
                   </div>
                </div>
-               <div class="col-md-6">
+               <div class="col-md-4">
                   <div class="mb-3">
                      <label class="form-label fw-bold text-muted">Localização</label>
                      <p class="mb-0">{{ $user->client->city ?? 'Não informado' }} - {{ $user->client->uf ?? '' }}</p>
