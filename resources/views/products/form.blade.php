@@ -3,14 +3,15 @@
         @php
             $id = $id ?? null;
             $data = $data ?? null;
+            $isCopy = request()->routeIs('products.copy');
         @endphp
         <form 
-            action="{{ $id ? route('products.update', $id) : route('products.store') }}" 
+            action="{{ $id && !$isCopy ? route('products.update', $id) : route('products.store') }}" 
             method="POST" 
             enctype="multipart/form-data"
         >
             @csrf
-            @if($id)
+            @if($id && !$isCopy)
                 @method('PATCH')
             @endif
 
@@ -19,7 +20,7 @@
                     <div class="card">
                         <div class="card-header d-flex justify-content-between">
                             <div class="header-title">
-                                <h4 class="card-title">{{ $id ? 'Editar' : 'Novo' }} Produto</h4>
+                                <h4 class="card-title">{{ $isCopy ? 'Copiar' : ($id ? 'Editar' : 'Novo') }} Produto</h4>
                             </div>
                             <div class="card-action">
                                 <button type="button" class="btn btn-sm btn-primary" onclick="window.location.href = document.referrer">Voltar</button>
@@ -27,6 +28,13 @@
                         </div>
                         <div class="card-body">
                             <div class="new-product-info">
+                                @if($isCopy)
+                                    <div class="alert alert-info mb-3">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Você está criando uma cópia do produto.
+                                    </div>
+                                @endif
+                                
                                 @if($errors->any())
                                     <div class="alert alert-danger mb-3">
                                         <ul class="mb-0">
@@ -41,7 +49,7 @@
                                 <div class="row">
                                     <div class="form-group col-md-12">
                                         <label class="form-label" for="client_id">Cliente <span class="text-danger">*</span></label>
-                                        <select name="client_id" id="client_id" class="form-control" required {{ auth()->user()->type == 'client' ? 'disabled' : '' }}>
+                                        <select name="client_id" id="client_id" class="form-control" required disabled>
                                             @if(auth()->user()->type == 'admin')
                                                 <option value="">Selecione um cliente</option>
                                                 @foreach($clients as $client)
@@ -58,22 +66,22 @@
                                 <div class="row">
                                     <div class="form-group col-md-12">
                                         <label class="form-label" for="name">Nome <span class="text-danger">*</span></label>
-                                        <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o nome do produto" required maxlength="50">
+                                        <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Informe o nome do produto" required maxlength="50" {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
                                     </div>
                                 </div>
 
                                 <div class="row">
                                     <div class="form-group col-md-4">
-                                        <label class="form-label" for="asin">ASIN <span class="text-danger">*</span></label>
-                                        <input type="text" name="asin" id="asin" class="form-control" value="{{ old('asin', $data->asin ?? '') }}" placeholder="Ex: B0FDRCTH8H" maxlength="15" required>
+                                        <label class="form-label" for="asin">ASIN</label>
+                                        <input type="text" name="asin" id="asin" class="form-control" value="{{ old('asin', $isCopy ? '' : ($data->asin ?? '')) }}" maxlength="15" {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label class="form-label" for="fsnku">FSNKU <span class="text-danger">*</span></label>
-                                        <input type="text" name="fsnku" id="fsnku" class="form-control" value="{{ old('fsnku', $data->fsnku ?? '') }}" placeholder="Ex: X004SC7I0R" maxlength="15" required>
+                                        <label class="form-label" for="fsnku">FSNKU</label>
+                                        <input type="text" name="fsnku" id="fsnku" class="form-control" value="{{ old('fsnku', $isCopy ? '' : ($data->fsnku ?? '')) }}" maxlength="15" {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
                                     </div>
                                     <div class="form-group col-md-4">
                                         <label class="form-label" for="sku">SKU <span class="text-danger">*</span></label>
-                                        <input type="text" name="sku" id="sku" class="form-control" value="{{ old('sku', $data->sku ?? '') }}" placeholder="Ex: 0054-Generico-BolsaTermica-Azul" maxlength="40" required>
+                                        <input type="text" name="sku" id="sku" class="form-control" value="{{ old('sku', $data->sku ?? '') }}" maxlength="40" required {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
                                     </div>
                                     <div class="form-group col-md-12">
                                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
@@ -108,8 +116,8 @@
                                 <div class="row">
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="photo">Foto do Produto</label>
-                                        <input type="file" name="photo" id="photo" class="form-control" accept="image/*">
-                                        @if(isset($data->photo_path) && $data->photo_path)
+                                        <input type="file" name="photo" id="photo" class="form-control" accept="image/*" {{ auth()->user()->type == 'admin' ? 'disabled' : '' }}>
+                                        @if(isset($data->photo_path) && $data->photo_path && !$isCopy)
                                             <div class="mt-2">
                                                 <img src="{{ asset('storage/' . $data->photo_path) }}" alt="Foto atual" class="img-thumbnail" style="max-width: 150px;">
                                                 <small class="text-muted d-block">Foto atual</small>
@@ -123,7 +131,7 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary mt-3">{{ $id ? 'Atualizar' : 'Adicionar' }} Produto</button>
+                                <button type="submit" class="btn btn-primary mt-3">{{ $isCopy ? 'Criar Cópia' : ($id ? 'Atualizar' : 'Adicionar') }} Produto</button>
                             </div>
                         </div>
                     </div>

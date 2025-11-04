@@ -53,20 +53,20 @@ document.addEventListener('DOMContentLoaded', function() {
         const newRange = `
             <div class="row mt-3 price-range-row">
                 <div class="form-group col-md-2">
-                    <label>De (qtd)</label>
-                    <input type="number" name="ranges[${rangeIndex}][min_value]" class="form-control" placeholder="Ex: 1" min="0" value="${minValue}">
+                    <label>Qtd. Inicial <span class="text-danger">*</span></label>
+                    <input type="number" name="ranges[${rangeIndex}][min_value]" class="form-control" min="0" value="${minValue}">
                 </div>
                 <div class="form-group col-md-2">
-                    <label>à (qtd)</label>
-                    <input type="number" name="ranges[${rangeIndex}][max_value]" class="form-control" placeholder="Ex: 499" min="0" value="${maxValue}">
+                    <label>Qtd. Final <span class="text-danger">*</span></label>
+                    <input type="number" name="ranges[${rangeIndex}][max_value]" class="form-control" min="0" value="${maxValue}">
                 </div>
                 <div class="form-group col-md-3">
-                    <label>Valor Etiqueta (R$)</label>
-                    <input type="text" name="ranges[${rangeIndex}][price]" class="form-control price-input" placeholder="Ex: 0,80" value="${price}">
+                    <label>Valor Etiqueta (R$) <span class="text-danger">*</span></label>
+                    <input type="text" name="ranges[${rangeIndex}][price]" class="form-control price-input" value="${price}">
                 </div>
                 <div class="form-group col-md-3">
-                    <label>Valor Kit (R$)</label>
-                    <input type="text" name="ranges[${rangeIndex}][price_kit]" class="form-control price-input" placeholder="Ex: 1,00" value="${priceKit}">
+                    <label>Valor Kit (R$) <span class="text-danger">*</span></label>
+                    <input type="text" name="ranges[${rangeIndex}][price_kit]" class="form-control price-input" value="${priceKit}">
                 </div>
                 <div class="form-group col-md-2 d-flex align-items-end">
                     <button type="button" class="btn btn-danger btn-sm remove-range w-100 py-2">

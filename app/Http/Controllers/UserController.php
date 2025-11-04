@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
+use App\Http\Requests\UpdatePasswordRequest;
 use App\Models\User;
 use App\Models\PriceTable;
 use App\Models\Client;
@@ -97,23 +98,18 @@ class UserController extends Controller
             ->withSuccess(__('Usuário removido com sucesso.'));
     }
 
-    public function updatePassword(Request $request, $id)
+    public function updatePassword(UpdatePasswordRequest $request, $id)
     {
         // Se o usuário é cliente, só pode alterar sua própria senha
         if (strtolower(auth()->user()->type) === 'client' && auth()->id() != $id) {
-            abort(403, 'Acesso negado.');
+            abort(403, __('messages.access_denied'));
         }
-        
-        $request->validate([
-            'current_password' => 'required',
-            'password' => 'required|min:6|confirmed',
-        ]);
 
         try {
             $this->userService->updatePassword($id, $request->current_password, $request->password);
             return redirect()
                 ->route('users.show', $id)
-                ->withSuccess(__('Senha atualizada com sucesso.'));
+                ->withSuccess(__('passwords.updated_successfully'));
         } catch (\Exception $e) {
             return redirect()
                 ->route('users.show', $id)

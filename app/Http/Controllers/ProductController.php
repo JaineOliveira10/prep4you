@@ -44,6 +44,24 @@ class ProductController extends Controller
         return view('products.form', compact('assets', 'clients'));
     }
 
+    public function copy(string $id)
+    {
+        if (auth()->user()->type != 'client') {
+            abort(403, 'Apenas clientes podem copiar produtos.');
+        }
+        
+        $product = $this->productService->findById($id);
+        
+        if ($product->client_id != auth()->user()->client_id) {
+            abort(403, 'Você não pode copiar este produto.');
+        }
+        
+        $clients = auth()->user()->type == 'admin' ? Client::all() : [];
+        $data = $product;
+        $assets = [];
+        return view('products.form', compact('data', 'assets', 'clients'));
+    }
+
     public function store(ProductRequest $request)
     {
         if (auth()->user()->type != 'client') {

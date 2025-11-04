@@ -106,7 +106,7 @@ class UserService
         $user = $this->userRepository->find($id);
         
         if (!Hash::check($currentPassword, $user->password)) {
-            throw new \Exception('Senha atual incorreta.');
+            throw new \Exception(__('passwords.current_incorrect'));
         }
         
         return $this->userRepository->update($id, [

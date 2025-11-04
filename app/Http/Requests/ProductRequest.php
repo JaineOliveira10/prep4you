@@ -21,7 +21,7 @@ class ProductRequest extends FormRequest
             'name' => 'required|string|max:50',
             'asin' => $productId ? "nullable|string|max:15|unique:products,asin,{$productId},id,deleted_at,NULL" : 'nullable|string|max:15|unique:products,asin,NULL,id,deleted_at,NULL',
             'fsnku' => $productId ? "nullable|string|max:15|unique:products,fsnku,{$productId},id,deleted_at,NULL" : 'nullable|string|max:15|unique:products,fsnku,NULL,id,deleted_at,NULL',
-            'sku' => $productId ? "nullable|string|max:40|unique:products,sku,{$productId},id,deleted_at,NULL" : 'nullable|string|max:40|unique:products,sku,NULL,id,deleted_at,NULL',
+            'sku' => 'required|string|max:40',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'observation' => 'nullable|string|max:200',
             'type' => 'required|in:simple,kit,super_kit',

@@ -41,9 +41,7 @@ class AuthController extends Controller
             $this->authService->login($request->validated());
             $request->session()->regenerate();
 
-            return redirect()
-                ->route('dashboard')
-                ->with('success', 'Login realizado com sucesso!');
+            return redirect()->route('dashboard');
         } catch (Exception $e) {
             return back()->withErrors(['email' => $e->getMessage()]);
         }

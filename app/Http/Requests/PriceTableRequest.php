@@ -41,7 +41,7 @@ class PriceTableRequest extends FormRequest
                 $max = (int) $range['max_value'];
                 
                 if ($min > $max) {
-                    $validator->errors()->add("ranges.{$i}.max_value", 'O valor máximo deve ser maior que o valor mínimo.');
+                    $validator->errors()->add("ranges.{$i}.max_value", __('validation.custom.ranges.max_greater_than_min'));
                     continue;
                 }
                 
@@ -54,7 +54,7 @@ class PriceTableRequest extends FormRequest
                     $otherMax = (int) $otherRange['max_value'];
                     
                     if ($this->rangesOverlap($min, $max, $otherMin, $otherMax)) {
-                        $validator->errors()->add("ranges.{$i}", "A faixa {$min}-{$max} se sobrepõe com a faixa {$otherMin}-{$otherMax}.");
+                        $validator->errors()->add("ranges.{$i}", __('validation.custom.ranges.overlap', ['range1' => "{$min}-{$max}", 'range2' => "{$otherMin}-{$otherMax}"]));
                         break;
                     }
                 }

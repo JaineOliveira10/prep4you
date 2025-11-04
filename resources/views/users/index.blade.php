@@ -22,6 +22,7 @@
                         <tr class="ligth">
                            <th>Nome</th>
                            <th>Email</th>
+                           <th>Município/Estado</th>
                            <th>Tipo</th>
                            <th style="min-width: 100px">Ações</th>
                         </tr>
@@ -31,6 +32,8 @@
                         <tr>
                            <td>{{ $user->name }}</td>
                            <td>{{ $user->email }}</td>
+                           <td>{{ ($user->client?->city && $user->client?->uf) ? $user->client->city . ' / ' . $user->client->uf : '-' }}</td>
+
                            <td>
                               @php
                                  $type = $user->type ?? '';

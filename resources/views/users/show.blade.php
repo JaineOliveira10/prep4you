@@ -100,30 +100,43 @@
          <div class="card">
          <div class="card-header">
             <div class="header-title">
-               <h4 class="card-title">Alterar Senha</h4>
+               <h4 class="card-title">{{ __('ui.titles.change_password') }}</h4>
             </div>
          </div>
          <div class="card-body">
-            <p>Altere sua senha de acesso ao sistema.</p>
+            <p>{{ __('ui.messages.change_password_instruction') }}</p>
+            <small class="text-muted">{{ __('ui.messages.password_requirements') }}</small>
+            
+            <x-form-errors />
+            
             <form action="{{ route('users.update-password', $user->id) }}" method="POST">
                @csrf
                @method('PATCH')
                <div class="row">
                   <div class="form-group col-md-6">
-                     <label class="form-label" for="current_password">Senha Atual <span class="text-danger">*</span></label>
-                     <input type="password" name="current_password" id="current_password" class="form-control" placeholder="Digite sua senha atual" required>
+                     <label class="form-label" for="current_password">{{ __('ui.labels.current_password') }} <span class="text-danger">*</span></label>
+                     <input type="password" name="current_password" id="current_password" class="form-control @error('current_password') is-invalid @enderror" placeholder="{{ __('ui.placeholders.enter_current_password') }}" required>
+                     @error('current_password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                     @enderror
                   </div>
                   <div class="form-group col-md-6"></div>
                   <div class="form-group col-md-6">
-                     <label class="form-label" for="password">Nova Senha <span class="text-danger">*</span></label>
-                     <input type="password" name="password" id="password" class="form-control" placeholder="Digite a nova senha" required>
+                     <label class="form-label" for="password">{{ __('ui.labels.new_password') }} <span class="text-danger">*</span></label>
+                     <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="{{ __('ui.placeholders.enter_new_password') }}" required>
+                     @error('password')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                     @enderror
                   </div>
                   <div class="form-group col-md-6">
-                     <label class="form-label" for="password_confirmation">Confirmar Nova Senha <span class="text-danger">*</span></label>
-                     <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" placeholder="Confirme a nova senha" required>
+                     <label class="form-label" for="password_confirmation">{{ __('ui.labels.confirm_password') }} <span class="text-danger">*</span></label>
+                     <input type="password" name="password_confirmation" id="password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror" placeholder="{{ __('ui.placeholders.confirm_new_password') }}" required>
+                     @error('password_confirmation')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                     @enderror
                   </div>
                </div>
-               <button type="submit" class="btn btn-primary mt-3">Alterar Senha</button>
+               <button type="submit" class="btn btn-primary mt-3">{{ __('ui.buttons.change_password') }}</button>
             </form>
          </div>
          </div>

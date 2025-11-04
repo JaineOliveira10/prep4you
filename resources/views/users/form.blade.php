@@ -75,8 +75,8 @@
                                           </div>
 
                                           <div class="form-group col-md-6">
-                                                <label for="client_city">Cidade<span class="text-danger">*</span></label>
-                                                <input type="text" name="city" id="client_city" class="form-control" placeholder="Nome da cidade" value="{{ old('city',  $data->client->city ?? '') }}" required>
+                                                <label for="client_city">Município<span class="text-danger">*</span></label>
+                                                <input type="text" name="city" id="client_city" class="form-control" placeholder="Nome do município" value="{{ old('city',  $data->client->city ?? '') }}" required>
                                           </div>
 
                                           <div class="form-group col-md-6">

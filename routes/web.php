@@ -21,6 +21,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::middleware(['restrict.admin'])->group(function () {
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::get('/products/{product}/copy', [ProductController::class, 'copy'])->name('products.copy');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
         Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
     });

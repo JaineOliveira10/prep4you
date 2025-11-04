@@ -18,7 +18,16 @@
         </span>
     </a>
     @if(auth()->user()->type == 'client')
-        <a class="btn btn-sm btn-icon btn-danger" onclick="confirmDelete('products-delete-{{$id}}', 'Deseja realmente excluir este produto?')" data-bs-toggle="tooltip" title="Deletar produto" href="#">
+        <a class="btn btn-sm btn-icon btn-success" data-bs-toggle="tooltip" title="Copiar para novo produto" href="{{ route('products.copy',$id) }}">
+            <span class="btn-inner">
+                <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 1H4C2.9 1 2 1.9 2 3V17H4V3H16V1ZM19 5H8C6.9 5 6 5.9 6 7V21C6 22.1 6.9 23 8 23H19C20.1 23 21 22.1 21 21V7C21 5.9 20.1 5 19 5ZM19 21H8V7H19V21Z" fill="currentColor"></path>
+                </svg>
+            </span>
+        </a>
+    @endif
+    @if(auth()->user()->type == 'client')
+        <a class="btn btn-sm btn-icon btn-danger" onclick="confirmDelete('products-delete-{{$id}}', 'Deseja realmente excluir este produto?')" data-bs-toggle="tooltip" title="Excluir produto" href="#">
             <span class="btn-inner">
                 <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
                     <path d="M19.3248 9.46826C19.3248 9.46826 18.7818 16.2033 18.4668 19.0403C18.3168 20.3953 17.4798 21.1893 16.1088 21.2143C13.4998 21.2613 10.8878 21.2643 8.27979 21.2093C6.96079 21.1823 6.13779 20.3783 5.99079 19.0473C5.67379 16.1853 5.13379 9.46826 5.13379 9.46826" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>

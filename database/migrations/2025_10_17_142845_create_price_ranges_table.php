@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('price_ranges', function (Blueprint $table) {
             $table->id();
             $table->foreignId('price_table_id')->constrained('price_tables')->onDelete('cascade');
-            $table->decimal('min_value', 10, 2);
-            $table->decimal('max_value', 10, 2)->nullable();
+            $table->integer('min_value');
+            $table->integer('max_value');
             $table->decimal('price', 10, 2);
             $table->decimal('price_kit', 10, 2);
             $table->timestamps();

@@ -23,8 +23,8 @@
                      <table class="table table-striped">
                         <thead>
                            <tr>
-                              <th>De (qtd)</th>
-                              <th>Até (qtd)</th>
+                              <th>Qtd. Inicial</th>
+                              <th>Qtd. Final</th>
                               <th>Valor Etiqueta</th>
                               <th>Valor Kit</th>
                            </tr>
@@ -32,8 +32,8 @@
                         <tbody>
                            @foreach($priceTable->priceRanges as $range)
                            <tr>
-                              <td>{{ number_format($range->min_value, 0, ',', '.') }}</td>
-                              <td>{{ number_format($range->max_value, 0, ',', '.') }}</td>
+                              <td>{{ $range->min_value }}</td>
+                              <td>{{ $range->max_value }}</td>
                               <td>R$ {{ number_format($range->price, 2, ',', '.') }}</td>
                               <td>R$ {{ number_format($range->price_kit, 2, ',', '.') }}</td>
                            </tr>

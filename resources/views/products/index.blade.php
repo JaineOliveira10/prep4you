@@ -1,5 +1,14 @@
 @push('scripts')
-
+<script>
+$(document).ready(function() {
+    if ($.fn.DataTable.isDataTable('#product-list-table')) {
+        $('#product-list-table').DataTable().destroy();
+    }
+    $('#product-list-table').DataTable({
+        "pageLength": 100
+    });
+});
+</script>
 @endpush
 
 <x-app-layout :assets="$assets ?? []">
@@ -56,6 +65,7 @@
                            <th>Imagem</th>
                            <th>Nome</th>
                            <th>Tipo</th>
+                           <th>FSNKU</th>
                            <th>SKU</th>
                            <th style="min-width: 100px">Ações</th>
                         </tr>
@@ -67,7 +77,7 @@
                               @if($product->photo_path)
                                  <img src="{{ asset('storage/' . $product->photo_path) }}" alt="Product-Photo" class="img-fluid rounded avatar-50" style="object-fit: cover;">
                               @else
-                                 <div class="bg-light rounded d-flex align-items-center justify-content-center avatar-100">
+                                 <div class="bg-light rounded d-flex align-items-center justify-content-center avatar-50">
                                     <i class="bi bi-image fs-1 text-muted"></i>
                                  </div>
                               @endif
@@ -77,11 +87,12 @@
                                @if($product->type == 'simple')
                                    <span class="badge bg-primary">Simples</span>
                                @elseif($product->type == 'kit')
-                                   <span class="badge bg-warning">Kit</span>
+                                   <span class="badge bg-secondary">Kit</span>
                                @else
                                    <span class="badge bg-success">Super Kit</span>
                                @endif
                            </td>
+                           <td>{{ $product->fsnku ?? '-' }}</td>
                            <td>{{ $product->sku ?? '-' }}</td>
                            <td>
                               @include('products.action', ['id' => $product->id])
