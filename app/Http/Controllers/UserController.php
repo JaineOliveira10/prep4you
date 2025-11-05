@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserRequest;
 use App\Http\Requests\UpdatePasswordRequest;
+use App\Http\Requests\UpdateNameRequest;
 use App\Models\User;
 use App\Models\PriceTable;
 use App\Models\Client;
@@ -115,5 +116,19 @@ class UserController extends Controller
                 ->route('users.show', $id)
                 ->withError($e->getMessage());
         }
+    }
+
+    public function updateName(UpdateNameRequest $request, $id)
+    {
+        // Se o usuário é cliente, só pode alterar seu próprio nome
+        if (strtolower(auth()->user()->type) === 'client' && auth()->id() != $id) {
+            abort(403, __('messages.access_denied'));
+        }
+
+        $this->userService->updateName($id, $request->name);
+
+        return redirect()
+            ->route('users.show', $id)
+            ->withSuccess('Nome atualizado com sucesso.');
     }
 }

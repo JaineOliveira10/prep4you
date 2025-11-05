@@ -23,9 +23,9 @@ class ProductRequest extends FormRequest
                 ? 'nullable|string|max:15|unique:products,asin,' . $productId
                 : 'nullable|string|max:15|unique:products,asin',
             'fsnku' => $productId
-                ? 'nullable|string|max:15|unique:products,fsnku,' . $productId
-                : 'nullable|string|max:15|unique:products,fsnku',
-            'sku' => 'required|string|max:40',
+                ? 'required|string|max:15|unique:products,fsnku,' . $productId
+                : 'required|string|max:15|unique:products,fsnku',
+            'sku' => 'nullable|string|max:40',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'observation' => 'nullable|string|max:200',
             'type' => 'required|in:simple,kit,super_kit',
@@ -66,8 +66,8 @@ class ProductRequest extends FormRequest
             'name.required' => 'O nome é obrigatório.',
             'name.max' => 'O nome deve ter no máximo 50 caracteres.',
             'asin.unique' => 'Este ASIN já está em uso.',
+            'fsnku.required' => 'O FSNKU é obrigatório.',
             'fsnku.unique' => 'Este FSNKU já está em uso.',
-            'sku.unique' => 'Este SKU já está em uso.',
             'type.required' => 'O tipo é obrigatório.',
             'kit_units.required' => 'O número de unidades é obrigatório para kits.',
             'unit_price.required' => 'O preço unitário é obrigatório para super kits.',

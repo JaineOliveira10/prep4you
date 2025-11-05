@@ -76,12 +76,12 @@
                                         <input type="text" name="asin" id="asin" class="form-control" value="{{ old('asin', $isCopy ? '' : ($data->asin ?? '')) }}" maxlength="15" {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label class="form-label" for="fsnku">FSNKU</label>
-                                        <input type="text" name="fsnku" id="fsnku" class="form-control" value="{{ old('fsnku', $isCopy ? '' : ($data->fsnku ?? '')) }}" maxlength="15" {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
+                                        <label class="form-label" for="fsnku">FSNKU <span class="text-danger">*</span></label>
+                                        <input type="text" name="fsnku" id="fsnku" class="form-control" value="{{ old('fsnku', $isCopy ? '' : ($data->fsnku ?? '')) }}" maxlength="15" required {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
                                     </div>
                                     <div class="form-group col-md-4">
-                                        <label class="form-label" for="sku">SKU <span class="text-danger">*</span></label>
-                                        <input type="text" name="sku" id="sku" class="form-control" value="{{ old('sku', $data->sku ?? '') }}" maxlength="40" required {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
+                                        <label class="form-label" for="sku">SKU</label>
+                                        <input type="text" name="sku" id="sku" class="form-control" value="{{ old('sku', $data->sku ?? '') }}" maxlength="40" {{ auth()->user()->type == 'admin' ? 'readonly' : '' }}>
                                     </div>
                                     <div class="form-group col-md-12">
                                         <label class="form-label">Tipo <span class="text-danger">*</span></label>

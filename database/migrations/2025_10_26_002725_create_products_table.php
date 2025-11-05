@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name', 50);
             $table->string('asin', 15)->unique()->nullable();
             $table->string('fsnku', 15)->unique()->nullable();
-            $table->string('sku', 40);
+            $table->string('sku', 40)->nullable();
             $table->string('photo_path')->nullable();
             $table->string('observation', 200)->nullable();
             $table->enum('type', ['simple', 'kit', 'super_kit'])->default('simple');

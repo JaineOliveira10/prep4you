@@ -42,6 +42,12 @@
                </div>
                <div class="col-md-6">
                   <div class="mb-3">
+                     <label class="form-label fw-bold text-muted">Nome</label>
+                     <p class="mb-0">{{ $user->name }}</p>
+                  </div>
+               </div>
+               <div class="col-md-6">
+                  <div class="mb-3">
                      <label class="form-label fw-bold text-muted">Email</label>
                      <p class="mb-0">{{ $user->email }}</p>
                   </div>
@@ -102,6 +108,34 @@
          </div>
       </div>
       @if(auth()->id() == $user->id)
+      <div class="col-lg-12">
+         <div class="card">
+         <div class="card-header">
+            <div class="header-title">
+               <h4 class="card-title">Editar Nome</h4>
+            </div>
+         </div>
+         <div class="card-body">
+            <form action="{{ route('users.update-name', $user->id) }}" method="POST">
+               @csrf
+               @method('PATCH')
+               <div class="row">
+                  <div class="form-group col-md-8">
+                     <label class="form-label" for="name">Nome</label>
+                     <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}">
+                     @error('name')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                     @enderror
+                  </div>
+                  <div class="col-4 mt-3">
+                     <button type="submit" class="btn btn-primary mt-3">Atualizar Nome</button>
+                  </div>
+               </div>
+               
+            </form>
+         </div>
+         </div>
+      </div>
       <div class="col-lg-12">
          <div class="card">
          <div class="card-header">

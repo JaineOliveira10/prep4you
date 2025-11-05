@@ -39,6 +39,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
     Route::patch('/users/{user}/update-password', [UserController::class, 'updatePassword'])->name('users.update-password');
+    Route::patch('/users/{user}/update-name', [UserController::class, 'updateName'])->name('users.update-name');
 
     Route::prefix('menu-style')->group(function () {
         Route::get('horizontal', [HomeController::class, 'horizontal'])->name('menu-style.horizontal');

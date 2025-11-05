@@ -115,4 +115,17 @@ class UserService
             'password' => Hash::make($newPassword)
         ]);
     }
+
+    public function updateName($id, $name)
+    {
+        $user = $this->userRepository->find($id);
+        
+        $this->userRepository->update($id, ['name' => $name]);
+        
+        if ($user->type === 'client' && $user->client) {
+            $user->client->update(['name' => $name]);
+        }
+        
+        return true;
+    }
 }
