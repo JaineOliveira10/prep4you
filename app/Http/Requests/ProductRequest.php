@@ -16,6 +16,8 @@ class ProductRequest extends FormRequest
     {
         
         $productId = $this->route('product');
+        $isAdmin = auth()->user()->type == 'admin';
+        $isEditing = !is_null($productId);
 
         $rules = [
             'name' => 'required|string|max:50',
@@ -29,7 +31,7 @@ class ProductRequest extends FormRequest
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'observation' => 'nullable|string|max:200',
             'type' => 'required|in:simple,kit,super_kit',
-            'client_id' => 'required|exists:clients,id',
+            'client_id' => ($isAdmin && $isEditing) ? 'nullable|exists:clients,id' : 'required|exists:clients,id',
         ];
 
         if ($this->type == 'kit' || $this->type == 'super_kit') {
@@ -48,6 +50,10 @@ class ProductRequest extends FormRequest
         // Se for cliente, força o client_id do usuário logado
         if (auth()->user()->type == 'client') {
             $this->merge(['client_id' => auth()->user()->client_id]);
+        }
+        // Se for admin editando e não forneceu client_id, mantém o original
+        elseif (auth()->user()->type == 'admin' && $this->route('product') && (!$this->has('client_id') || !$this->client_id)) {
+            // Não força nenhum client_id, deixa o sistema manter o original
         }
         // Se não tem client_id e não é admin, usa o client_id do usuário
         elseif (!$this->has('client_id') || !$this->client_id) {

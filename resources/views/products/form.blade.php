@@ -87,15 +87,15 @@
                                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
                                         <div class="mt-2">
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="type" id="type_simple" value="simple" {{ old('type', $data->type ?? 'simple') == 'simple' ? 'checked' : '' }}>
+                                                <input class="form-check-input" type="radio" name="type" id="type_simple" value="simple" {{ old('type', $data->type ?? 'simple') == 'simple' ? 'checked' : '' }} {{ auth()->user()->type == 'client' && isset($data) && $data->type == 'super_kit' ? 'disabled' : '' }}>
                                                 <label class="form-check-label" for="type_simple">Item Simples</label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="type" id="type_kit" value="kit" {{ old('type', $data->type ?? '') == 'kit' ? 'checked' : '' }}>
+                                                <input class="form-check-input" type="radio" name="type" id="type_kit" value="kit" {{ old('type', $data->type ?? '') == 'kit' ? 'checked' : '' }} {{ auth()->user()->type == 'client' && isset($data) && $data->type == 'super_kit' ? 'disabled' : '' }}>
                                                 <label class="form-check-label" for="type_kit">Kit</label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="type" id="type_super_kit" value="super_kit" {{ old('type', $data->type ?? '') == 'super_kit' ? 'checked' : '' }}>
+                                                <input class="form-check-input" type="radio" name="type" id="type_super_kit" value="super_kit" {{ old('type', $data->type ?? '') == 'super_kit' ? 'checked' : '' }} {{ auth()->user()->type == 'client' ? 'disabled' : '' }}>
                                                 <label class="form-check-label" for="type_super_kit">Super Kit</label>
                                             </div>
                                         </div>
@@ -105,11 +105,11 @@
                                 <div class="row kit-fields" style="{{ old('type', $data->type ?? 'simple') == 'simple' ? 'display: none;' : '' }}">
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="kit_units">Unidades no Kit <span class="text-danger kit-required">*</span></label>
-                                        <input type="number" name="kit_units" id="kit_units" class="form-control" value="{{ old('kit_units', $data->kit_units ?? '') }}" placeholder="Número de unidades" min="1">
+                                        <input type="number" name="kit_units" id="kit_units" class="form-control" value="{{ old('kit_units', $data->kit_units ?? '') }}" placeholder="Número de unidades" min="1" {{ auth()->user()->type == 'client' ? 'readonly' : '' }}>
                                     </div>
                                     <div class="form-group col-md-6 super-kit-field" style="{{ old('type', $data->type ?? '') != 'super_kit' ? 'display: none;' : '' }}">
                                         <label class="form-label" for="unit_price">Preço Unitário <span class="text-danger super-kit-required">*</span></label>
-                                        <input type="text" name="unit_price" id="unit_price" class="form-control money" value="{{ old('unit_price', isset($data->unit_price) ? number_format($data->unit_price, 2, ',', '.') : '') }}" placeholder="0,00">
+                                        <input type="text" name="unit_price" id="unit_price" class="form-control money" value="{{ old('unit_price', isset($data->unit_price) ? number_format($data->unit_price, 2, ',', '.') : '') }}" placeholder="0,00" {{ auth()->user()->type == 'client' ? 'readonly' : '' }}>
                                     </div>
                                 </div>
 
@@ -123,6 +123,10 @@
                                                 <small class="text-muted d-block">Foto atual</small>
                                             </div>
                                         @endif
+                                        <div id="photo-preview" class="mt-2" style="display: none;">
+                                            <img id="preview-image" src="" alt="Preview" class="img-thumbnail" style="max-width: 150px;">
+                                            <small class="text-muted d-block">{{$id ? 'Prévia nova foto' : 'Foto do produto'}}</small>
+                                        </div>
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="observation">Observação</label>
@@ -140,51 +144,5 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const typeRadios = document.querySelectorAll('input[name="type"]');
-            const kitFields = document.querySelector('.kit-fields');
-            const superKitField = document.querySelector('.super-kit-field');
-            const kitUnitsInput = document.getElementById('kit_units');
-            const unitPriceInput = document.getElementById('unit_price');
-
-            function toggleFields() {
-                const selectedType = document.querySelector('input[name="type"]:checked').value;
-                
-                if (selectedType === 'simple') {
-                    kitFields.style.display = 'none';
-                    kitUnitsInput.removeAttribute('required');
-                    unitPriceInput.removeAttribute('required');
-                } else {
-                    kitFields.style.display = '';
-                    kitUnitsInput.setAttribute('required', 'required');
-                    
-                    if (selectedType === 'super_kit') {
-                        superKitField.style.display = '';
-                        unitPriceInput.setAttribute('required', 'required');
-                    } else {
-                        superKitField.style.display = 'none';
-                        unitPriceInput.removeAttribute('required');
-                    }
-                }
-            }
-
-            typeRadios.forEach(radio => {
-                radio.addEventListener('change', toggleFields);
-            });
-            
-            toggleFields();
-
-            // Máscara para campo de preço
-            if (unitPriceInput) {
-                unitPriceInput.addEventListener('input', function(e) {
-                    let value = e.target.value.replace(/\D/g, '');
-                    value = (value / 100).toFixed(2) + '';
-                    value = value.replace('.', ',');
-                    value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                    e.target.value = value;
-                });
-            }
-        });
-    </script>
+    <script src="{{ asset('js/products-form.js') }}"></script>
 </x-app-layout>

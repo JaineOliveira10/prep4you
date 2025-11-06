@@ -78,7 +78,7 @@ class ProductService
             'type' => $data['type'],
             'kit_units' => $data['type'] != 'simple' ? $data['kit_units'] : null,
             'unit_price' => $data['type'] == 'super_kit' ? $data['unit_price'] : null,
-            'client_id' => $data['client_id']
+            'client_id' => $data['client_id'] ?? $product->client_id
         ];
 
         return $this->productRepository->update($id, $productData);
