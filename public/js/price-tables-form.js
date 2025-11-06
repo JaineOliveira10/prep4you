@@ -1,25 +1,25 @@
 document.addEventListener('DOMContentLoaded', function() {
-    let rangeIndex = 0;
     const addButton = document.getElementById('add-range');
     const container = document.getElementById('price-ranges-container');
+    let rangeIndex = container.querySelectorAll('.price-range-row').length;
 
-    // Load existing ranges from data attribute
+    // Load existing ranges from data attribute (only if no old input exists)
     const existingRangesData = container.getAttribute('data-existing-ranges');
-    if (existingRangesData && existingRangesData !== '[]') {
+    if (existingRangesData && existingRangesData !== '[]' && !container.querySelector('.price-range-row')) {
         try {
             const existingRanges = JSON.parse(existingRangesData);
             existingRanges.forEach(range => {
                 addRangeRow(range.min_value, range.max_value, range.price, range.price_kit);
             });
-            
-            // Aplicar formatação aos campos existentes
-            container.querySelectorAll('.price-input').forEach(input => {
-                applyPriceFormatting(input);
-            });
         } catch (e) {
             console.error('Erro ao carregar faixas existentes:', e);
         }
     }
+    
+    // Aplicar formatação aos campos existentes
+    container.querySelectorAll('.price-input').forEach(input => {
+        applyPriceFormatting(input);
+    });
 
     function formatCurrency(value) {
         // Remove tudo exceto números
