@@ -68,7 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <label>Valor Kit (R$) <span class="text-danger">*</span></label>
                     <input type="text" name="ranges[${rangeIndex}][price_kit]" class="form-control price-input" value="${priceKit}">
                 </div>
-                <div class="form-group col-md-2 d-flex align-items-end">
+                <div class="form-group col-md-2">
+                    <label>&nbsp;</label>
                     <button type="button" class="btn btn-danger btn-sm remove-range w-100 py-2">
                         <svg width="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
                             <path d="M19.3248 9.46826C19.3248 9.46826 18.7818 16.2033 18.4668 19.0403C18.3168 20.3953 17.4798 21.1893 16.1088 21.2143C13.4998 21.2613 10.8878 21.2643 8.27979 21.2093C6.96079 21.1823 6.13779 20.3783 5.99079 19.0473C5.67379 16.1853 5.13379 9.46826 5.13379 9.46826" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
