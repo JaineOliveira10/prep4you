@@ -105,7 +105,7 @@
                                 <div class="row kit-fields" style="{{ old('type', $data->type ?? 'simple') == 'simple' ? 'display: none;' : '' }}">
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="kit_units">Unidades no Kit <span class="text-danger kit-required">*</span></label>
-                                        <input type="number" name="kit_units" id="kit_units" class="form-control" value="{{ old('kit_units', $data->kit_units ?? '') }}" placeholder="Número de unidades" min="1" {{ auth()->user()->type == 'client' ? 'readonly' : '' }}>
+                                        <input type="number" name="kit_units" id="kit_units" class="form-control" value="{{ old('kit_units', $data->kit_units ?? '') }}" placeholder="Número de unidades" min="1" {{ auth()->user()->type == 'client' && isset($data) && $data->type == 'super_kit' ? 'disabled' : '' }}>
                                     </div>
                                     <div class="form-group col-md-6 super-kit-field" style="{{ old('type', $data->type ?? '') != 'super_kit' ? 'display: none;' : '' }}">
                                         <label class="form-label" for="unit_price">Preço Unitário <span class="text-danger super-kit-required">*</span></label>
