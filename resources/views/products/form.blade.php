@@ -98,6 +98,9 @@
                                                 <input class="form-check-input" type="radio" name="type" id="type_super_kit" value="super_kit" {{ old('type', $data->type ?? '') == 'super_kit' ? 'checked' : '' }} {{ auth()->user()->type == 'client' ? 'disabled' : '' }}>
                                                 <label class="form-check-label" for="type_super_kit">Super Kit</label>
                                             </div>
+                                            @if(auth()->user()->type == 'client' && isset($data) && $data->type == 'super_kit')
+                                                <input type="hidden" name="type" value="super_kit">
+                                            @endif
                                         </div>
                                     </div>
                                 </div>

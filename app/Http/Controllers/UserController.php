@@ -92,11 +92,16 @@ class UserController extends Controller
 
     public function destroy($id)
     {
-        $this->userService->delete($id);
-
-        return redirect()
-            ->route('users.index')
-            ->withSuccess(__('Usuário removido com sucesso.'));
+        try {
+            $this->userService->delete($id);
+            return redirect()
+                ->route('users.index')
+                ->withSuccess(__('Usuário removido com sucesso.'));
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('users.index')
+                ->withError($e->getMessage());
+        }
     }
 
     public function updatePassword(UpdatePasswordRequest $request, $id)

@@ -94,6 +94,11 @@ class UserService
     {
         $user = $this->userRepository->find($id);
         
+        // Verificar se o usuário tem produtos cadastrados
+        if ($user->client && $user->client->products()->count() > 0) {
+            throw new \Exception('Não é possível excluir este usuário pois possui produtos cadastrados.');
+        }
+        
         $result = $this->userRepository->delete($id);
         
         if ($user->client) {
