@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PriceTableController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\DistributionCenterController;
+use App\Http\Controllers\ShipmentController;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -27,6 +28,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::resource('products', ProductController::class)->except(['create', 'store', 'destroy']);
+
+    Route::resource('shipments', ShipmentController::class);
+    Route::post('/shipments/calculate-collection-date', [ShipmentController::class, 'calculateCollectionDate'])->name('shipments.calculate-collection-date');
 
     Route::middleware(['restrict.client'])->group(function () {
 

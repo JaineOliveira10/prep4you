@@ -118,7 +118,7 @@
     </li>
     @endif
 
-        <li><hr class="hr-horizontal"></li>
+    <li><hr class="hr-horizontal"></li>
     <li class="nav-item static-item">
         <a class="nav-link static-item disabled" href="#" tabindex="-1">
             <span class="default-icon">Produtos</span>
@@ -135,5 +135,24 @@
 
             </i>
             <span class="item-name">Produtos</span>
+        </a>
+    </li>
+
+    <li><hr class="hr-horizontal"></li>
+    <li class="nav-item static-item">
+        <a class="nav-link static-item disabled" href="#" tabindex="-1">
+            <span class="default-icon">Remessas</span>
+            <span class="mini-icon">-</span>
+        </a>
+    </li>
+
+     <li class="nav-item">
+        <a class="nav-link {{activeRoute(route('shipments.index'))}}" href="{{route('shipments.index')}}">
+            <i class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </i>
+            <span class="item-name">Remessas</span>
         </a>
     </li>

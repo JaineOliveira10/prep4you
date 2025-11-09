@@ -12,6 +12,8 @@ use App\Interfaces\DistributionCenterRepositoryInterface;
 use App\Repositories\DistributionCenterRepository;
 use App\Interfaces\ProductRepositoryInterface;
 use App\Repositories\ProductRepository;
+use App\Interfaces\ShipmentRepositoryInterface;
+use App\Repositories\ShipmentRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PriceTableRepositoryInterface::class, PriceTableRepository::class);
         $this->app->bind(DistributionCenterRepositoryInterface::class, DistributionCenterRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
+        $this->app->bind(ShipmentRepositoryInterface::class, ShipmentRepository::class);
     }
 
     public function boot(): void

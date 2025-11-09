@@ -11,4 +11,9 @@ class DistributionCenter extends Model
         'acronym', 
         'name'
     ];
+
+    public function shipments()
+    {
+        return $this->hasMany(Shipment::class);
+    }
 }
