@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\ShipmentRepository;
 use App\Models\Shipment;
+use App\Models\ShipmentItem;
 use App\Helpers\BusinessDaysHelper;
 
 class ShipmentService
@@ -43,6 +44,21 @@ class ShipmentService
             'creation_date' => $data['creation_date'],
         ]);
 
+        // Criar itens da remessa se fornecidos
+        if (isset($data['items']) && is_array($data['items'])) {
+            foreach ($data['items'] as $item) {
+                if (!empty($item['product_id']) && !empty($item['quantity'])) {
+                    ShipmentItem::create([
+                        'shipment_id' => $shipment->id,
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'total_value' => $item['quantity'] * $item['unit_price']
+                    ]);
+                }
+            }
+        }
+
         return $shipment;
     }
 
@@ -57,6 +73,25 @@ class ShipmentService
             'distribution_center_id' => $data['distribution_center_id'],
             'creation_date' => $data['creation_date'] ?? null,
         ]);
+
+        // Atualizar itens da remessa
+        if (isset($data['items']) && is_array($data['items'])) {
+            // Remover itens existentes
+            ShipmentItem::where('shipment_id', $id)->delete();
+            
+            // Criar novos itens
+            foreach ($data['items'] as $item) {
+                if (!empty($item['product_id']) && !empty($item['quantity'])) {
+                    ShipmentItem::create([
+                        'shipment_id' => $id,
+                        'product_id' => $item['product_id'],
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'total_value' => $item['quantity'] * $item['unit_price']
+                    ]);
+                }
+            }
+        }
 
         return $shipment;
     }

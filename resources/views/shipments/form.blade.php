@@ -87,8 +87,102 @@
                                         </select>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary mt-3">{{ $id ? 'Atualizar' : 'Criar' }} Remessa</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção de Itens da Remessa -->
+            <div class="row mt-4">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <div class="header-title">
+                                <h4 class="card-title">Itens da Remessa</h4>
+                            </div>
+                            <div class="card-action">
+                                <button type="button" class="btn btn-sm btn-success" id="add-item">Adicionar Item</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <style>
+                                    #items-table {
+                                        table-layout: fixed;
+                                        width: 100%;
+                                    }
+                                    #items-table td {
+                                        padding: 0.15rem !important;
+                                        vertical-align: middle;
+                                    }
+                                    #items-table th {
+                                        padding: 0.3rem 0.15rem !important;
+                                        font-size: 0.8rem;
+                                    }
+                                    #items-table .form-control,
+                                    #items-table .form-select {
+                                        padding: 0.3rem 0.4rem;
+                                        font-size: 0.85rem;
+                                        height: 36px;
+                                        border-width: 1px;
+                                    }
+                                    #items-table .btn-sm {
+                                        padding: 0.2rem 0.4rem;
+                                        font-size: 0.75rem;
+                                    }
+                                </style>
+                                <table class="table table-striped" id="items-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 25%;">Produto</th>
+                                            <th style="width: 10%;">FSNKU</th>
+                                            <th style="width: 10%;">SKU</th>
+                                            <th style="width: 8%;">Tipo</th>
+                                            <th style="width: 8%;">Qtd Kit</th>
+                                            <th style="width: 8%;">Qtd</th>
+                                            <th style="width: 12%;">Preço Unit.</th>
+                                            <th style="width: 12%;">Valor Total</th>
+                                            <th style="width: 7%;">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="items-tbody">
+                                        @if(isset($data) && $data->items)
+                                            @foreach($data->items as $index => $item)
+                                                <tr data-index="{{ $index }}">
+                                                    <td>
+                                                        <select name="items[{{ $index }}][product_id]" class="form-select product-select" required>
+                                                            <option value="">Selecione um produto</option>
+                                                            @foreach($products as $product)
+                                                                <option value="{{ $product->id }}" {{ $item->product_id == $product->id ? 'selected' : '' }}>
+                                                                    {{ $product->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </td>
+                                                    <td><input type="text" class="form-control fsnku" value="{{ $item->product->fsnku }}" disabled></td>
+                                                    <td><input type="text" class="form-control sku" value="{{ $item->product->sku }}" disabled></td>
+                                                    <td><input type="text" class="form-control type" value="{{ $item->product->type === 'simple' ? 'Simples' : ($item->product->type === 'kit' ? 'Kit' : 'S.Kit') }}" disabled></td>
+                                                    <td><input type="text" class="form-control kit-units" value="{{ $item->product->kit_units }}" disabled></td>
+                                                    <td><input type="number" name="items[{{ $index }}][quantity]" class="form-control quantity" value="{{ $item->quantity }}" min="1" required></td>
+                                                    <td><input type="number" name="items[{{ $index }}][unit_price]" class="form-control unit-price" value="{{ $item->unit_price }}" step="0.01" readonly></td>
+                                                    <td><input type="number" class="form-control total-value" value="{{ $item->total_value }}" step="0.01" disabled></td>
+                                                    <td><button type="button" class="btn btn-sm btn-danger remove-item">Remover</button></td>
+                                                </tr>
+                                            @endforeach
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6 offset-md-6">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Total Geral:</strong>
+                                        <strong id="grand-total">R$ 0,00</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-3">{{ $id ? 'Atualizar' : 'Criar' }} Remessa</button>
                         </div>
                     </div>
                 </div>
@@ -96,7 +190,9 @@
         </form>
     </div>
 
+    <script src="{{ asset('js/shipments-form.js') }}"></script>
     <script>
+    // Cálculo da data de coleta
     document.getElementById('shipment_date').addEventListener('change', function() {
         const shipmentDate = this.value;
         const collectionDateField = document.getElementById('collection_date');
@@ -122,6 +218,20 @@
                 console.error('Erro ao calcular data de coleta:', error);
             });
         }
+    });
+
+    // Inicializar gerenciador de itens
+    document.addEventListener('DOMContentLoaded', function() {
+        const itemsManager = new ShipmentItemsManager(
+            @json($products ?? []),
+            {
+                getProductPrice: '{{ route("shipments.get-product-price") }}',
+                getProductsByClient: '{{ route("shipments.get-products-by-client") }}'
+            },
+            '{{ csrf_token() }}',
+            '{{ auth()->user()->type }}',
+            '{{ auth()->user()->client->id ?? "" }}'
+        );
     });
     </script>
 </x-app-layout>

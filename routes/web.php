@@ -31,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('shipments', ShipmentController::class);
     Route::post('/shipments/calculate-collection-date', [ShipmentController::class, 'calculateCollectionDate'])->name('shipments.calculate-collection-date');
+    Route::post('/shipments/get-products-by-client', [ShipmentController::class, 'getProductsByClient'])->name('shipments.get-products-by-client');
+    Route::post('/shipments/get-product-price', [ShipmentController::class, 'getProductPrice'])->name('shipments.get-product-price');
 
     Route::middleware(['restrict.client'])->group(function () {
 

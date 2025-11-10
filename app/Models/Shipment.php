@@ -26,4 +26,9 @@ class Shipment extends Model
     {
         return $this->belongsTo(DistributionCenter::class);
     }
+
+    public function items()
+    {
+        return $this->hasMany(ShipmentItem::class);
+    }
 }

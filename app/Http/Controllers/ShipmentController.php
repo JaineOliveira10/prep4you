@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Services\ShipmentService;
 use App\Models\Client;
 use App\Models\DistributionCenter;
+use App\Models\Product;
+use App\Models\PriceTable;
+use App\Models\PriceRange;
 
 class ShipmentController extends Controller
 {
@@ -39,7 +42,11 @@ class ShipmentController extends Controller
      */
     public function create()
     {
-        return view('shipments.form');
+        $products = [];
+        if (auth()->user()->type === 'client' && auth()->user()->client) {
+            $products = Product::where('client_id', auth()->user()->client->id)->get();
+        }
+        return view('shipments.form', compact('products'));
     }
 
     /**
@@ -69,7 +76,13 @@ class ShipmentController extends Controller
     public function edit(string $id)
     {
         $data = $this->shipmentService->findById($id);
-        return view('shipments.form', compact('data', 'id'));
+        $products = [];
+        if (auth()->user()->type === 'client' && auth()->user()->client) {
+            $products = Product::where('client_id', auth()->user()->client->id)->get();
+        } elseif (auth()->user()->type === 'admin' && $data->client_id) {
+            $products = Product::where('client_id', $data->client_id)->get();
+        }
+        return view('shipments.form', compact('data', 'id', 'products'));
     }
 
     /**
@@ -108,5 +121,77 @@ class ShipmentController extends Controller
         }
         
         return response()->json(['error' => 'Data inválida'], 400);
+    }
+
+    /**
+     * Get products by client
+     */
+    public function getProductsByClient(Request $request)
+    {
+        $clientId = $request->input('client_id');
+        $products = Product::where('client_id', $clientId)->get();
+        
+        return response()->json($products);
+    }
+
+    /**
+     * Get product price based on client's price table
+     */
+    public function getProductPrice(Request $request)
+    {
+        $productId = $request->input('product_id');
+        $clientId = $request->input('client_id');
+        $quantity = $request->input('quantity', 1); // Quantidade padrão = 1
+        
+        $product = Product::find($productId);
+        if (!$product) {
+            return response()->json(['error' => 'Produto não encontrado'], 404);
+        }
+        
+        // Para super_kit, sempre usar o preço do campo preço do produto
+        if ($product->type === 'super_kit') {
+            $price = $product->unit_price ?? 0;
+        } else {
+            // Para produtos simples e kit, buscar na tabela de preços do cliente baseado na quantidade
+            $client = Client::find($clientId);
+            
+            if (!$client || !$client->price_table_id) {
+                $price = $product->unit_price ?? 0;
+            } else {
+                // Buscar range baseado na quantidade
+                $priceRange = PriceRange::where('price_table_id', $client->price_table_id)
+                    ->where('min_value', '<=', $quantity)
+                    ->where('max_value', '>=', $quantity)
+                    ->first();
+                
+                if ($priceRange) {
+                    if ($product->type === 'kit') {
+                        $price = $priceRange->price_kit ?? $priceRange->price;
+                    } else {
+                        $price = $priceRange->price;
+                    }
+                } else {
+                    // Se não encontrar range, usar o primeiro disponível
+                    $priceRange = PriceRange::where('price_table_id', $client->price_table_id)
+                        ->orderBy('min_value')
+                        ->first();
+                    
+                    if ($priceRange) {
+                        if ($product->type === 'kit') {
+                            $price = $priceRange->price_kit ?? $priceRange->price;
+                        } else {
+                            $price = $priceRange->price;
+                        }
+                    } else {
+                        $price = $product->unit_price ?? 0;
+                    }
+                }
+            }
+        }
+        
+        return response()->json([
+            'price' => $price,
+            'product' => $product
+        ]);
     }
 }
