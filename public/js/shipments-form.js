@@ -216,16 +216,38 @@ class ShipmentItemsManager {
     
     updateGrandTotal() {
         let grandTotal = 0;
+        let totalItems = 0;
+        
         document.querySelectorAll('.total-value').forEach(input => {
             grandTotal += parseFloat(input.value) || 0;
         });
         
-        const grandTotalElement = document.getElementById('grand-total');
-        if (grandTotalElement) {
-            grandTotalElement.textContent = 'R$ ' + grandTotal.toLocaleString('pt-BR', {
+        document.querySelectorAll('.quantity').forEach(input => {
+            totalItems += parseInt(input.value) || 0;
+        });
+        
+        const grandTotalDisplay = document.getElementById('grand-total');
+        const grandTotalInput = document.getElementById('grand-total-input');
+        const totalItemsDisplay = document.getElementById('grand-total-items-display');
+        const totalItemsInput = document.getElementById('grand-total-items-input');
+        
+        if (grandTotalDisplay) {
+            grandTotalDisplay.textContent = 'R$ ' + grandTotal.toLocaleString('pt-BR', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
+        }
+        
+        if (grandTotalInput) {
+            grandTotalInput.value = grandTotal.toFixed(2);
+        }
+        
+        if (totalItemsDisplay) {
+            totalItemsDisplay.textContent = totalItems;
+        }
+        
+        if (totalItemsInput) {
+            totalItemsInput.value = totalItems;
         }
     }
     

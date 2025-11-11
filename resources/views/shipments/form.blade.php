@@ -30,11 +30,12 @@
                                 <div class="row">
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="name">Nome da Remessa</label>
-                                        <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o nome da remessa" required>
+                                        <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o nome da remessa">
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="creation_date">Data de Criação</label>
                                         <input type="date" name="creation_date" id="creation_date" class="form-control" value="{{ old('creation_date', $data->creation_date ?? now()->format('Y-m-d')) }}" disabled>
+                                        <input type="hidden" name="creation_date" value="{{ old('creation_date', $data->creation_date ?? now()->format('Y-m-d')) }}">
                                     </div>
                                     @if(auth()->user()->type === 'admin')
                                     <div class="form-group col-md-4">
@@ -60,6 +61,7 @@
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="collection_date">Data da Coleta</label>
                                         <input type="date" name="collection_date" id="collection_date" class="form-control" value="{{ old('collection_date', $data->collection_date ?? '') }}" disabled>
+                                        <input type="hidden" name="collection_date" value="{{ old('collection_date', $data->collection_date ?? '') }}">
                                         <small class="text-muted">Será calculada como 3 dias úteis após a data da remessa</small>
                                     </div>
                                 </div>
@@ -85,6 +87,9 @@
                                             <option value="Invoice Generated" {{ old('status', $data->status ?? '') == 'Invoice Generated' ? 'selected' : '' }}>Fatura Gerada</option>
                                             <option value="Paid" {{ old('status', $data->status ?? '') == 'Paid' ? 'selected' : '' }}>Pago</option>
                                         </select>
+                                        @if(auth()->user()->type == 'client')
+                                            <input type="hidden" name="status" value="{{ old('status', $data->status ?? 'Pending') }}">
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -177,8 +182,16 @@
                             <div class="row mt-3">
                                 <div class="col-md-6 offset-md-6">
                                     <div class="d-flex justify-content-between">
+                                        <strong>Total Itens:</strong>
+                                        <strong id="grand-total-items-display">0</strong>
+                                        <input type="hidden" name="total_items" id="grand-total-items-input" value="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 offset-md-6">
+                                    <div class="d-flex justify-content-between">
                                         <strong>Total Geral:</strong>
                                         <strong id="grand-total">R$ 0,00</strong>
+                                        <input type="hidden" name="total_value" id="grand-total-input" value="0">
                                     </div>
                                 </div>
                             </div>

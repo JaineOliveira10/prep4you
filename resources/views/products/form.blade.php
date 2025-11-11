@@ -87,19 +87,19 @@
                                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
                                         <div class="mt-2">
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="type" id="type_simple" value="simple" {{ old('type', $data->type ?? 'simple') == 'simple' ? 'checked' : '' }} {{ auth()->user()->type == 'client' && isset($data) && $data->type == 'super_kit' ? 'disabled' : '' }}>
+                                                <input class="form-check-input" type="radio" name="type" id="type_simple" value="simple" {{ old('type', $data->type ?? 'simple') == 'simple' ? 'checked' : '' }} {{ auth()->user()->type == 'client' && isset($data) && ($data->type == 'super_kit' || $data->type == 'kit') ? 'disabled' : '' }}>
                                                 <label class="form-check-label" for="type_simple">Item Simples</label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" type="radio" name="type" id="type_kit" value="kit" {{ old('type', $data->type ?? '') == 'kit' ? 'checked' : '' }} {{ auth()->user()->type == 'client' && isset($data) && $data->type == 'super_kit' ? 'disabled' : '' }}>
+                                                <input class="form-check-input" type="radio" name="type" id="type_kit" value="kit" {{ old('type', $data->type ?? '') == 'kit' ? 'checked' : '' }} {{ auth()->user()->type == 'client' && isset($data) && ($data->type == 'super_kit' || $data->type == 'kit') ? 'disabled' : '' }}>
                                                 <label class="form-check-label" for="type_kit">Kit</label>
                                             </div>
                                             <div class="form-check form-check-inline">
                                                 <input class="form-check-input" type="radio" name="type" id="type_super_kit" value="super_kit" {{ old('type', $data->type ?? '') == 'super_kit' ? 'checked' : '' }} {{ auth()->user()->type == 'client' ? 'disabled' : '' }}>
                                                 <label class="form-check-label" for="type_super_kit">Super Kit</label>
                                             </div>
-                                            @if(auth()->user()->type == 'client' && isset($data) && $data->type == 'super_kit')
-                                                <input type="hidden" name="type" value="super_kit">
+                                            @if(auth()->user()->type == 'client' && isset($data) && ($data->type == 'super_kit' || $data->type == 'kit'))
+                                                <input type="hidden" name="type" value="{{ $data->type }}">
                                             @endif
                                         </div>
                                     </div>
@@ -108,7 +108,7 @@
                                 <div class="row kit-fields" style="{{ old('type', $data->type ?? 'simple') == 'simple' ? 'display: none;' : '' }}">
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="kit_units">Unidades no Kit <span class="text-danger kit-required">*</span></label>
-                                        <input type="number" name="kit_units" id="kit_units" class="form-control" value="{{ old('kit_units', $data->kit_units ?? '') }}" placeholder="Número de unidades" min="1" {{ auth()->user()->type == 'client' && isset($data) && $data->type == 'super_kit' ? 'readonly' : '' }}>
+                                        <input type="number" name="kit_units" id="kit_units" class="form-control" value="{{ old('kit_units', $data->kit_units ?? '') }}" placeholder="Número de unidades" min="1" {{ auth()->user()->type == 'client' && isset($data) && ($data->type == 'super_kit' || $data->type == 'kit') ? 'readonly' : '' }}>
                                     </div>
                                     <div class="form-group col-md-6 super-kit-field" style="{{ old('type', $data->type ?? '') != 'super_kit' ? 'display: none;' : '' }}">
                                         <label class="form-label" for="unit_price">Preço Unitário <span class="text-danger super-kit-required">*</span></label>

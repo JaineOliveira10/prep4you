@@ -54,6 +54,7 @@
                      <thead>
                         <tr class="ligth">
                            <th>Cliente</th>
+                           <th>Nome da Remessa</th>
                            <th>Data da Remessa</th>
                            <th>Data da Coleta</th>
                            <th>Centro de distribuição</th>
@@ -65,6 +66,7 @@
                         @foreach($shipments as $shipment)
                         <tr>
                            <td>{{ $shipment->client ? $shipment->client->name : 'N/A' }}</td>
+                           <td>{{ $shipment->name ? $shipment->name : 'N/A' }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>

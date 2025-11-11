@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\ShipmentRequest;
 use App\Services\ShipmentService;
 use App\Models\Client;
 use App\Models\DistributionCenter;
@@ -52,7 +53,7 @@ class ShipmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ShipmentRequest $request)
     {
         $data = $request->all();
         $data['creation_date'] = now()->format('Y-m-d');
@@ -88,7 +89,7 @@ class ShipmentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(ShipmentRequest $request, string $id)
     {
         $this->shipmentService->update($id, $request->all());
         return redirect()->route('shipments.index')->with('success', 'Remessa atualizada com sucesso!');
@@ -99,11 +100,18 @@ class ShipmentController extends Controller
      */
     public function destroy(string $id)
     {
-        $this->distributionCenterService->delete($id);
-
-        return redirect()
-            ->route('shipments.index')
-            ->withSuccess(__('Remessa removida com sucesso.'));
+        if (auth()->user()->type != 'client') {
+            abort(403, 'Apenas clientes podem excluir remessas.');
+        }
+        
+        $shipment = $this->shipmentService->findById($id);
+        
+        if ($shipment->client_id != auth()->user()->client_id) {
+            abort(403, 'Você não pode excluir esta remessa.');
+        }
+        
+        $this->shipmentService->delete($id);
+        return redirect()->route('shipments.index')->with('success', 'Remessa excluída com sucesso!');
     }
 
     /**

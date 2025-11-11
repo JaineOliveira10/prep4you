@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('shipment_id')->constrained('shipments')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('name', 50);
-            $table->string('fsnku', 15)->unique()->nullable();
+            $table->string('fsnku', 15)->nullable();
             $table->string('sku', 40)->nullable();
             $table->enum('type', ['simple', 'kit', 'super_kit'])->default('simple');
             $table->integer('kit_units')->nullable();

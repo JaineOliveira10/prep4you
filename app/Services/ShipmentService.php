@@ -42,6 +42,8 @@ class ShipmentService
             'client_id' => $data['client_id'],
             'distribution_center_id' => $data['distribution_center_id'],
             'creation_date' => $data['creation_date'],
+            'total_value' => $data['total_value'] ?? 0,
+            'total_items' => $data['total_items'] ?? 0,
         ]);
 
         // Criar itens da remessa se fornecidos
@@ -89,6 +91,8 @@ class ShipmentService
             'client_id' => $data['client_id'],
             'distribution_center_id' => $data['distribution_center_id'],
             'creation_date' => $currentShipment->creation_date,
+            'total_value' => $data['total_value'] ?? 0,
+            'total_items' => $data['total_items'] ?? 0,
         ]);
 
         // Atualizar itens da remessa

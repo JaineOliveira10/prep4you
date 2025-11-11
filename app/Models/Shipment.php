@@ -14,7 +14,9 @@ class Shipment extends Model
         'name',
         'client_id',
         'distribution_center_id',
-        'creation_date'
+        'creation_date',
+        'total_value',
+        'total_items'
     ];
 
     public function client()

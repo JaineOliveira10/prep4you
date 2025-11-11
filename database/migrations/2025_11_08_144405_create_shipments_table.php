@@ -25,6 +25,8 @@ return new class extends Migration
                 'Paid'
             ])->default('Pending');
             $table->string('name')->nullable();
+            $table->decimal('total_value', 10, 2);
+            $table->integer('total_items');
             $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
             $table->foreignId('distribution_center_id')->constrained('distribution_centers')->onDelete('cascade');
             $table->timestamps();
