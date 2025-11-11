@@ -90,7 +90,7 @@ class ShipmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->shipmentService->update($id, $request->validated());
+        $this->shipmentService->update($id, $request->all());
         return redirect()->route('shipments.index')->with('success', 'Remessa atualizada com sucesso!');
     }
 

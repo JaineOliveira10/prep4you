@@ -160,10 +160,10 @@
                                                             @endforeach
                                                         </select>
                                                     </td>
-                                                    <td><input type="text" class="form-control fsnku" value="{{ $item->product->fsnku }}" disabled></td>
-                                                    <td><input type="text" class="form-control sku" value="{{ $item->product->sku }}" disabled></td>
-                                                    <td><input type="text" class="form-control type" value="{{ $item->product->type === 'simple' ? 'Simples' : ($item->product->type === 'kit' ? 'Kit' : 'S.Kit') }}" disabled></td>
-                                                    <td><input type="text" class="form-control kit-units" value="{{ $item->product->kit_units }}" disabled></td>
+                                                    <td><input type="text" class="form-control fsnku" value="{{ $item->fsnku }}" disabled></td>
+                                                    <td><input type="text" class="form-control sku" value="{{ $item->sku }}" disabled></td>
+                                                    <td><input type="text" class="form-control type_product" value="{{ $item->type === 'simple' ? 'Simples' : ($item->type === 'kit' ? 'Kit' : 'S.Kit') }}" disabled></td>
+                                                    <td><input type="text" class="form-control kit-units" value="{{ $item->kit_units }}" disabled></td>
                                                     <td><input type="number" name="items[{{ $index }}][quantity]" class="form-control quantity" value="{{ $item->quantity }}" min="1" required></td>
                                                     <td><input type="number" name="items[{{ $index }}][unit_price]" class="form-control unit-price" value="{{ $item->unit_price }}" step="0.01" readonly></td>
                                                     <td><input type="number" class="form-control total-value" value="{{ $item->total_value }}" step="0.01" disabled></td>
