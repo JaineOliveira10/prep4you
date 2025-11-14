@@ -51,6 +51,7 @@ class ShipmentRequest extends FormRequest
             'pdfs.max' => 'Você pode enviar no máximo 6 PDFs.',
             'pdfs.*.tipo.required_with' => 'O tipo do PDF é obrigatório quando um arquivo é selecionado.',
             'pdfs.*.tipo.in' => 'O tipo do PDF deve ser: Etiqueta Individual, Etiqueta Master ou Nota Fiscal.',
+            'pdfs.*.pdf.required_with' => 'O arquivo PDF é obrigatório quando um tipo é selecionado.',
             'pdfs.*.pdf.mimes' => 'O arquivo deve ser um PDF válido.',
             'pdfs.*.pdf.max' => 'O arquivo PDF deve ter no máximo 5MB.',
         ];
