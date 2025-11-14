@@ -138,6 +138,7 @@
         </a>
     </li>
 
+    @if(auth()->user()->type === 'client') 
     <li><hr class="hr-horizontal"></li>
     <li class="nav-item static-item">
         <a class="nav-link static-item disabled" href="#" tabindex="-1">
@@ -146,7 +147,7 @@
         </a>
     </li>
 
-     <li class="nav-item">
+    <li class="nav-item">
         <a class="nav-link {{activeRoute(route('shipments.index'))}}" href="{{route('shipments.index')}}">
             <i class="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="currentColor">
@@ -156,3 +157,4 @@
             <span class="item-name">Remessas</span>
         </a>
     </li>
+    @endif

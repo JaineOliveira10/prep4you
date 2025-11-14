@@ -21,7 +21,7 @@ class ShipmentRepository implements ShipmentRepositoryInterface
 
     public function find($id)
     {
-        return $this->model->findOrFail($id);
+        return $this->model->with(['pdfs', 'items'])->findOrFail($id);
     }
 
     public function create(array $data)

@@ -156,17 +156,14 @@ class ShipmentController extends Controller
             return response()->json(['error' => 'Produto não encontrado'], 404);
         }
         
-        // Para super_kit, sempre usar o preço do campo preço do produto
         if ($product->type === 'super_kit') {
             $price = $product->unit_price ?? 0;
         } else {
-            // Para produtos simples e kit, buscar na tabela de preços do cliente baseado na quantidade
             $client = Client::find($clientId);
             
             if (!$client || !$client->price_table_id) {
                 $price = $product->unit_price ?? 0;
             } else {
-                // Buscar range baseado na quantidade
                 $priceRange = PriceRange::where('price_table_id', $client->price_table_id)
                     ->where('min_value', '<=', $quantity)
                     ->where('max_value', '>=', $quantity)
@@ -179,7 +176,6 @@ class ShipmentController extends Controller
                         $price = $priceRange->price;
                     }
                 } else {
-                    // Se não encontrar range, usar o primeiro disponível
                     $priceRange = PriceRange::where('price_table_id', $client->price_table_id)
                         ->orderBy('min_value')
                         ->first();

@@ -23,10 +23,13 @@ class ShipmentRequest extends FormRequest
             'creation_date' => 'required|date',
             'total_value' => 'nullable|numeric|min:0',
             'total_items' => 'nullable|integer|min:0',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-            'items.*.unit_price' => 'required|numeric|min:0',
+            'items' => 'nullable|array',
+            'items.*.product_id' => 'required_with:items|exists:products,id',
+            'items.*.quantity' => 'required_with:items|integer|min:1',
+            'items.*.unit_price' => 'required_with:items|numeric|min:0',
+            'pdfs' => 'nullable|array|max:6',
+            'pdfs.*.tipo' => 'required_with:pdfs.*.pdf|in:individual_label,master_label,invoice',
+            'pdfs.*.pdf' => 'nullable|mimes:pdf|max:5120',
         ];
     }
 
@@ -43,6 +46,11 @@ class ShipmentRequest extends FormRequest
             'items.*.quantity.required' => 'A quantidade é obrigatória.',
             'items.*.quantity.min' => 'A quantidade deve ser pelo menos 1.',
             'items.*.unit_price.required' => 'O preço unitário é obrigatório.',
+            'pdfs.max' => 'Você pode enviar no máximo 6 PDFs.',
+            'pdfs.*.tipo.required_with' => 'O tipo do PDF é obrigatório quando um arquivo é selecionado.',
+            'pdfs.*.tipo.in' => 'O tipo do PDF deve ser: Etiqueta Individual, Etiqueta Master ou Nota Fiscal.',
+            'pdfs.*.pdf.mimes' => 'O arquivo deve ser um PDF válido.',
+            'pdfs.*.pdf.max' => 'O arquivo PDF deve ter no máximo 5MB.',
         ];
     }
 }

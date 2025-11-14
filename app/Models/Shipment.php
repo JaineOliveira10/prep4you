@@ -33,4 +33,9 @@ class Shipment extends Model
     {
         return $this->hasMany(ShipmentItem::class);
     }
+
+    public function pdfs()
+    {
+        return $this->hasMany(ShipmentPdf::class);
+    }
 }

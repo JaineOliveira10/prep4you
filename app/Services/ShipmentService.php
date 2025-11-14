@@ -69,6 +69,20 @@ class ShipmentService
             }
         }
 
+        // Processar PDFs se fornecidos
+        if (isset($data['pdfs']) && is_array($data['pdfs'])) {
+            foreach ($data['pdfs'] as $pdfData) {
+                if (isset($pdfData['pdf']) && $pdfData['pdf'] && isset($pdfData['tipo']) && $pdfData['tipo']) {
+                    $path = $pdfData['pdf']->store("shipments/{$shipment->id}", 'public');
+                    \App\Models\ShipmentPdf::create([
+                        'shipment_id' => $shipment->id,
+                        'type' => $pdfData['tipo'],
+                        'path_pdf' => $path,
+                    ]);
+                }
+            }
+        }
+
         return $shipment;
     }
 
@@ -118,6 +132,20 @@ class ShipmentService
                             'total_value' => $item['quantity'] * ($item['unit_price'] ?? 0)
                         ]);
                     }
+                }
+            }
+        }
+
+        // Processar PDFs se fornecidos
+        if (isset($data['pdfs']) && is_array($data['pdfs'])) {
+            foreach ($data['pdfs'] as $pdfData) {
+                if (isset($pdfData['pdf']) && $pdfData['pdf'] && isset($pdfData['tipo']) && $pdfData['tipo']) {
+                    $path = $pdfData['pdf']->store("shipments/{$id}", 'public');
+                    \App\Models\ShipmentPdf::create([
+                        'shipment_id' => $id,
+                        'type' => $pdfData['tipo'],
+                        'path_pdf' => $path,
+                    ]);
                 }
             }
         }
