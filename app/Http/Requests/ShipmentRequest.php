@@ -13,6 +13,8 @@ class ShipmentRequest extends FormRequest
 
     public function rules(): array
     {
+        $isUpdate = $this->route()->getActionMethod() === 'update';
+        
         return [
             'name' => 'nullable|string|max:255',
             'shipment_date' => 'required|date',
@@ -28,7 +30,7 @@ class ShipmentRequest extends FormRequest
             'items.*.quantity' => 'required_with:items|integer|min:1',
             'items.*.unit_price' => 'required_with:items|numeric|min:0',
             'pdfs' => 'nullable|array|max:6',
-            'pdfs.*.tipo' => 'required_with:pdfs.*.pdf|in:individual_label,master_label,invoice',
+            'pdfs.*.tipo' => $isUpdate ? 'nullable|in:individual_label,master_label,invoice' : 'required_with:pdfs.*.pdf|in:individual_label,master_label,invoice',
             'pdfs.*.pdf' => 'nullable|mimes:pdf|max:5120',
         ];
     }
