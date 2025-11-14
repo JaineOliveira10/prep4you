@@ -31,7 +31,7 @@ class ShipmentRequest extends FormRequest
             'items.*.unit_price' => 'required_with:items|numeric|min:0',
             'pdfs' => 'nullable|array|max:6',
             'pdfs.*.tipo' => $isUpdate ? 'nullable|in:individual_label,master_label,invoice' : 'required_with:pdfs.*.pdf|in:individual_label,master_label,invoice',
-            'pdfs.*.pdf' => 'nullable|mimes:pdf|max:5120',
+            'pdfs.*.pdf' => 'required_with:pdfs.*.tipo|mimes:pdf|max:5120',
         ];
     }
 
