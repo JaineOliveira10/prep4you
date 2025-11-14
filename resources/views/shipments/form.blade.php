@@ -35,8 +35,8 @@
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="creation_date">Data de Criação</label>
-                                        <input type="date" name="creation_date" id="creation_date" class="form-control" value="{{ old('creation_date', $data->creation_date ?? now()->format('Y-m-d')) }}" disabled>
-                                        <input type="hidden" name="creation_date" value="{{ old('creation_date', $data->creation_date ?? now()->format('Y-m-d')) }}">
+                                        <input type="date" name="creation_date" id="creation_date" class="form-control" value="{{ old('creation_date', $data->creation_date ?? now()->setTimezone('America/Sao_Paulo')->format('Y-m-d')) }}" disabled>
+                                        <input type="hidden" name="creation_date" value="{{ old('creation_date', $data->creation_date ?? now()->setTimezone('America/Sao_Paulo')->format('Y-m-d')) }}">
                                     </div>
                                     @if(auth()->user()->type === 'admin')
                                     <div class="form-group col-md-4">
