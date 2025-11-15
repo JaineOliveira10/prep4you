@@ -53,10 +53,12 @@
                   <table id="product-list-table" class="table table-striped" role="grid" data-toggle="data-table">
                      <thead>
                         <tr class="ligth">
-                           <th>Nome da Remessa</th>
-                           <th>Data da Remessa</th>
-                           <th>Data da Coleta</th>
-                           <th>Centro de distribuição</th>
+                           <th>Nome Remessa</th>
+                           <th>Qtd</th>
+                           <th>Vr Total</th>
+                           <th>Dt Remessa</th>
+                           <th>Dt Coleta</th>
+                           <th>Centro Dist.</th>
                            <th>Status</th>
                            <th style="min-width: 100px">Ações</th>
                         </tr>
@@ -65,6 +67,8 @@
                         @foreach($shipments as $shipment)
                         <tr>
                            <td>{{ $shipment->name ? $shipment->name : 'N/A' }}</td>
+                           <td>{{ $shipment->total_items }}</td>
+                           <td>R$ {{ number_format($shipment->total_value, 2, ',', '.') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>

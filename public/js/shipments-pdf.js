@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <label class="form-label">Arquivo PDF</label>
                     <input type="file" name="pdfs[${pdfIndex}][pdf]" class="form-control" accept=".pdf">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 d-flex justify-content-end align-items-end">
                     <label class="form-label">&nbsp;</label>
                     <button type="button" class="btn btn-danger d-block remove-pdf">Remover</button>
                 </div>

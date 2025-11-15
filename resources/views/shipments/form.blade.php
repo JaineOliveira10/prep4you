@@ -131,14 +131,14 @@
                                 <table class="table table-striped" id="items-table">
                                     <thead>
                                         <tr>
-                                            <th style="width: 25%;">Produto</th>
-                                            <th style="width: 10%;">FSNKU</th>
-                                            <th style="width: 10%;">SKU</th>
-                                            <th style="width: 8%;">Tipo</th>
-                                            <th style="width: 8%;">Qtd Kit</th>
-                                            <th style="width: 8%;">Qtd</th>
-                                            <th style="width: 12%;">Preço Unit.</th>
-                                            <th style="width: 12%;">Valor Total</th>
+                                            <th style="width: 22%;">Produto</th>
+                                            <th style="width: 8%;">FSNKU</th>
+                                            <th style="width: 22%;">SKU</th>
+                                            <th style="width: 9%;">Tipo</th>
+                                            <th style="width: 5%;">Qtd Kit</th>
+                                            <th style="width: 7%;">Qtd</th>
+                                            <th style="width: 8%;">Preço Unit.</th>
+                                            <th style="width: 9%;">Valor Total</th>
                                             <th style="width: 7%;">Ações</th>
                                         </tr>
                                     </thead>
