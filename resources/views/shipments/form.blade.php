@@ -102,32 +102,8 @@
                                 <h5 class="mb-0">Itens da Remessa</h5>
                                 <button type="button" class="btn btn-sm btn-success" id="add-item">Adicionar Item</button>
                             </div>
-                            <div class="table-responsive">
-                                <style>
-                                    #items-table {
-                                        table-layout: fixed;
-                                        width: 100%;
-                                    }
-                                    #items-table td {
-                                        padding: 0.15rem !important;
-                                        vertical-align: middle;
-                                    }
-                                    #items-table th {
-                                        padding: 0.3rem 0.15rem !important;
-                                        font-size: 0.8rem;
-                                    }
-                                    #items-table .form-control,
-                                    #items-table .form-select {
-                                        padding: 0.3rem 0.4rem;
-                                        font-size: 0.85rem;
-                                        height: 36px;
-                                        border-width: 1px;
-                                    }
-                                    #items-table .btn-sm {
-                                        padding: 0.2rem 0.4rem;
-                                        font-size: 0.75rem;
-                                    }
-                                </style>
+                            <div style="overflow: visible;">
+
                                 <table class="table table-striped" id="items-table">
                                     <thead>
                                         <tr>
@@ -158,14 +134,11 @@
                                                 @endphp
                                                 <tr data-index="{{ $index }}">
                                                     <td>
-                                                        <select name="items[{{ $index }}][product_id]" class="form-select product-select" required>
-                                                            <option value="">Selecione um produto</option>
-                                                            @foreach($products as $product)
-                                                                <option value="{{ $product->id }}" {{ (isset($itemData->product_id) && $itemData->product_id == $product->id) ? 'selected' : '' }}>
-                                                                    {{ $product->name }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
+                                                        <div class="position-relative">
+                                                            <input type="text" class="form-control product-search" placeholder="Digite nome, SKU, FSNKU ou ASIN..." autocomplete="off" value="{{ $selectedProduct->name ?? '' }}">
+                                                            <input type="hidden" name="items[{{ $index }}][product_id]" class="product-id" value="{{ $itemData->product_id ?? '' }}">
+                                                            <div class="product-results position-absolute w-100 bg-white border rounded shadow-sm" style="z-index: 9999; max-height: 200px; overflow-y: auto; display: none; top: 100%;"></div>
+                                                        </div>
                                                     </td>
                                                     <td><input type="text" class="form-control fsnku" value="{{ $selectedProduct->fsnku ?? ($itemData->fsnku ?? '') }}" disabled></td>
                                                     <td><input type="text" class="form-control sku" value="{{ $selectedProduct->sku ?? ($itemData->sku ?? '') }}" disabled></td>
@@ -348,49 +321,19 @@
         @endif
     </div>
 
+    <link rel="stylesheet" href="{{ asset('css/shipments-form.css') }}">
     <script src="{{ asset('js/shipments-form.js') }}"></script>
     <script src="{{ asset('js/shipments-pdf.js') }}"></script>
     <script>
-    // Cálculo da data de coleta
-    document.getElementById('shipment_date').addEventListener('change', function() {
-        const shipmentDate = this.value;
-        const collectionDateField = document.getElementById('collection_date');
-        
-        if (shipmentDate) {
-            fetch('{{ route("shipments.calculate-collection-date") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    shipment_date: shipmentDate
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.collection_date) {
-                    collectionDateField.value = data.collection_date;
-                }
-            })
-            .catch(error => {
-                console.error('Erro ao calcular data de coleta:', error);
-            });
-        }
-    });
-
-    // Inicializar gerenciador de itens
-    document.addEventListener('DOMContentLoaded', function() {
-        const itemsManager = new ShipmentItemsManager(
-            @json($products ?? []),
-            {
-                getProductPrice: '{{ route("shipments.get-product-price") }}',
-                getProductsByClient: '{{ route("shipments.get-products-by-client") }}'
-            },
-            '{{ csrf_token() }}',
-            '{{ auth()->user()->type }}',
-            '{{ auth()->user()->client->id ?? "" }}'
-        );
-    });
+        window.products = @json($products ?? []);
+        window.shipmentRoutes = {
+            calculateCollectionDate: '{{ route("shipments.calculate-collection-date") }}',
+            getProductPrice: '{{ route("shipments.get-product-price") }}',
+            getProductsByClient: '{{ route("shipments.get-products-by-client") }}'
+        };
+        window.csrfToken = '{{ csrf_token() }}';
+        window.userType = '{{ auth()->user()->type }}';
+        window.clientId = '{{ auth()->user()->client->id ?? "" }}';
     </script>
+
 </x-app-layout>

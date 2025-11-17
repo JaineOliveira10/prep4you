@@ -6,6 +6,7 @@ use App\Repositories\ShipmentRepository;
 use App\Models\Shipment;
 use App\Models\ShipmentItem;
 use App\Helpers\BusinessDaysHelper;
+use App\Models\ShipmentPdf;
 
 class ShipmentService
 {
@@ -155,6 +156,29 @@ class ShipmentService
 
     public function delete($id)
     {
+        $shipment = $this->shipmentRepository->find($id);
+        
+        if ($shipment) {
+            // Excluir PDFs físicos
+            foreach ($shipment->pdfs as $pdf) {
+                if (\Storage::disk('public')->exists($pdf->path_pdf)) {
+                    \Storage::disk('public')->delete($pdf->path_pdf);
+                }
+            }
+            
+            // Excluir pasta da remessa
+            $shipmentFolder = "shipments/{$id}";
+            if (\Storage::disk('public')->exists($shipmentFolder)) {
+                \Storage::disk('public')->deleteDirectory($shipmentFolder);
+            }
+            
+            // Excluir PDFs do banco
+            ShipmentPdf::where('shipment_id', $id)->delete();
+            
+            // Excluir itens
+            ShipmentItem::where('shipment_id', $id)->delete();
+        }
+        
         return $this->shipmentRepository->delete($id);
     }
 }

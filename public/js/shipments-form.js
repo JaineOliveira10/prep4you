@@ -38,16 +38,13 @@ class ShipmentItemsManager {
         const row = document.createElement('tr');
         row.setAttribute('data-index', this.itemIndex);
         
-        let productOptions = '<option value="">Selecione um produto</option>';
-        this.products.forEach(product => {
-            productOptions += `<option value="${product.id}">${product.name}</option>`;
-        });
-        
         row.innerHTML = `
             <td>
-                <select name="items[${this.itemIndex}][product_id]" class="form-select product-select" required>
-                    ${productOptions}
-                </select>
+                <div class="position-relative">
+                    <input type="text" class="form-control product-search" placeholder="Digite nome, SKU, FSNKU ou ASIN..." autocomplete="off">
+                    <input type="hidden" name="items[${this.itemIndex}][product_id]" class="product-id">
+                    <div class="product-results position-absolute w-100 bg-white border rounded shadow-sm" style="z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"></div>
+                </div>
             </td>
             <td><input type="text" class="form-control fsnku" disabled></td>
             <td><input type="text" class="form-control sku" disabled></td>
@@ -66,22 +63,59 @@ class ShipmentItemsManager {
     }
     
     addRowEvents(row) {
-        const productSelect = row.querySelector('.product-select');
+        const productSearch = row.querySelector('.product-search');
+        const productResults = row.querySelector('.product-results');
         const quantityInput = row.querySelector('.quantity');
         const removeBtn = row.querySelector('.remove-item');
         
-        if (productSelect) {
-            productSelect.addEventListener('change', (e) => {
-                this.updateProductInfo(row, e.target.value);
+        if (productSearch) {
+            let searchTimeout;
+            
+            productSearch.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                const query = e.target.value.trim();
+                
+                if (query.length < 2) {
+                    productResults.style.display = 'none';
+                    return;
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    this.searchProducts(query, productResults, row);
+                }, 300);
+            });
+            
+            productSearch.addEventListener('blur', () => {
+                setTimeout(() => {
+                    productResults.style.display = 'none';
+                }, 200);
+            });
+            
+            // Reposicionar lista ao rolar a página
+            window.addEventListener('scroll', () => {
+                if (productResults.style.display === 'block') {
+                    const rect = productSearch.getBoundingClientRect();
+                    productResults.style.top = (rect.bottom + 2) + 'px';
+                    productResults.style.left = rect.left + 'px';
+                }
+            });
+            
+            productSearch.addEventListener('focus', () => {
+                if (productSearch.value.length >= 2) {
+                    const rect = productSearch.getBoundingClientRect();
+                    productResults.style.top = (rect.bottom + 2) + 'px';
+                    productResults.style.left = rect.left + 'px';
+                    productResults.style.width = rect.width + 'px';
+                    productResults.style.display = 'block';
+                }
             });
         }
         
         if (quantityInput) {
             quantityInput.addEventListener('input', () => {
-                // Recalcular preço baseado na nova quantidade
-                const productSelect = row.querySelector('.product-select');
-                if (productSelect && productSelect.value) {
-                    this.updateProductInfo(row, productSelect.value);
+                const productId = row.querySelector('.product-id')?.value;
+                if (productId) {
+                    this.updateProductInfo(row, productId);
                 } else {
                     this.updateTotalValue(row);
                 }
@@ -251,6 +285,64 @@ class ShipmentItemsManager {
         }
     }
     
+    searchProducts(query, resultsContainer, row) {
+        const currentClientId = this.userType === 'admin' 
+            ? document.getElementById('client_id')?.value 
+            : this.clientId;
+            
+        const filteredProducts = this.products.filter(product => {
+            return product.name.toLowerCase().includes(query.toLowerCase()) ||
+                   (product.sku && product.sku.toLowerCase().includes(query.toLowerCase())) ||
+                   (product.fsnku && product.fsnku.toLowerCase().includes(query.toLowerCase())) ||
+                   (product.asin && product.asin.toLowerCase().includes(query.toLowerCase()));
+        });
+        
+        if (filteredProducts.length === 0) {
+            resultsContainer.innerHTML = '<div class="p-2 text-muted">Nenhum produto encontrado</div>';
+        } else {
+            resultsContainer.innerHTML = filteredProducts.map(product => `
+                <div class="product-result-item p-2 border-bottom" style="cursor: pointer;" data-product-id="${product.id}">
+                    <div class="fw-bold">${product.name}</div>
+                    <small class="text-muted">
+                        ${product.sku ? `SKU: ${product.sku}` : ''}
+                        ${product.fsnku ? ` | FSNKU: ${product.fsnku}` : ''}
+                        ${product.asin ? ` | ASIN: ${product.asin}` : ''}
+                    </small>
+                </div>
+            `).join('');
+            
+            // Adicionar eventos de clique nos resultados
+            resultsContainer.querySelectorAll('.product-result-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const productId = item.dataset.productId;
+                    const product = filteredProducts.find(p => p.id == productId);
+                    
+                    if (product) {
+                        row.querySelector('.product-search').value = product.name;
+                        row.querySelector('.product-id').value = productId;
+                        resultsContainer.style.display = 'none';
+                        this.updateProductInfo(row, productId);
+                    }
+                });
+                
+                item.addEventListener('mouseenter', () => {
+                    item.style.backgroundColor = '#f8f9fa';
+                });
+                
+                item.addEventListener('mouseleave', () => {
+                    item.style.backgroundColor = 'white';
+                });
+            });
+        }
+        
+        const searchInput = row.querySelector('.product-search');
+        const rect = searchInput.getBoundingClientRect();
+        resultsContainer.style.top = (rect.bottom + 2) + 'px';
+        resultsContainer.style.left = rect.left + 'px';
+        resultsContainer.style.width = rect.width + 'px';
+        resultsContainer.style.display = 'block';
+    }
+    
     updateProductsByClient(clientId) {
         if (!clientId) return;
         
@@ -278,3 +370,45 @@ class ShipmentItemsManager {
         });
     }
 }
+
+// Cálculo da data de coleta
+document.getElementById('shipment_date').addEventListener('change', function() {
+    const shipmentDate = this.value;
+    const collectionDateField = document.getElementById('collection_date');
+    
+    if (shipmentDate) {
+        fetch(window.shipmentRoutes.calculateCollectionDate, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken
+            },
+            body: JSON.stringify({
+                shipment_date: shipmentDate
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.collection_date) {
+                collectionDateField.value = data.collection_date;
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao calcular data de coleta:', error);
+        });
+    }
+});
+
+// Inicializar gerenciador de itens
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsManager = new ShipmentItemsManager(
+        window.products || [],
+        {
+            getProductPrice: window.shipmentRoutes.getProductPrice,
+            getProductsByClient: window.shipmentRoutes.getProductsByClient
+        },
+        window.csrfToken,
+        window.userType,
+        window.clientId
+    );
+});
