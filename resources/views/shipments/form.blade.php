@@ -30,6 +30,12 @@
                             <div class="new-shipment-info">
                                 <div class="row">
                                     <div class="form-group col-md-6">
+                                        <label class="form-label" for="name">ID da Remessa</label>
+                                        <input type="text" name="shipment_code" id="shipment_code" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o id da remessa">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-md-6">
                                         <label class="form-label" for="name">Nome da Remessa</label>
                                         <input type="text" name="name" id="name" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o nome da remessa">
                                     </div>

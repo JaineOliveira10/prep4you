@@ -14,6 +14,8 @@ class Shipment extends Model
         'name',
         'client_id',
         'distribution_center_id',
+        'shipment_code',
+        'imported_flag',
         'creation_date',
         'total_value',
         'total_items'

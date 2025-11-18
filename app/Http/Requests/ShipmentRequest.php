@@ -22,6 +22,8 @@ class ShipmentRequest extends FormRequest
             'status' => 'required|in:Pending,In Preparation,Packed,Collected,Invoice Generated,Paid',
             'client_id' => 'required|exists:clients,id',
             'distribution_center_id' => 'required|exists:distribution_centers,id',
+            'shipment_code' => 'nullable|string|max:20',
+            'imported_flag' => 'nullable|boolean',
             'creation_date' => 'required|date',
             'total_value' => 'nullable|numeric|min:0',
             'total_items' => 'nullable|integer|min:0',
