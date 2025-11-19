@@ -35,7 +35,7 @@ class PriceTableController extends Controller
     public function store(PriceTableRequest $request)
     {
         $this->priceTableService->create($request->validated());
-        return redirect()->route('pages.price-tables.index')->with('success', 'Tabela de preço criada com sucesso!');
+        return redirect()->route('price-tables.index')->with('success', 'Tabela de preço criada com sucesso!');
     }
 
     /**
@@ -62,7 +62,7 @@ class PriceTableController extends Controller
     public function update(PriceTableRequest $request, string $id)
     {
         $this->priceTableService->update($id, $request->validated());
-        return redirect()->route('pages.price-tables.index')->with('success', 'Tabela de preço atualizada com sucesso!');
+        return redirect()->route('price-tables.index')->with('success', 'Tabela de preço atualizada com sucesso!');
     }
 
     /**
@@ -73,11 +73,11 @@ class PriceTableController extends Controller
         try {
             $this->priceTableService->delete($id);
             return redirect()
-                ->route('pages.price-tables.index')
+                ->route('price-tables.index')
                 ->withSuccess(__('Tabela de preço removida com sucesso.'));
         } catch (\Exception $e) {
             return redirect()
-                ->route('pages.price-tables.index')
+                ->route('price-tables.index')
                 ->withError($e->getMessage());
         }
     }

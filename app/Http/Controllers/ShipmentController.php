@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\ShipmentRequest;
+use App\Http\Requests\ShipmentImportRequest;
 use App\Services\ShipmentService;
 use App\Models\Client;
 use App\Models\DistributionCenter;
 use App\Models\Product;
 use App\Models\PriceTable;
 use App\Models\PriceRange;
+use App\Models\Shipment;
 
 class ShipmentController extends Controller
 {
@@ -58,7 +60,7 @@ class ShipmentController extends Controller
         $data = $request->all();
         $data['creation_date'] = now()->format('Y-m-d');
         $this->shipmentService->create($data);
-        return redirect()->route('pages.shipments.index')->with('success', 'Remessa criada com sucesso!');
+        return redirect()->route('shipments.index')->with('success', 'Remessa criada com sucesso!');
     }
 
     /**
@@ -92,7 +94,7 @@ class ShipmentController extends Controller
     public function update(ShipmentRequest $request, string $id)
     {
         $this->shipmentService->update($id, $request->all());
-        return redirect()->route('pages.shipments.index')->with('success', 'Remessa atualizada com sucesso!');
+        return redirect()->route('shipments.index')->with('success', 'Remessa atualizada com sucesso!');
     }
 
     /**
@@ -111,7 +113,7 @@ class ShipmentController extends Controller
         }
         
         $this->shipmentService->delete($id);
-        return redirect()->route('pages.shipments.index')->with('success', 'Remessa excluída com sucesso!');
+        return redirect()->route('shipments.index')->with('success', 'Remessa excluída com sucesso!');
     }
 
     /**
@@ -149,53 +151,59 @@ class ShipmentController extends Controller
     {
         $productId = $request->input('product_id');
         $clientId = $request->input('client_id');
-        $quantity = $request->input('quantity', 1); // Quantidade padrão = 1
+        $quantity = $request->input('quantity', 1);
         
-        $product = Product::find($productId);
-        if (!$product) {
-            return response()->json(['error' => 'Produto não encontrado'], 404);
+        $result = $this->shipmentService->getProductPrice($productId, $clientId, $quantity);
+        
+        if (isset($result['error'])) {
+            return response()->json(['error' => $result['error']], 404);
         }
         
-        if ($product->type === 'super_kit') {
-            $price = $product->unit_price ?? 0;
-        } else {
-            $client = Client::find($clientId);
+        return response()->json($result);
+    }
+
+    public function preview(ShipmentImportRequest $request)
+    {
+        try {
+            $result = $this->shipmentService->previewTsv($request->file('tsv_file'));
             
-            if (!$client || !$client->price_table_id) {
-                $price = $product->unit_price ?? 0;
-            } else {
-                $priceRange = PriceRange::where('price_table_id', $client->price_table_id)
-                    ->where('min_value', '<=', $quantity)
-                    ->where('max_value', '>=', $quantity)
-                    ->first();
-                
-                if ($priceRange) {
-                    if ($product->type === 'kit') {
-                        $price = $priceRange->price_kit ?? $priceRange->price;
-                    } else {
-                        $price = $priceRange->price;
-                    }
-                } else {
-                    $priceRange = PriceRange::where('price_table_id', $client->price_table_id)
-                        ->orderBy('min_value')
-                        ->first();
-                    
-                    if ($priceRange) {
-                        if ($product->type === 'kit') {
-                            $price = $priceRange->price_kit ?? $priceRange->price;
-                        } else {
-                            $price = $priceRange->price;
-                        }
-                    } else {
-                        $price = $product->unit_price ?? 0;
-                    }
-                }
+            if (isset($result['error'])) {
+                return response()->json(['error' => $result['error']], 422);
             }
+            
+            return response()->json([
+                'success' => true,
+                'data' => $result['data']
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno: ' . $e->getMessage()], 500);
         }
-        
-        return response()->json([
-            'price' => $price,
-            'product' => $product
+    }
+    
+    public function import(Request $request)
+    {
+        $request->validate([
+            'tsv_file' => 'required|file|mimes:tsv,txt',
+            'shipment_date' => 'required|date'
         ]);
+        
+        try {
+            $result = $this->shipmentService->importFromTsv(
+                $request->file('tsv_file'), 
+                auth()->user()->client->id,
+                $request->input('shipment_date')
+            );
+            
+            if (isset($result['error'])) {
+                return response()->json(['error' => $result['error']], 422);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'shipment' => $result['shipment']
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Erro interno: ' . $e->getMessage()], 500);
+        }
     }
 }

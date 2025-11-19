@@ -31,7 +31,7 @@
                                 <div class="row">
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="name">ID da Remessa</label>
-                                        <input type="text" name="shipment_code" id="shipment_code" class="form-control" value="{{ old('name', $data->name ?? '') }}" placeholder="Digite o id da remessa">
+                                        <input type="text" name="shipment_code" id="shipment_code" class="form-control" value="{{ old('name', $data->shipment_code ?? '') }}" placeholder="Digite o id da remessa">
                                     </div>
                                 </div>
                                 <div class="row">

@@ -55,7 +55,7 @@ class UserController extends Controller
     {
         // Se o usuário é cliente, só pode ver seu próprio perfil
         if (strtolower(auth()->user()->type) === 'client' && auth()->id() != $id) {
-            return redirect()->route('pages.users.show', auth()->id());
+            return redirect()->route('users.show', auth()->id());
         }
         
         $user = User::with('client.priceTable')->findOrFail($id);
@@ -133,7 +133,7 @@ class UserController extends Controller
         $this->userService->updateName($id, $request->name);
 
         return redirect()
-            ->route('pages.users.show', $id)
+            ->route('users.show', $id)
             ->withSuccess('Nome atualizado com sucesso.');
     }
 }

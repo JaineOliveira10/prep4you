@@ -7,6 +7,7 @@ use App\Models\Shipment;
 use App\Models\ShipmentItem;
 use App\Helpers\BusinessDaysHelper;
 use App\Models\ShipmentPdf;
+use App\Models\DistributionCenter;
 
 class ShipmentService
 {
@@ -184,5 +185,133 @@ class ShipmentService
         }
         
         return $this->shipmentRepository->delete($id);
+    }
+    
+    /**
+     * Get product price based on client's price table
+     */
+    public function getProductPrice($productId, $clientId, $quantity = 1)
+    {
+        $product = \App\Models\Product::find($productId);
+        if (!$product) {
+            return ['error' => 'Produto não encontrado'];
+        }
+        
+        if ($product->type === 'super_kit') {
+            $price = $product->unit_price ?? 0;
+        } else {
+            $client = \App\Models\Client::find($clientId);
+            
+            if (!$client || !$client->price_table_id) {
+                $price = $product->unit_price ?? 0;
+            } else {
+                $priceRange = \App\Models\PriceRange::where('price_table_id', $client->price_table_id)
+                    ->where('min_value', '<=', $quantity)
+                    ->where('max_value', '>=', $quantity)
+                    ->first();
+                
+                if ($priceRange) {
+                    if ($product->type === 'kit') {
+                        $price = $priceRange->price_kit ?? $priceRange->price;
+                    } else {
+                        $price = $priceRange->price;
+                    }
+                } else {
+                    $priceRange = \App\Models\PriceRange::where('price_table_id', $client->price_table_id)
+                        ->orderBy('min_value')
+                        ->first();
+                    
+                    if ($priceRange) {
+                        if ($product->type === 'kit') {
+                            $price = $priceRange->price_kit ?? $priceRange->price;
+                        } else {
+                            $price = $priceRange->price;
+                        }
+                    } else {
+                        $price = $product->unit_price ?? 0;
+                    }
+                }
+            }
+        }
+        
+        return [
+            'price' => $price,
+            'product' => $product
+        ];
+    }
+    
+    /**
+     * Import shipment from TSV file
+     */
+    public function previewTsv($file)
+    {
+        try {
+            $fileHandle = fopen($file->getRealPath(), 'r');
+            $data = [];
+
+            while (($line = fgets($fileHandle)) !== false) {
+                $parts = explode("\t", trim($line));
+
+                if (count($parts) >= 2) {
+                    $key = trim($parts[0]);
+                    $value = trim($parts[1]);
+                    $data[$key] = $value;
+                }
+            }
+
+            fclose($fileHandle);
+            
+            return ['data' => $data];
+        } catch (\Exception $e) {
+            return ['error' => 'Erro ao processar arquivo: ' . $e->getMessage()];
+        }
+    }
+    
+    public function importFromTsv($file, $clientId, $shipmentDate = null)
+    {
+        try {
+            $fileHandle = fopen($file->getRealPath(), 'r');
+            $data = [];
+
+            while (($line = fgets($fileHandle)) !== false) {
+                $parts = explode("\t", trim($line));
+
+                if (count($parts) >= 2) {
+                    $key = trim($parts[0]);
+                    $value = trim($parts[1]);
+                    $data[$key] = $value;
+                }
+            }
+
+            fclose($fileHandle);
+
+            $acronym = $data['Enviar para'] ?? null;
+            $dc = DistributionCenter::where('acronym', $acronym)->first();
+
+            if (!$dc) {
+                return ['error' => "Centro de distribuição '$acronym' não encontrado"];
+            }
+
+            $shipmentData = [
+                'shipment_code' => $data['ID do envio'] ?? null,
+                'name' => $data['Nome'] ?? 'Remessa Importada',
+                'client_id' => $clientId,
+                'distribution_center_id' => $dc->id,
+                'shipment_date' => $shipmentDate ?: now()->format('Y-m-d'),
+                'status' => 'Pending',
+                'creation_date' => now()->format('Y-m-d'),
+                'total_value' => 0,
+                'total_items' => 0
+            ];
+
+            $shipment = $this->create($shipmentData);
+            
+            return [
+                'shipment' => $shipment,
+                'shipment_code' => $shipmentData['shipment_code']
+            ];
+        } catch (\Exception $e) {
+            return ['error' => 'Erro ao processar arquivo: ' . $e->getMessage()];
+        }
     }
 }

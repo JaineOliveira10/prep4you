@@ -13,6 +13,9 @@
                </div>
                <div class="card-action">
                   @if(auth()->user()->type == 'client')
+                     <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#importModal">Importar Remessa</button>
+                  @endif
+                  @if(auth()->user()->type == 'client')
                      <a href="{{route('shipments.create')}}" class="btn btn-sm btn-primary" role="button">Nova Remessa</a>
                   @endif
                </div>
@@ -102,4 +105,156 @@
       </div>
    </div>
 </div>
+
+<!-- Modal de Importação -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <form id="importForm" enctype="multipart/form-data">
+            @csrf
+            <div class="modal-header">
+               <h5 class="modal-title" id="importModalLabel">Importar Remessa</h5>
+               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               <div id="uploadSection">
+                  <div class="mb-3">
+                     <label for="tsvFile" class="form-label">Arquivo TSV</label>
+                     <input type="file" class="form-control" id="tsvFile" name="tsv_file" accept=".tsv" required>
+                     <div class="form-text">Selecione um arquivo .tsv para importar a remessa</div>
+                  </div>
+               </div>
+               <div id="previewSection" style="display: none;">
+                  <h6>Dados da Remessa:</h6>
+                  <div id="previewData"></div>
+                  <div class="mb-3 mt-3">
+                     <label for="shipmentDate" class="form-label">Data da Remessa</label>
+                     <input type="date" class="form-control" id="shipmentDate" name="shipment_date" required>
+                  </div>
+               </div>
+               <div id="resultSection" style="display: none;">
+                  <div class="alert alert-success">
+                     <h6>Remessa criada com sucesso!</h6>
+                  </div>
+               </div>
+            </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+               <button type="button" id="previewBtn" class="btn btn-info" style="display: none;">Visualizar</button>
+               <button type="submit" id="importBtn" class="btn btn-primary">Importar</button>
+               <button type="button" id="createBtn" class="btn btn-success" style="display: none;">Criar Remessa</button>
+            </div>
+         </form>
+      </div>
+   </div>
+</div>
+
+<script>
+let tsvData = null;
+
+// Quando arquivo é selecionado
+document.getElementById('tsvFile').addEventListener('change', function() {
+    if (this.files.length > 0) {
+        document.getElementById('previewBtn').style.display = 'inline-block';
+        document.getElementById('importBtn').style.display = 'none';
+    }
+});
+
+// Botão visualizar
+document.getElementById('previewBtn').addEventListener('click', function() {
+    const fileInput = document.getElementById('tsvFile');
+    if (!fileInput.files[0]) return;
+    
+    const formData = new FormData();
+    formData.append('tsv_file', fileInput.files[0]);
+    
+    fetch('{{ route("shipments.preview") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            tsvData = data.data;
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('previewBtn').style.display = 'none';
+            document.getElementById('createBtn').style.display = 'inline-block';
+            
+            const previewHtml = `
+                <p><strong>Nome:</strong> ${data.data.Nome || 'N/A'}</p>
+                <p><strong>ID do Envio:</strong> ${data.data['ID do envio'] || 'N/A'}</p>
+                <p><strong>Enviar para:</strong> ${data.data['Enviar para'] || 'N/A'}</p>
+            `;
+            document.getElementById('previewData').innerHTML = previewHtml;
+            document.getElementById('shipmentDate').value = new Date().toISOString().split('T')[0];
+        } else {
+            alert('Erro: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao processar arquivo');
+    });
+});
+
+// Botão criar remessa
+document.getElementById('createBtn').addEventListener('click', function() {
+    const shipmentDate = document.getElementById('shipmentDate').value;
+    if (!shipmentDate) {
+        alert('Por favor, selecione uma data para a remessa');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('tsv_file', document.getElementById('tsvFile').files[0]);
+    formData.append('shipment_date', shipmentDate);
+    
+    this.disabled = true;
+    this.textContent = 'Criando...';
+    
+    fetch('{{ route("shipments.import") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('previewSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+            document.getElementById('createBtn').style.display = 'none';
+             window.location.reload();
+        } else {
+            alert('Erro: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao criar remessa');
+    })
+    .finally(() => {
+        this.disabled = false;
+        this.textContent = 'Criar Remessa';
+    });
+});
+
+// Reset modal quando fechar
+document.getElementById('importModal').addEventListener('hidden.bs.modal', function() {
+    document.getElementById('uploadSection').style.display = 'block';
+    document.getElementById('previewSection').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('previewBtn').style.display = 'none';
+    document.getElementById('importBtn').style.display = 'inline-block';
+    document.getElementById('createBtn').style.display = 'none';
+    document.getElementById('importForm').reset();
+    tsvData = null;
+});
+</script>
+
 </x-app-layout>

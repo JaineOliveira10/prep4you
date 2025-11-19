@@ -69,7 +69,7 @@ class ProductController extends Controller
         }
         
         $product = $this->productService->create($request->validated());
-        return redirect()->route('pages.products.index')->with('success', 'Produto criado com sucesso!');
+        return redirect()->route('products.index')->with('success', 'Produto criado com sucesso!');
     }
 
     public function show(string $id)
@@ -102,7 +102,7 @@ class ProductController extends Controller
         }
         
         $this->productService->update($id, $request->validated());
-        return redirect()->route('pages.products.index')->with('success', 'Produto atualizado com sucesso!');
+        return redirect()->route('products.index')->with('success', 'Produto atualizado com sucesso!');
     }
 
     public function destroy(string $id)
@@ -118,6 +118,6 @@ class ProductController extends Controller
         }
         
         $this->productService->delete($id);
-        return redirect()->route('pages.products.index')->with('success', 'Produto excluído com sucesso!');
+        return redirect()->route('products.index')->with('success', 'Produto excluído com sucesso!');
     }
 }
