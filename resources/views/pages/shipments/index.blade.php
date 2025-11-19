@@ -126,7 +126,7 @@
                </div>
                <div id="previewSection" style="display: none;">
                   <h6>Dados da Remessa:</h6>
-                  <div id="previewData"></div>
+                  <div id="previewData" class="mt-4"></div>
                   <div class="mb-3 mt-3">
                      <label for="shipmentDate" class="form-label">Data da Remessa</label>
                      <input type="date" class="form-control" id="shipmentDate" name="shipment_date" required>
@@ -150,111 +150,13 @@
 </div>
 
 <script>
-let tsvData = null;
-
-// Quando arquivo é selecionado
-document.getElementById('tsvFile').addEventListener('change', function() {
-    if (this.files.length > 0) {
-        document.getElementById('previewBtn').style.display = 'inline-block';
-        document.getElementById('importBtn').style.display = 'none';
-    }
-});
-
-// Botão visualizar
-document.getElementById('previewBtn').addEventListener('click', function() {
-    const fileInput = document.getElementById('tsvFile');
-    if (!fileInput.files[0]) return;
-    
-    const formData = new FormData();
-    formData.append('tsv_file', fileInput.files[0]);
-    
-    fetch('{{ route("shipments.preview") }}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            tsvData = data.data;
-            document.getElementById('uploadSection').style.display = 'none';
-            document.getElementById('previewSection').style.display = 'block';
-            document.getElementById('previewBtn').style.display = 'none';
-            document.getElementById('createBtn').style.display = 'inline-block';
-            
-            const previewHtml = `
-                <p><strong>Nome:</strong> ${data.data.Nome || 'N/A'}</p>
-                <p><strong>ID do Envio:</strong> ${data.data['ID do envio'] || 'N/A'}</p>
-                <p><strong>Enviar para:</strong> ${data.data['Enviar para'] || 'N/A'}</p>
-            `;
-            document.getElementById('previewData').innerHTML = previewHtml;
-            document.getElementById('shipmentDate').value = new Date().toISOString().split('T')[0];
-        } else {
-            alert('Erro: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao processar arquivo');
-    });
-});
-
-// Botão criar remessa
-document.getElementById('createBtn').addEventListener('click', function() {
-    const shipmentDate = document.getElementById('shipmentDate').value;
-    if (!shipmentDate) {
-        alert('Por favor, selecione uma data para a remessa');
-        return;
-    }
-    
-    const formData = new FormData();
-    formData.append('tsv_file', document.getElementById('tsvFile').files[0]);
-    formData.append('shipment_date', shipmentDate);
-    
-    this.disabled = true;
-    this.textContent = 'Criando...';
-    
-    fetch('{{ route("shipments.import") }}', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('previewSection').style.display = 'none';
-            document.getElementById('resultSection').style.display = 'block';
-            document.getElementById('createBtn').style.display = 'none';
-             window.location.reload();
-        } else {
-            alert('Erro: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        alert('Erro ao criar remessa');
-    })
-    .finally(() => {
-        this.disabled = false;
-        this.textContent = 'Criar Remessa';
-    });
-});
-
-// Reset modal quando fechar
-document.getElementById('importModal').addEventListener('hidden.bs.modal', function() {
-    document.getElementById('uploadSection').style.display = 'block';
-    document.getElementById('previewSection').style.display = 'none';
-    document.getElementById('resultSection').style.display = 'none';
-    document.getElementById('previewBtn').style.display = 'none';
-    document.getElementById('importBtn').style.display = 'inline-block';
-    document.getElementById('createBtn').style.display = 'none';
-    document.getElementById('importForm').reset();
-    tsvData = null;
-});
+    window.shipmentRoutes = {
+        calculateCollectionDate: '{{ route("shipments.calculate-collection-date") }}',
+        preview: '{{ route("shipments.preview") }}',
+        import: '{{ route("shipments.import") }}'
+    };
+    window.csrfToken = '{{ csrf_token() }}';
 </script>
+<script src="{{ asset('js/shipments-import.js') }}"></script>
 
 </x-app-layout>
