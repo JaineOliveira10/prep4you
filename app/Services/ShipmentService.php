@@ -301,7 +301,8 @@ class ShipmentService
                 'status' => 'Pending',
                 'creation_date' => now()->format('Y-m-d'),
                 'total_value' => 0,
-                'total_items' => 0
+                'total_items' => 0,
+                'imported_flag' => true
             ];
 
             $shipment = $this->create($shipmentData);

@@ -62,6 +62,7 @@
                            <th>Dt Remessa</th>
                            <th>Dt Coleta</th>
                            <th>Centro Dist.</th>
+                           <th>Importado?</th>
                            <th>Status</th>
                            <th style="min-width: 100px">Ações</th>
                         </tr>
@@ -75,6 +76,7 @@
                            <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>
+                           <td>{{ $shipment->imported_flag ? 'Sim' : 'Não' }}</td>
                            <td>
                                @if($shipment->status == 'Pending')
                                    <span class="badge bg-warning">Pendente</span>
@@ -139,10 +141,10 @@
                </div>
             </div>
             <div class="modal-footer">
-               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                <button type="button" id="previewBtn" class="btn btn-info" style="display: none;">Visualizar</button>
                <button type="submit" id="importBtn" class="btn btn-primary">Importar</button>
                <button type="button" id="createBtn" class="btn btn-success" style="display: none;">Criar Remessa</button>
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
             </div>
          </form>
       </div>
