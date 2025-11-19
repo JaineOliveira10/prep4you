@@ -19,7 +19,7 @@ class DistributionCenterController extends Controller
     {
         $distributionCenters = $this->distributionCenterService->getAll();
         $assets = ['data-table'];
-        return view('distribution-centers.index', compact('distributionCenters', 'assets'));
+        return view('pages.distribution-centers.index', compact('distributionCenters', 'assets'));
     }
 
     /**
@@ -36,7 +36,7 @@ class DistributionCenterController extends Controller
     public function store(DistributionCenterRequest $request)
     {
         $this->distributionCenterService->create($request->validated());
-        return redirect()->route('distribution-centers.index')->with('success', 'Centro de distribuição criado com sucesso!');
+        return redirect()->route('pages.distribution-centers.index')->with('success', 'Centro de distribuição criado com sucesso!');
     }
 
     /**
@@ -62,7 +62,7 @@ class DistributionCenterController extends Controller
     public function update(DistributionCenterRequest $request, string $id)
     {
         $this->distributionCenterService->update($id, $request->validated());
-        return redirect()->route('distribution-centers.index')->with('success', 'Centro de distribuição atualizado com sucesso!');
+        return redirect()->route('pages.distribution-centers.index')->with('success', 'Centro de distribuição atualizado com sucesso!');
     }
 
     /**
@@ -73,7 +73,7 @@ class DistributionCenterController extends Controller
         $this->distributionCenterService->delete($id);
 
         return redirect()
-            ->route('distribution-centers.index')
+            ->route('pages.distribution-centers.index')
             ->withSuccess(__('Centro de distribuição removido com sucesso.'));
     }
 }

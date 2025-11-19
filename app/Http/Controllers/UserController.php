@@ -25,7 +25,7 @@ class UserController extends Controller
     {
         $users = $this->userService->getAll();
         $assets = ['data-table'];
-        return view('users.index', compact('users', 'assets'));
+        return view('pages.users.index', compact('users', 'assets'));
     }
 
     public function create()
@@ -39,7 +39,7 @@ class UserController extends Controller
 
         $estados = \App\Models\Client::ESTADOS;
 
-        return view('users.form', compact('roles', 'priceTables', 'estados'));
+        return view('pages.users.form', compact('roles', 'priceTables', 'estados'));
     }
 
     public function store(UserRequest $request)
@@ -55,14 +55,14 @@ class UserController extends Controller
     {
         // Se o usuário é cliente, só pode ver seu próprio perfil
         if (strtolower(auth()->user()->type) === 'client' && auth()->id() != $id) {
-            return redirect()->route('users.show', auth()->id());
+            return redirect()->route('pages.users.show', auth()->id());
         }
         
         $user = User::with('client.priceTable')->findOrFail($id);
 
         $priceTables = PriceTable::all();
 
-        return view('users.show', compact('user', 'priceTables'));
+        return view('pages.users.show', compact('user', 'priceTables'));
     }
 
     public function edit($id)
@@ -78,7 +78,7 @@ class UserController extends Controller
 
         $priceTables = PriceTable::all();
 
-        return view('users.form',  ['id' => $id, 'data' => $user, 'roles' => $roles, 'priceTables' => $priceTables, 'estados' => $estados]);
+        return view('pages.users.form',  ['id' => $id, 'data' => $user, 'roles' => $roles, 'priceTables' => $priceTables, 'estados' => $estados]);
     }
 
     public function update(UserRequest $request, $id)
@@ -133,7 +133,7 @@ class UserController extends Controller
         $this->userService->updateName($id, $request->name);
 
         return redirect()
-            ->route('users.show', $id)
+            ->route('pages.users.show', $id)
             ->withSuccess('Nome atualizado com sucesso.');
     }
 }

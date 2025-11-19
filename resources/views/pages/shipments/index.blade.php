@@ -90,7 +90,7 @@
                                @endif
                            </td>
                            <td>
-                              @include('shipments.action', ['id' => $shipment->id])
+                              @include('pages.shipments.action', ['id' => $shipment->id])
                            </td>
                         </tr>
                         @endforeach

@@ -95,7 +95,7 @@ $(document).ready(function() {
                            <td>{{ $product->fsnku ?? '-' }}</td>
                            <td>{{ $product->sku ?? '-' }}</td>
                            <td>
-                              @include('products.action', ['id' => $product->id])
+                              @include('pages.products.action', ['id' => $product->id])
                            </td>
                         </tr>
                         @endforeach

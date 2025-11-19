@@ -35,7 +35,7 @@ class ShipmentController extends Controller
         $clients = Client::all();
         $distributionCenters =  DistributionCenter::all();
         $assets = ['data-table'];
-        return view('shipments.index', compact('shipments', 'clients', 'distributionCenters', 'assets'));
+        return view('pages.shipments.index', compact('shipments', 'clients', 'distributionCenters', 'assets'));
     }
 
     /**
@@ -47,7 +47,7 @@ class ShipmentController extends Controller
         if (auth()->user()->type === 'client' && auth()->user()->client) {
             $products = Product::where('client_id', auth()->user()->client->id)->get();
         }
-        return view('shipments.form', compact('products'));
+        return view('pages.shipments.form', compact('products'));
     }
 
     /**
@@ -58,7 +58,7 @@ class ShipmentController extends Controller
         $data = $request->all();
         $data['creation_date'] = now()->format('Y-m-d');
         $this->shipmentService->create($data);
-        return redirect()->route('shipments.index')->with('success', 'Remessa criada com sucesso!');
+        return redirect()->route('pages.shipments.index')->with('success', 'Remessa criada com sucesso!');
     }
 
     /**
@@ -68,7 +68,7 @@ class ShipmentController extends Controller
     {
         $shipment = $this->shipmentService->findById($id);
         $assets = [];
-        return view('shipments.show', compact('shipment', 'assets'));
+        return view('pages.shipments.show', compact('shipment', 'assets'));
     }
 
     /**
@@ -83,7 +83,7 @@ class ShipmentController extends Controller
         } elseif (auth()->user()->type === 'admin' && $data->client_id) {
             $products = Product::where('client_id', $data->client_id)->get();
         }
-        return view('shipments.form', compact('data', 'id', 'products'));
+        return view('pages.shipments.form', compact('data', 'id', 'products'));
     }
 
     /**
@@ -92,7 +92,7 @@ class ShipmentController extends Controller
     public function update(ShipmentRequest $request, string $id)
     {
         $this->shipmentService->update($id, $request->all());
-        return redirect()->route('shipments.index')->with('success', 'Remessa atualizada com sucesso!');
+        return redirect()->route('pages.shipments.index')->with('success', 'Remessa atualizada com sucesso!');
     }
 
     /**
@@ -111,7 +111,7 @@ class ShipmentController extends Controller
         }
         
         $this->shipmentService->delete($id);
-        return redirect()->route('shipments.index')->with('success', 'Remessa excluída com sucesso!');
+        return redirect()->route('pages.shipments.index')->with('success', 'Remessa excluída com sucesso!');
     }
 
     /**

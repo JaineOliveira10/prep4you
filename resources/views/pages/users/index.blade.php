@@ -56,7 +56,7 @@
                               <span class="badge {{ $badgeClass }}">{{ $typeLabel }}</span>
                            </td>
                            <td>
-                              @include('users.action', ['id' => $user->id])
+                              @include('pages.users.action', ['id' => $user->id])
                            </td>
                         </tr>
                         @endforeach

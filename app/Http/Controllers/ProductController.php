@@ -30,7 +30,7 @@ class ProductController extends Controller
         }
         
         $assets = ['data-table'];
-        return view('products.index', compact('products', 'assets', 'clients'));
+        return view('pages.products.index', compact('products', 'assets', 'clients'));
     }
 
     public function create()
@@ -41,7 +41,7 @@ class ProductController extends Controller
         
         $clients = auth()->user()->type == 'admin' ? Client::all() : [];
         $assets = [];
-        return view('products.form', compact('assets', 'clients'));
+        return view('pages.products.form', compact('assets', 'clients'));
     }
 
     public function copy(string $id)
@@ -59,7 +59,7 @@ class ProductController extends Controller
         $clients = auth()->user()->type == 'admin' ? Client::all() : [];
         $data = $product;
         $assets = [];
-        return view('products.form', compact('data', 'assets', 'clients'));
+        return view('pages.products.form', compact('data', 'assets', 'clients'));
     }
 
     public function store(ProductRequest $request)
@@ -69,14 +69,14 @@ class ProductController extends Controller
         }
         
         $product = $this->productService->create($request->validated());
-        return redirect()->route('products.index')->with('success', 'Produto criado com sucesso!');
+        return redirect()->route('pages.products.index')->with('success', 'Produto criado com sucesso!');
     }
 
     public function show(string $id)
     {
         $product = $this->productService->findById($id);
         $assets = [];
-        return view('products.show', compact('product', 'assets'));
+        return view('pages.products.show', compact('product', 'assets'));
     }
 
     public function edit(string $id)
@@ -90,7 +90,7 @@ class ProductController extends Controller
         $clients = auth()->user()->type == 'admin' ? Client::all() : [];
         $data = $product;
         $assets = [];
-        return view('products.form', compact('data', 'id', 'assets', 'clients'));
+        return view('pages.products.form', compact('data', 'id', 'assets', 'clients'));
     }
 
     public function update(ProductRequest $request, string $id)
@@ -102,7 +102,7 @@ class ProductController extends Controller
         }
         
         $this->productService->update($id, $request->validated());
-        return redirect()->route('products.index')->with('success', 'Produto atualizado com sucesso!');
+        return redirect()->route('pages.products.index')->with('success', 'Produto atualizado com sucesso!');
     }
 
     public function destroy(string $id)
@@ -118,6 +118,6 @@ class ProductController extends Controller
         }
         
         $this->productService->delete($id);
-        return redirect()->route('products.index')->with('success', 'Produto excluído com sucesso!');
+        return redirect()->route('pages.products.index')->with('success', 'Produto excluído com sucesso!');
     }
 }
