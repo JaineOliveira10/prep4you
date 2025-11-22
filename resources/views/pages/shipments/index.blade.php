@@ -110,7 +110,7 @@
 
 <!-- Modal de Importação -->
 <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-   <div class="modal-dialog">
+   <div class="modal-dialog modal-xl">
       <div class="modal-content">
          <form id="importForm" enctype="multipart/form-data">
             @csrf
@@ -128,17 +128,18 @@
                </div>
                <div id="previewSection" style="display: none;">
                   <h6>Dados da Remessa:</h6>
-                  <div id="previewData" class="mt-4"></div>
                   <div class="mb-3 mt-3">
                      <label for="shipmentDate" class="form-label">Data da Remessa</label>
                      <input type="date" class="form-control" id="shipmentDate" name="shipment_date" required>
                   </div>
+                  <div id="previewData" class="mt-4"></div>
                </div>
-               <div id="resultSection" style="display: none;">
-                  <div class="alert alert-success">
-                     <h6>Remessa criada com sucesso!</h6>
-                  </div>
+               <div id="resultSection" style="display: none;"> 
+                  <div class="alert alert-success"> 
+                     <h6>Remessa criada com sucesso!</h6> 
+                  </div> 
                </div>
+
             </div>
             <div class="modal-footer">
                <button type="button" id="previewBtn" class="btn btn-info" style="display: none;">Visualizar</button>
@@ -155,10 +156,64 @@
     window.shipmentRoutes = {
         calculateCollectionDate: '{{ route("shipments.calculate-collection-date") }}',
         preview: '{{ route("shipments.preview") }}',
-        import: '{{ route("shipments.import") }}'
+        import: '{{ route("shipments.import") }}',
+        registerProduct: '{{ route("products.store.ajax") }}'
     };
     window.csrfToken = '{{ csrf_token() }}';
+
+
+   $('#importForm').on('submit', function(e) {
+      e.preventDefault();
+
+      let formData = new FormData(this);
+
+      $.ajax({
+         url: window.shipmentRoutes.import,
+         method: 'POST',
+         data: formData,
+         contentType: false,
+         processData: false,
+
+         headers: {
+               'X-CSRF-TOKEN': window.csrfToken,
+               'Accept': 'application/json'
+         },
+
+         success: function(res) {
+               $('#uploadSection').hide();
+               $('#previewSection').hide();
+
+               $('#resultSection').html(`
+                  <div class="alert alert-success">
+                     <h6>Remessa criada com sucesso!</h6>
+                  </div>
+               `).show();
+         },
+
+         error: function(xhr) {
+               console.log("Erro recebido:", xhr);
+
+               let msg = xhr.responseJSON?.error ?? 'Erro inesperado';
+
+               $('#uploadSection').hide();
+               $('#previewSection').hide();
+
+               $('#resultSection').html(`
+                  <div class="alert alert-danger">
+                     <h6>${msg}</h6>
+                  </div>
+               `).show();
+         }
+      });
+   });
+
+
+
+
 </script>
 <script src="{{ asset('js/shipments-import.js') }}"></script>
 
+
+
 </x-app-layout>
+

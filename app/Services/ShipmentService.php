@@ -247,27 +247,59 @@ class ShipmentService
     {
         try {
             $fileHandle = fopen($file->getRealPath(), 'r');
+
             $data = [];
+            $products = [];
+
+            $header = null;
+            $startedProducts = false;
 
             while (($line = fgets($fileHandle)) !== false) {
-                $parts = explode("\t", trim($line));
+                $clean = trim($line);
+                $parts = explode("\t", $clean);
 
-                if (count($parts) >= 2) {
+                if (!$startedProducts && count($parts) == 2) {
                     $key = trim($parts[0]);
                     $value = trim($parts[1]);
                     $data[$key] = $value;
+                    continue;
+                }
+
+                if (!$startedProducts && count($parts) > 2) {
+                    $header = array_map('trim', $parts);
+                    $startedProducts = true;
+                    continue;
+                }
+
+                if ($startedProducts && count($parts) >= count($header)) {
+                    $row = array_combine($header, $parts);
+
+                    $products[] = [
+                        'sku'   => $row['SKU do vendedor'] ?? '',
+                        'name'  => $row['Título'] ?? '',
+                        'asin'  => $row['Código ASIN'] ?? '',
+                        'fsnku' => $row['FNSKU'] ?? '',
+                        'qtd'   => isset($row['Enviado']) ? (int)$row['Enviado'] : 0,
+                    ];
+
+                    continue;
                 }
             }
 
             fclose($fileHandle);
-            
-            return ['data' => $data];
+
+            return [
+                'data' => $data,
+                'products' => $products
+            ];
+
         } catch (\Exception $e) {
             return ['error' => 'Erro ao processar arquivo: ' . $e->getMessage()];
         }
     }
+
     
-    public function importFromTsv($file, $clientId, $shipmentDate = null)
+    public function importFromTsv($file, $clientId, $shipmentDate = null, $productsData = [])
     {
         try {
             $fileHandle = fopen($file->getRealPath(), 'r');
@@ -289,7 +321,33 @@ class ShipmentService
             $dc = DistributionCenter::where('acronym', $acronym)->first();
 
             if (!$dc) {
-                return ['error' => "Centro de distribuição '$acronym' não encontrado"];
+                return ['error' => "Centro de distribuição '$acronym' não encontrado", 'code' => 422];
+            }
+
+            $totalItems = 0;
+            $totalValue = 0;
+            $items = [];
+            
+            foreach ($productsData as $productData) {
+                $product = \App\Models\Product::where('client_id', $clientId)
+                    ->where('fsnku', $productData['fsnku'])
+                    ->first();
+                    
+                if ($product) {
+                    $quantity = intval($productData['qtd'] ?? 0);
+                    
+                    $priceResult = $this->getProductPrice($product->id, $clientId, $quantity);
+                    $unitPrice = $priceResult['price'] ?? 0;
+                    
+                    $items[] = [
+                        'product_id' => $product->id,
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice
+                    ];
+                    
+                    $totalItems += $quantity;
+                    $totalValue += $quantity * $unitPrice;
+                }
             }
 
             $shipmentData = [
@@ -300,9 +358,10 @@ class ShipmentService
                 'shipment_date' => $shipmentDate ?: now()->format('Y-m-d'),
                 'status' => 'Pending',
                 'creation_date' => now()->format('Y-m-d'),
-                'total_value' => 0,
-                'total_items' => 0,
-                'imported_flag' => true
+                'total_value' => $totalValue,
+                'total_items' => $totalItems,
+                'imported_flag' => true,
+                'items' => $items
             ];
 
             $shipment = $this->create($shipmentData);
@@ -311,8 +370,22 @@ class ShipmentService
                 'shipment' => $shipment,
                 'shipment_code' => $shipmentData['shipment_code']
             ];
+        } catch (\Illuminate\Database\QueryException $e) {
+            if ($e->getCode() == "23505") {
+                return [
+                    'error' => "A remessa já foi importada anteriormente.",
+                    'code' => 422
+                ];
+            }
+            return [
+                'error' => "Erro ao salvar a remessa.",
+                'code' => 422
+            ];
         } catch (\Exception $e) {
-            return ['error' => 'Erro ao processar arquivo: ' . $e->getMessage()];
+            return [
+                'error' => "Erro ao processar arquivo: " . $e->getMessage(),
+                'code' => 500
+            ];
         }
     }
 }

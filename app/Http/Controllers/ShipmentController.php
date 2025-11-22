@@ -165,45 +165,80 @@ class ShipmentController extends Controller
     public function preview(ShipmentImportRequest $request)
     {
         try {
-            $result = $this->shipmentService->previewTsv($request->file('tsv_file'));
-            
+            $file = $request->file('tsv_file');
+            $clientId = auth()->user()->client->id;
+
+            $result = $this->shipmentService->previewTsv($file);
+
             if (isset($result['error'])) {
                 return response()->json(['error' => $result['error']], 422);
             }
-            
+
+            $products = $result['products'] ?? [];
+            foreach ($products as &$product) {
+                $exists = Product::where('client_id', $clientId)
+                    ->where('fsnku', $product['fsnku'])
+                    ->exists();
+                $product['exists'] = $exists;
+            }
+
             return response()->json([
                 'success' => true,
-                'data' => $result['data']
+                'data' => [
+                    'data' => $result['data'],
+                    'products' => $products
+                ]
             ]);
+
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro interno: ' . $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Erro interno: ' . $e->getMessage()
+            ], 500);
         }
     }
+
     
     public function import(Request $request)
     {
-        $request->validate([
-            'tsv_file' => 'required|file|mimes:tsv,txt',
-            'shipment_date' => 'required|date'
-        ]);
-        
         try {
+            $request->validate([
+                'tsv_file' => 'required|file|mimes:tsv,txt',
+                'shipment_date' => 'required|date'
+            ]);
+
+            $productsData = json_decode($request->input('products_data'), true) ?? [];
+
             $result = $this->shipmentService->importFromTsv(
-                $request->file('tsv_file'), 
+                $request->file('tsv_file'),
                 auth()->user()->client->id,
-                $request->input('shipment_date')
+                $request->input('shipment_date'),
+                $productsData
             );
-            
+
             if (isset($result['error'])) {
-                return response()->json(['error' => $result['error']], 422);
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['error']
+                ], $result['code'] ?? 422);
             }
-            
+
             return response()->json([
                 'success' => true,
                 'shipment' => $result['shipment']
             ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => collect($e->errors())->flatten()->first() ?? 'Erro de validação'
+            ], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Erro interno: ' . $e->getMessage()], 500);
+            \Log::error('Erro ao importar remessa: ' . $e->getMessage(), ['exception' => $e]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

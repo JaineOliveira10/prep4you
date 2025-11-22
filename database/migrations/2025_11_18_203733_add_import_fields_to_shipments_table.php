@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('shipments', function (Blueprint $table) {
-            $table->string('shipment_code')->nullable()->after('id'); 
+            $table->string('shipment_code')->nullable()->unique()->after('id'); 
             $table->boolean('imported_flag')->default(false)->after('shipment_code'); 
         });
     }
@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('shipments', function (Blueprint $table) {
-            $table->dropColumn(['shipment_code', 'is_imported']);
+            $table->dropColumn(['shipment_code', 'imported_flag']);
         });
     }
 };
