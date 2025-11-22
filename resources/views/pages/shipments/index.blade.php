@@ -1,8 +1,8 @@
-@push('scripts')
-
-@endpush
 
 <x-app-layout :assets="$assets ?? []">
+
+<link rel="stylesheet" href="{{ asset('css/shipments-import.css') }}">
+
 <div>
    <div class="row">
       <div class="col-sm-12">
@@ -139,7 +139,6 @@
                      <h6>Remessa criada com sucesso!</h6> 
                   </div> 
                </div>
-
             </div>
             <div class="modal-footer">
                <button type="button" id="previewBtn" class="btn btn-info" style="display: none;">Visualizar</button>
@@ -152,15 +151,18 @@
    </div>
 </div>
 
+</x-app-layout>
+
+@push('scripts')
 <script>
     window.shipmentRoutes = {
         calculateCollectionDate: '{{ route("shipments.calculate-collection-date") }}',
         preview: '{{ route("shipments.preview") }}',
         import: '{{ route("shipments.import") }}',
-        registerProduct: '{{ route("products.store.ajax") }}'
+        registerProduct: '{{ route("products.store.ajax") }}',
+        getProductPrice: '{{ route("shipments.get-product-price") }}',
     };
     window.csrfToken = '{{ csrf_token() }}';
-
 
    $('#importForm').on('submit', function(e) {
       e.preventDefault();
@@ -206,14 +208,7 @@
          }
       });
    });
-
-
-
-
 </script>
 <script src="{{ asset('js/shipments-import.js') }}"></script>
 
-
-
-</x-app-layout>
 

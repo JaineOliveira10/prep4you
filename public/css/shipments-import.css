@@ -1,0 +1,30 @@
+#previewData {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+}
+
+#previewData table {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#previewData .row {
+    background-color: white;
+    padding: 15px;
+    border-radius: 0.25rem;
+    border: 1px solid #dee2e6;
+}
+
+#previewData .d-flex {
+    padding: 10px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#previewData .d-flex:last-child {
+    border-bottom: none;
+}
+
+#previewData strong {
+    font-weight: 600;
+}

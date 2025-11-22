@@ -15,7 +15,17 @@ class ShipmentRequest extends FormRequest
     public function rules(): array
     {
         $isUpdate = $this->route()->getActionMethod() === 'update';
-        $shipmentId = $this->shipment->id ?? null;
+        
+        // Obter ID do shipment - pode ser string ou objeto
+        $shipmentId = null;
+        if ($isUpdate) {
+            $shipment = $this->route('shipment');
+            $shipmentId = is_object($shipment) ? $shipment->id : $shipment;
+        }
+        
+        $uniqueRule = $isUpdate && $shipmentId
+            ? Rule::unique('shipments', 'shipment_code')->ignore($shipmentId)
+            : 'unique:shipments,shipment_code';
         
         return [
             'name' => 'nullable|string|max:255',
@@ -24,7 +34,7 @@ class ShipmentRequest extends FormRequest
             'status' => 'required|in:Pending,In Preparation,Packed,Collected,Invoice Generated,Paid',
             'client_id' => 'required|exists:clients,id',
             'distribution_center_id' => 'required|exists:distribution_centers,id',
-            'shipment_code' => ['nullable', 'string', 'max:20', Rule::unique('shipments', 'shipment_code')->ignore($shipmentId, 'id'),],
+            'shipment_code' => ['nullable', 'string', 'max:20', $uniqueRule],
             'imported_flag' => 'nullable|boolean',
             'creation_date' => 'required|date',
             'total_value' => 'nullable|numeric|min:0',

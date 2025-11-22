@@ -149,17 +149,50 @@ class ShipmentController extends Controller
      */
     public function getProductPrice(Request $request)
     {
-        $productId = $request->input('product_id');
-        $clientId = $request->input('client_id');
-        $quantity = $request->input('quantity', 1);
-        
-        $result = $this->shipmentService->getProductPrice($productId, $clientId, $quantity);
-        
-        if (isset($result['error'])) {
-            return response()->json(['error' => $result['error']], 404);
+        try {
+            $fsnku = $request->input('fsnku');
+            $sku = $request->input('sku');
+            $type = $request->input('type', 'simple');
+            $quantity = $request->input('quantity', 1);
+            $clientId = auth()->user()->client->id;
+            
+            \Log::info('getProductPrice chamado', [
+                'fsnku' => $fsnku,
+                'sku' => $sku,
+                'type' => $type,
+                'quantity' => $quantity,
+                'clientId' => $clientId
+            ]);
+            
+            // Buscar produto pelo FSNKU ou SKU
+            $product = Product::where('client_id', $clientId)
+                ->where(function($query) use ($fsnku, $sku) {
+                    $query->where('fsnku', $fsnku)
+                          ->orWhere('sku', $sku);
+                })
+                ->first();
+            
+            if (!$product) {
+                \Log::info('Produto não encontrado', ['fsnku' => $fsnku, 'sku' => $sku]);
+                return response()->json(['price' => 0]);
+            }
+            
+            \Log::info('Produto encontrado', ['product_id' => $product->id, 'type' => $type]);
+            
+            // Usar o service para buscar o preço
+            $result = $this->shipmentService->getProductPrice($product->id, $clientId, $quantity, $type);
+            
+            \Log::info('Preço retornado', ['price' => $result['price']]);
+            
+            return response()->json(['price' => (float)$result['price']]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Erro ao obter preço', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['price' => 0]);
         }
-        
-        return response()->json($result);
     }
 
     public function preview(ShipmentImportRequest $request)

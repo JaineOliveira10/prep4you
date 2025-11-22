@@ -57,6 +57,30 @@ function registerProduct(fsnku, name, sku, asin) {
     return false;
 }
 
+// Função para obter preço do produto
+async function getProductPrice(fsnku, sku, type) {
+    try {
+        const response = await fetch(window.shipmentRoutes.getProductPrice, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ 
+                fsnku: fsnku, 
+                sku: sku,
+                type: type 
+            })
+        });
+        const data = await response.json();
+        return data.price || 0;
+    } catch (error) {
+        console.error('Erro ao obter preço:', error);
+        return 0;
+    }
+}
+
 // Função para atualizar preview com data de coleta
 function updatePreview(shipmentDate) {
     if (!currentTsvData) return;
@@ -75,55 +99,80 @@ function updatePreview(shipmentDate) {
             // Montar tabela de produtos
             let productsHtml = '';
             if (currentTsvData.products) {
+                // Calcular totais (será atualizado após carregar preços)
+                let totalItems = 0;
+                let totalValue = 0;
+                
+                currentTsvData.products.forEach(p => {
+                    totalItems += parseInt(p.qtd) || 0;
+                    totalValue += (parseFloat(p.price || 0) * parseInt(p.qtd || 0));
+                });
+
                 productsHtml = `
                     <h6>Produtos encontrados:</h6>
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm">
                             <thead>
                                 <tr>
-                                    <th>FNSKU</th>
-                                    <th>Nome</th>
-                                    <th>SKU</th>
-                                    <th>Qtd</th>
-                                    <th>Status</th>
-                                    <th>Ação</th>
+                                    <th style="width: 20%;">FNSKU</th>
+                                    <th style="width: 30%;">Nome</th>
+                                    <th style="width: 15%;">SKU</th>
+                                    <th style="width: 10%;">Qtd</th>
+                                    <th style="width: 10%;">Preço</th>
+                                    <th style="width: 15%;">Total</th>
+                                    <th style="width: 10%;">Status</th>
+                                    <th style="width: 15%;">Ação</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${currentTsvData.products.map(p => `
-                                    <tr class="${!p.exists ? 'table-danger' : 'table-success'}">
-                                        <td>${p.fsnku}</td>
-                                        <td title="${p.name}">${truncateProductName(p.name)}</td>
-                                        <td>${p.sku}</td>
-                                        <td>${p.qtd}</td>
-                                        <td>
-                                            ${p.exists
-                                                ? '<span class="badge bg-success">Cadastrado</span>'
-                                                : '<span class="badge bg-danger">Não cadastrado</span>'}
-                                        </td>
-                                        <td>
-                                            ${!p.exists ? `
-                                                <div class="d-flex gap-1 align-items-center">
-                                                    <select id="type_${p.fsnku}" class="form-select form-select-sm" style="width:80px;">
-                                                        <option value="simple">Simples</option>
-                                                        <option value="kit">Kit</option>
-                                                    </select>
-                                                    <input type="number" id="kit_units_${p.fsnku}" class="form-control form-control-sm" placeholder="Qtd Kit" min="1" style="width:80px; display:none;">
-                                                    <button class="btn btn-sm btn-success" onclick="registerProduct('${p.fsnku}', '${p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${p.sku}', '${p.asin || ''}')">Cadastrar</button>
-                                                </div>
-                                                <script>
-                                                    document.getElementById('type_${p.fsnku}').addEventListener('change', function() {
-                                                        const kitInput = document.getElementById('kit_units_${p.fsnku}');
-                                                        kitInput.style.display = this.value === 'kit' ? 'inline-block' : 'none';
-                                                        if (this.value === 'kit') kitInput.required = true;
-                                                    });
-                                                </script>
-                                            ` : ''}
-                                        </td>
-                                    </tr>
-                                `).join('')}
+                                ${currentTsvData.products.map(p => {
+                                    const itemTotal = (parseFloat(p.price || 0) * parseInt(p.qtd || 0)).toFixed(2);
+                                    return `
+                                        <tr class="${!p.exists ? 'table-danger' : 'table-success'}" data-fsnku="${p.fsnku}">
+                                            <td>${p.fsnku}</td>
+                                            <td title="${p.name}">${truncateProductName(p.name)}</td>
+                                            <td>${p.sku}</td>
+                                            <td>${p.qtd}</td>
+                                            <td class="product-price">R$ ${(parseFloat(p.price || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            <td class="product-total">R$ ${parseFloat(itemTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            <td>
+                                                ${p.exists
+                                                    ? '<span class="badge bg-success">Cadastrado</span>'
+                                                    : '<span class="badge bg-danger">Não cadastrado</span>'}
+                                            </td>
+                                            <td>
+                                                ${!p.exists ? `
+                                                    <div class="d-flex gap-1 align-items-center flex-wrap">
+                                                        <select id="type_${p.fsnku}" class="form-select form-select-sm product-type" style="width:80px;" data-fsnku="${p.fsnku}" data-sku="${p.sku}">
+                                                            <option value="simple">Simples</option>
+                                                            <option value="kit">Kit</option>
+                                                        </select>
+                                                        <input type="number" id="kit_units_${p.fsnku}" class="form-control form-control-sm" placeholder="Qtd Kit" min="1" style="width:80px; display:none;">
+                                                        <button class="btn btn-sm btn-success" onclick="registerProduct('${p.fsnku}', '${p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${p.sku}', '${p.asin || ''}')">Cadastrar</button>
+                                                    </div>
+                                                ` : ''}
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <!-- Totalizadores -->
+                    <div class="row mt-3">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="d-flex justify-content-between">
+                                <strong>Total Itens:</strong>
+                                <strong id="preview-total-items">${totalItems}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6 offset-md-6">
+                            <div class="d-flex justify-content-between">
+                                <strong>Total Geral:</strong>
+                                <strong id="preview-total-value">R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -137,12 +186,17 @@ function updatePreview(shipmentDate) {
                     const typeSelect = document.getElementById(`type_${p.fsnku}`);
                     const kitInput = document.getElementById(`kit_units_${p.fsnku}`);
                     if (typeSelect && kitInput) {
-                        typeSelect.addEventListener('change', function() {
+                        typeSelect.addEventListener('change', async function() {
                             kitInput.style.display = this.value === 'kit' ? 'inline-block' : 'none';
+                            // Recarregar preço ao mudar tipo
+                            await loadProductPrice(p.fsnku, p.sku, this.value);
                         });
                     }
                 }
             });
+
+            // Carregar preços dos produtos
+            loadAllProductPrices();
             
             // Verificar se todos os produtos estão cadastrados
             const allRegistered = currentTsvData.products.every(p => p.exists);
@@ -155,6 +209,88 @@ function updatePreview(shipmentDate) {
                 createBtn.textContent = 'Cadastre todos os produtos primeiro';
             }
         });
+}
+
+// Função para atualizar preço na tabela
+function updatePriceInTable(fsnku, price) {
+    const row = document.querySelector(`tr[data-fsnku="${fsnku}"]`);
+    if (row) {
+        const product = currentTsvData.products.find(p => p.fsnku === fsnku);
+        if (product) {
+            product.price = parseFloat(price) || 0;  // Garantir que está um número
+            
+            const priceCell = row.querySelector('.product-price');
+            const totalCell = row.querySelector('.product-total');
+            const itemTotal = (parseFloat(product.price) * parseInt(product.qtd || 0)).toFixed(2);
+            
+            if (priceCell) {
+                priceCell.textContent = `R$ ${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+            if (totalCell) {
+                totalCell.textContent = `R$ ${parseFloat(itemTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+            
+            // Atualizar totais gerais
+            updateTotalValues();
+        }
+    }
+}
+
+// Função para atualizar totais gerais (CORRIGIDA)
+function updateTotalValues() {
+    let totalItems = 0;
+    let totalValue = 0;
+    
+    currentTsvData.products.forEach(p => {
+        const qty = parseInt(p.qtd) || 0;
+        const price = parseFloat(p.price) || 0;
+        totalItems += qty;
+        totalValue += (price * qty);
+    });
+    
+    const totalItemsEl = document.getElementById('preview-total-items');
+    const totalValueEl = document.getElementById('preview-total-value');
+    
+    if (totalItemsEl) {
+        totalItemsEl.textContent = totalItems;
+    }
+    if (totalValueEl) {
+        totalValueEl.textContent = `R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+}
+
+// Função para carregar preço de um produto
+async function loadProductPrice(fsnku, sku, type = 'simple') {
+    try {
+        const price = await getProductPrice(fsnku, sku, type);
+        const product = currentTsvData.products.find(p => p.fsnku === fsnku);
+        
+        if (product) {
+            product.price = parseFloat(price) || 0;
+            console.log(`Preço carregado para ${fsnku}: R$ ${product.price}`); // Debug
+            updatePriceInTable(fsnku, product.price);
+        }
+    } catch (error) {
+        console.error(`Erro ao carregar preço para ${fsnku}:`, error);
+    }
+}
+
+// Função para carregar preços de todos os produtos COM DELAY
+async function loadAllProductPrices() {
+    console.log('Iniciando carregamento de preços...'); // Debug
+    
+    for (const product of currentTsvData.products) {
+        await new Promise(resolve => setTimeout(resolve, 200)); // Delay de 200ms entre requisições
+        
+        const type = !product.exists ? 
+            (document.getElementById(`type_${product.fsnku}`)?.value || 'simple') : 
+            'simple';
+        
+        await loadProductPrice(product.fsnku, product.sku, type);
+    }
+    
+    console.log('Carregamento de preços finalizado'); // Debug
+    updateTotalValues(); // Atualizar totais após carregar todos os preços
 }
 
 // Função para calcular data de coleta
@@ -219,7 +355,8 @@ document.getElementById('previewBtn').addEventListener('click', function () {
                 sku: p.sku,
                 asin: p.asin,
                 qtd: p.qtd,
-                exists: p.exists || false
+                exists: p.exists || false,
+                price: 0  // Inicializar com 0
             })) || []
         };
 
