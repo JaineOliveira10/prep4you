@@ -92,7 +92,7 @@ class ShipmentService
 
     public function update($id, array $data)
     {
-        // Buscar remessa atual para preservar creation_date
+        // Buscar remessa atual para preservar creation_date e imported_flag
         $currentShipment = $this->shipmentRepository->find($id);
         
         // Calcular collection_date automaticamente se não fornecida
@@ -109,7 +109,7 @@ class ShipmentService
             'client_id' => $data['client_id'],
             'distribution_center_id' => $data['distribution_center_id'],
             'shipment_code' => $data['shipment_code'] ?? null,
-            'imported_flag' => $data['imported_flag'] ?? false,
+            'imported_flag' => $currentShipment->imported_flag,
             'creation_date' => $currentShipment->creation_date,
             'total_value' => floatval($data['total_value'] ?? 0),
             'total_items' => intval($data['total_items'] ?? 0),
