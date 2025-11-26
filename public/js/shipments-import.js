@@ -114,43 +114,58 @@ function updatePreview(shipmentDate) {
                         <table class="table table-bordered table-sm">
                             <thead>
                                 <tr>
-                                    <th style="width: 20%;">FNSKU</th>
-                                    <th style="width: 30%;">Nome</th>
-                                    <th style="width: 15%;">SKU</th>
-                                    <th style="width: 10%;">Qtd</th>
-                                    <th style="width: 10%;">Preço</th>
-                                    <th style="width: 15%;">Total</th>
-                                    <th style="width: 10%;">Status</th>
+                                    <th style="width: 12%;">FNSKU</th>
+                                    <th style="width: 25%;">Nome</th>
+                                    <th style="width: 12%;">SKU</th>
+                                    <th style="width: 6%;">Qtd</th>
+                                    <th style="width: 7%;">Preço</th>
+                                    <th style="width: 7%;">Total</th>
+                                    <th style="width: 5%;">Cad?</th>
                                     <th style="width: 15%;">Ação</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${currentTsvData.products.map(p => {
                                     const itemTotal = (parseFloat(p.price || 0) * parseInt(p.qtd || 0)).toFixed(2);
+                                    // Truncar nome e depois quebrar em linhas
+                                    const truncatedName = truncateProductName(p.name || p.sku);
+                                    const nameLines = truncatedName.match(/.{1,21}/g) || [truncatedName];
+                                    const displayName = nameLines.slice(0, 2).join('<br>');
+                                    
                                     return `
                                         <tr class="${!p.exists ? 'table-danger' : 'table-success'}" data-fsnku="${p.fsnku}">
-                                            <td>${p.fsnku}</td>
-                                            <td title="${p.name}">${truncateProductName(p.name)}</td>
-                                            <td>${p.sku}</td>
-                                            <td>${p.qtd}</td>
-                                            <td class="product-price">R$ ${(parseFloat(p.price || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                            <td class="product-total">R$ ${parseFloat(itemTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                                            <td>
+                                            <td style="font-size: 0.85rem;">${p.fsnku}</td>
+                                            <td style="font-size: 0.85rem; word-break: break-word;" title="${truncatedName}">${displayName}</td>
+                                            <td style="font-size: 0.85rem;">${p.sku}</td>
+                                            <td class="text-center">${p.qtd}</td>
+                                            <td class="product-price text-right">R$ ${(parseFloat(p.price || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            <td class="product-total text-right">R$ ${parseFloat(itemTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                            <td class="text-center">
                                                 ${p.exists
-                                                    ? '<span class="badge bg-success">Cadastrado</span>'
-                                                    : '<span class="badge bg-danger">Não cadastrado</span>'}
+                                                    ? '<span class="badge bg-success">Sim</span>'
+                                                    : '<span class="badge bg-danger">Não</span>'}
                                             </td>
                                             <td>
                                                 ${!p.exists ? `
-                                                    <div class="d-flex gap-1 align-items-center flex-wrap">
-                                                        <select id="type_${p.fsnku}" class="form-select form-select-sm product-type" style="width:80px;" data-fsnku="${p.fsnku}" data-sku="${p.sku}">
+                                                    <div class="d-flex gap-1 align-items-center flex-wrap" style="width: 125px;">
+                                                        <select id="type_${p.fsnku}" 
+                                                                class="form-select form-select-sm product-type w-100"
+                                                                data-fsnku="${p.fsnku}" data-sku="${p.sku}">
                                                             <option value="simple">Simples</option>
                                                             <option value="kit">Kit</option>
                                                         </select>
-                                                        <input type="number" id="kit_units_${p.fsnku}" class="form-control form-control-sm" placeholder="Qtd Kit" min="1" style="width:80px; display:none;">
-                                                        <button class="btn btn-sm btn-success" onclick="registerProduct('${p.fsnku}', '${p.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${p.sku}', '${p.asin || ''}')">Cadastrar</button>
+
+                                                        <input type="number" id="kit_units_${p.fsnku}" 
+                                                            class="form-control form-control-sm w-100"
+                                                            placeholder="Qtd" min="1" style="display:none;">
+
+                                                        <button class="btn btn-success btn-sm w-100"
+                                                                onclick="registerProduct('${p.fsnku}', '${(p.name || p.sku).replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${p.sku}', '${p.asin || ''}')">
+                                                            Cadastrar
+                                                        </button>
                                                     </div>
                                                 ` : ''}
+
                                             </td>
                                         </tr>
                                     `;
@@ -224,10 +239,10 @@ function updatePriceInTable(fsnku, price) {
             const itemTotal = (parseFloat(product.price) * parseInt(product.qtd || 0)).toFixed(2);
             
             if (priceCell) {
-                priceCell.textContent = `R$ ${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                priceCell.textContent = `${parseFloat(product.price).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
             if (totalCell) {
-                totalCell.textContent = `R$ ${parseFloat(itemTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                totalCell.textContent = `${parseFloat(itemTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
             
             // Atualizar totais gerais
@@ -433,17 +448,20 @@ document.getElementById('createBtn').addEventListener('click', function () {
             `;
             document.getElementById('resultSection').style.display = 'block';
             
-            // Fechar modal e recarregar página após 2 segundos
+            // Fechar modal e redirecionar para edição da remessa
             setTimeout(() => {
                 const modal = bootstrap.Modal.getInstance(document.getElementById('importModal'));
                 if (modal) {
                     modal.hide();
                 }
                 
-                // Recarregar a página
-                setTimeout(() => {
+                // Redirecionar para a tela de edição com a remessa criada
+                const shipmentId = response.data.shipment_id;
+                if (shipmentId) {
+                    window.location.href = `/shipments/${shipmentId}/edit?imported=true`;
+                } else {
                     location.reload();
-                }, 500);
+                }
             }, 1000);
         } else {
             const errorMessage = response.data.error || response.data.message || 'Erro ao criar remessa';

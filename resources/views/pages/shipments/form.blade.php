@@ -14,6 +14,14 @@
                 @method('PATCH')
             @endif
 
+            @if(request('imported') === 'true')
+            <div class="alert alert-warning d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle"></i>
+                <div>
+                    <strong>Atenção:</strong> Esta remessa foi importada. Você precisa fazer upload dos PDFs antes de confirmar.
+                </div>
+            </div>
+            @endif
             <div class="row">
                 <div class="col-xl-12">
                     <div class="card">

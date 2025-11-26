@@ -276,7 +276,7 @@ class ShipmentService
 
                     $products[] = [
                         'sku'   => $row['SKU do vendedor'] ?? '',
-                        'name'  => $row['Título'] ?? '',
+                        'name'  => $row['Título'] ?? $row['SKU do vendedor'],
                         'asin'  => $row['Código ASIN'] ?? '',
                         'fsnku' => $row['FNSKU'] ?? '',
                         'qtd'   => isset($row['Enviado']) ? (int)$row['Enviado'] : 0,

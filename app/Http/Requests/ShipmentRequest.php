@@ -16,16 +16,30 @@ class ShipmentRequest extends FormRequest
     {
         $isUpdate = $this->route()->getActionMethod() === 'update';
         
-        // Obter ID do shipment - pode ser string ou objeto
         $shipmentId = null;
+        $shipment = null;
+        
         if ($isUpdate) {
-            $shipment = $this->route('shipment');
-            $shipmentId = is_object($shipment) ? $shipment->id : $shipment;
+            $shipmentId = $this->route('shipment');
+            
+            // Se for string, buscar no banco
+            if (is_string($shipmentId)) {
+                $shipment = \App\Models\Shipment::find($shipmentId);
+            } else {
+                $shipment = $shipmentId;
+            }
         }
         
         $uniqueRule = $isUpdate && $shipmentId
             ? Rule::unique('shipments', 'shipment_code')->ignore($shipmentId)
             : 'unique:shipments,shipment_code';
+
+        // Verificar se é importada E não tem PDFs
+        $isImported = $shipment ? $shipment->imported_flag : false;
+        $hasPdfs = $shipment ? $shipment->pdfs()->count() > 0 : false;
+        
+        // PDFs obrigatórios apenas se for importada E não tiver PDFs ainda
+        $requirePdfs = ($isImported && !$hasPdfs);
         
         return [
             'name' => 'nullable|string|max:255',
@@ -40,12 +54,12 @@ class ShipmentRequest extends FormRequest
             'total_value' => 'nullable|numeric|min:0',
             'total_items' => 'nullable|integer|min:0',
             'items' => 'nullable|array',
-            'items.*.product_id' => 'required_with:items|exists:products,id',
-            'items.*.quantity' => 'required_with:items|integer|min:1',
-            'items.*.unit_price' => 'required_with:items|numeric|min:0',
-            'pdfs' => 'nullable|array|max:6',
-            'pdfs.*.tipo' => $isUpdate ? 'nullable|in:individual_label,master_label,invoice' : 'required_with:pdfs.*.pdf|in:individual_label,master_label,invoice',
-            'pdfs.*.pdf' => 'required_with:pdfs.*.tipo|mimes:pdf|max:5120',
+            'items.*.product_id' => 'required_if:items,!=null|exists:products,id',
+            'items.*.quantity' => 'required_if:items,!=null|integer|min:1',
+            'items.*.unit_price' => 'required_if:items,!=null|numeric|min:0',
+            'pdfs' => $requirePdfs ? 'required|array|min:1' : 'nullable|array',
+            'pdfs.*.tipo' => $requirePdfs ? 'required|in:individual_label,master_label,invoice' : 'nullable|in:individual_label,master_label,invoice',
+            'pdfs.*.pdf' => $requirePdfs ? 'required|mimes:pdf|max:5120' : 'nullable|mimes:pdf|max:5120',
         ];
     }
 
@@ -58,14 +72,13 @@ class ShipmentRequest extends FormRequest
             'distribution_center_id.required' => 'O centro de distribuição é obrigatório.',
             'items.required' => 'Pelo menos um item é obrigatório.',
             'items.min' => 'A remessa deve ter pelo menos um item.',
-            'items.*.product_id.required' => 'O produto é obrigatório.',
-            'items.*.quantity.required' => 'A quantidade é obrigatória.',
+            'items.*.product_id.required_if' => 'O produto é obrigatório.',
+            'items.*.quantity.required_if' => 'A quantidade é obrigatória.',
             'items.*.quantity.min' => 'A quantidade deve ser pelo menos 1.',
-            'items.*.unit_price.required' => 'O preço unitário é obrigatório.',
-            'pdfs.max' => 'Você pode enviar no máximo 6 PDFs.',
-            'pdfs.*.tipo.required_with' => 'O tipo do PDF é obrigatório quando um arquivo é selecionado.',
-            'pdfs.*.tipo.in' => 'O tipo do PDF deve ser: Etiqueta Individual, Etiqueta Master ou Nota Fiscal.',
-            'pdfs.*.pdf.required_with' => 'O arquivo PDF é obrigatório quando um tipo é selecionado.',
+            'items.*.unit_price.required_if' => 'O preço unitário é obrigatório.',
+            'pdfs.required' => 'Você precisa fazer upload de pelo menos um PDF para remessas importadas antes de salvar.',
+            'pdfs.*.tipo.required' => 'O tipo do PDF é obrigatório.',
+            'pdfs.*.pdf.required' => 'Você precisa fazer upload de pelo menos um PDF.',
             'pdfs.*.pdf.mimes' => 'O arquivo deve ser um PDF válido.',
             'pdfs.*.pdf.max' => 'O arquivo PDF deve ter no máximo 5MB.',
         ];

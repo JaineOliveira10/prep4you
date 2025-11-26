@@ -56,7 +56,7 @@
                   <table id="product-list-table" class="table table-striped" role="grid" data-toggle="data-table">
                      <thead>
                         <tr class="ligth">
-                           <th>Nome Remessa</th>
+                           <th>ID Remessa</th>
                            <th>Qtd</th>
                            <th>Vr Total</th>
                            <th>Dt Remessa</th>
@@ -70,7 +70,7 @@
                      <tbody>
                         @foreach($shipments as $shipment)
                         <tr>
-                           <td>{{ $shipment->name ? $shipment->name : 'N/A' }}</td>
+                           <td>{{ $shipment->shipment_code ? $shipment->shipment_code : 'N/A' }}</td>
                            <td>{{ $shipment->total_items }}</td>
                            <td>R$ {{ number_format($shipment->total_value, 2, ',', '.') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>

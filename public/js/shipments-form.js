@@ -149,7 +149,19 @@ class ShipmentItemsManager {
         const quantityInput = row.querySelector('.quantity');
         const quantity = quantityInput ? parseInt(quantityInput.value) || 1 : 1;
         
-        console.log('Enviando requisição:', { product_id: productId, client_id: currentClientId, quantity: quantity });
+        // Encontrar o produto para enviar também fsnku e sku
+        const product = this.products.find(p => p.id == productId);
+        
+        const payload = {
+            product_id: productId,
+            fsnku: product?.fsnku,
+            sku: product?.sku,
+            type: product?.type,
+            client_id: currentClientId,
+            quantity: quantity
+        };
+        
+        console.log('📤 ENVIANDO:', payload);
         
         fetch(this.routes.getProductPrice, {
             method: 'POST',
@@ -157,33 +169,30 @@ class ShipmentItemsManager {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': this.csrfToken
             },
-            body: JSON.stringify({
-                product_id: productId,
-                client_id: currentClientId,
-                quantity: quantity
-            })
+            body: JSON.stringify(payload)
         })
-        .then(response => {
-            console.log('Status da resposta:', response.status);
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Resposta completa do servidor:', data);
+            console.log('📥 RECEBIDO:', data);
             console.log('Preço retornado:', data.price);
-            if (data.product) {
-                console.log('Produto encontrado:', data.product);
-                this.fillProductInfo(row, data.product, data.price);
+            
+            if (product) {
+                console.log('Produto encontrado:', product);
+                this.fillProductInfo(row, product, data.price);
             } else {
-                console.error('Produto não encontrado na resposta');
+                console.error('Produto não encontrado no array local');
             }
         })
         .catch(error => {
-            console.error('Erro ao buscar informações do produto:', error);
+            console.error('Erro ao buscar preço:', error);
+            this.clearProductInfo(row);
         });
     }
     
     fillProductInfo(row, product, price) {
         try {
+            console.log('fillProductInfo chamado com:', { product, price }); // DEBUG
+            
             const fsnkuInput = row.querySelector('.fsnku');
             const skuInput = row.querySelector('.sku');
             const typeInput = row.querySelector('.type_product');
@@ -192,7 +201,11 @@ class ShipmentItemsManager {
             
             if (fsnkuInput) fsnkuInput.value = product.fsnku || '';
             if (skuInput) skuInput.value = product.sku || '';
-            if (unitPriceInput) unitPriceInput.value = price || 0;
+            // Garantir que sempre tenha 2 casas decimais
+            if (unitPriceInput) {
+                unitPriceInput.value = parseFloat(price || 0).toFixed(2);
+                console.log('Preço formatado:', unitPriceInput.value); // DEBUG
+            }
             
             // Tratar campo kit_units
             if (kitUnitsInput) {
@@ -203,7 +216,7 @@ class ShipmentItemsManager {
                 }
             }
             
-            // Tratar campo type com mais cuidado
+            // Tratar campo type
             if (typeInput) {
                 let typeDisplay = '';
                 if (product.type === 'simple') {

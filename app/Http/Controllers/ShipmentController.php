@@ -59,7 +59,8 @@ class ShipmentController extends Controller
     {
         $data = $request->all();
         $data['creation_date'] = now()->format('Y-m-d');
-        $this->shipmentService->create($data);
+        $shipment = $this->shipmentService->create($data);
+        
         return redirect()->route('shipments.index')->with('success', 'Remessa criada com sucesso!');
     }
 
@@ -150,13 +151,17 @@ class ShipmentController extends Controller
     public function getProductPrice(Request $request)
     {
         try {
+            $productId = $request->input('product_id');
             $fsnku = $request->input('fsnku');
             $sku = $request->input('sku');
-            $type = $request->input('type', 'simple');
             $quantity = $request->input('quantity', 1);
-            $clientId = auth()->user()->client->id;
+            $type = $request->input('type', 'simple');
+            
+            // Aceitar client_id do request ou usar o do usuário autenticado
+            $clientId = $request->input('client_id') ?? auth()->user()->client->id;
             
             \Log::info('getProductPrice chamado', [
+                'product_id' => $productId,
                 'fsnku' => $fsnku,
                 'sku' => $sku,
                 'type' => $type,
@@ -164,34 +169,55 @@ class ShipmentController extends Controller
                 'clientId' => $clientId
             ]);
             
-            // Buscar produto pelo FSNKU ou SKU
-            $product = Product::where('client_id', $clientId)
-                ->where(function($query) use ($fsnku, $sku) {
-                    $query->where('fsnku', $fsnku)
-                          ->orWhere('sku', $sku);
-                })
-                ->first();
+            // Buscar produto pelo ID ou FSNKU ou SKU
+            $product = null;
             
-            if (!$product) {
-                \Log::info('Produto não encontrado', ['fsnku' => $fsnku, 'sku' => $sku]);
-                return response()->json(['price' => 0]);
+            if ($productId) {
+                $product = Product::where('id', $productId)
+                    ->where('client_id', $clientId)
+                    ->first();
+            } elseif ($fsnku) {
+                $product = Product::where('fsnku', $fsnku)
+                    ->where('client_id', $clientId)
+                    ->first();
+            } elseif ($sku) {
+                $product = Product::where('sku', $sku)
+                    ->where('client_id', $clientId)
+                    ->first();
             }
             
-            \Log::info('Produto encontrado', ['product_id' => $product->id, 'type' => $type]);
+            if (!$product) {
+                \Log::warning('Produto não encontrado', [
+                    'product_id' => $productId,
+                    'fsnku' => $fsnku,
+                    'sku' => $sku,
+                    'clientId' => $clientId
+                ]);
+                return response()->json(['price' => 0, 'error' => 'Produto não encontrado']);
+            }
+            
+            \Log::info('Produto encontrado', ['product_id' => $product->id, 'fsnku' => $product->fsnku]);
             
             // Usar o service para buscar o preço
-            $result = $this->shipmentService->getProductPrice($product->id, $clientId, $quantity, $type);
+            $result = $this->shipmentService->getProductPrice(
+                $product->id, 
+                $clientId, 
+                $quantity, 
+                $product->type
+            );
             
-            \Log::info('Preço retornado', ['price' => $result['price']]);
+            $price = (float)$result['price'] ?? 0;
             
-            return response()->json(['price' => (float)$result['price']]);
+            \Log::info('Preço retornado', ['price' => $price, 'product_id' => $product->id]);
+            
+            return response()->json(['price' => $price]);
             
         } catch (\Exception $e) {
             \Log::error('Erro ao obter preço', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return response()->json(['price' => 0]);
+            return response()->json(['price' => 0, 'error' => $e->getMessage()]);
         }
     }
 
@@ -257,7 +283,8 @@ class ShipmentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'shipment' => $result['shipment']
+                'shipment_id' => $result['shipment']->id,
+                'message' => 'Remessa criada com sucesso'
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
