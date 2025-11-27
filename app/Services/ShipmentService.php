@@ -388,4 +388,30 @@ class ShipmentService
             ];
         }
     }
+
+    public function index()
+    {
+        $shipments = Shipment::query();
+        
+        // Filtros
+        if (request('status')) {
+            $shipments->where('status', request('status'));
+        }
+        
+        if (request('date_from') && request('date_to')) {
+            $shipments->whereBetween('created_at', [
+                request('date_from'),
+                request('date_to')
+            ]);
+        }
+        
+        if (request('client_id')) {
+            $shipments->where('client_id', request('client_id'));
+        }
+        
+        $shipments = $shipments->paginate(10);
+        $clients = Client::all();
+        
+        return view('shipments.index', compact('shipments', 'clients'));
+    }
 }

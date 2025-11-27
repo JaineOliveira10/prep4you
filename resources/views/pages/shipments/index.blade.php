@@ -81,8 +81,9 @@
                            value="{{ request('date_to', now()->format('Y-m-d')) }}">
                      </div>
 
-                     <div class="col-md-4 d-flex align-items-end">
+                     <div class="col-md-4 d-flex align-items-end gap-2">
                         <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                        <a href="{{ route('shipments.index') }}" class="btn btn-secondary w-100">Limpar Filtros</a>
                      </div>
                   </div>
                </form>
@@ -134,13 +135,31 @@
                                @endif
                            </td>
                            <td>
-                              @include('pages.shipments.action', ['id' => $shipment->id])
+                              @include('pages.shipments.action', ['id' => $shipment->id, 'status' => $shipment->status])
                            </td>
                         </tr>
                         @endforeach
                      </tbody>
                   </table>
                </div>
+               
+               <!-- Seção de Totais -->
+               @if($shipments->count() > 0)
+               <div class="row mt-5 mx-3">
+                  <div class="col-md-6 offset-md-6">
+                        <div class="d-flex justify-content-between">
+                           <strong>Total Itens:</strong>
+                           <strong id="preview-total-items">{{ $shipments->sum('total_items') }}</strong>
+                        </div>
+                  </div>
+                  <div class="col-md-6 offset-md-6">
+                        <div class="d-flex justify-content-between">
+                           <strong>Total Geral:</strong>
+                           <strong id="preview-total-value"> R$ {{ number_format($shipments->sum('total_value'), 2, ',', '.') }}</strong>
+                        </div>
+                  </div>
+               </div>
+               @endif
             </div>
          </div>
       </div>
@@ -246,6 +265,28 @@
                `).show();
          }
       });
+   });
+
+   // Função para inicializar tooltips
+   function initializeTooltips() {
+       const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+       tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+           new bootstrap.Tooltip(tooltipTriggerEl, {
+               trigger: 'hover'
+           });
+       });
+   }
+
+   // Inicializar ao carregar
+   document.addEventListener('DOMContentLoaded', function() {
+       setTimeout(initializeTooltips, 500);
+   });
+
+   // Reinicializar ao clicar em filtros
+   document.querySelectorAll('button[type="submit"], a.btn-secondary').forEach(btn => {
+       btn.addEventListener('click', function() {
+           setTimeout(initializeTooltips, 1000);
+       });
    });
 </script>
 <script src="{{ asset('js/shipments-import.js') }}"></script>
