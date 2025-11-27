@@ -1,4 +1,3 @@
-
 <x-app-layout :assets="$assets ?? []">
 
 <link rel="stylesheet" href="{{ asset('css/shipments-import.css') }}">
@@ -24,8 +23,8 @@
             <div class="card-body pb-2">
                <form method="GET" action="{{ route('shipments.index') }}">
                   <div class="row">
-                     <div class="col-md-12">
-                        <label id="client_id" class="pb-2">Cliente</label>
+                     <div class="col-md-3">
+                        <label for="client_id" class="pb-2">Cliente</label>
                         <select name="client_id" id="client_id" class="form-select"  onchange="this.form.submit()"
                            {{ auth()->user()->type == 'client' ? 'disabled' : '' }}>
                            @if(auth()->user()->type == 'client')
@@ -43,7 +42,47 @@
                               </option>
                            @endforeach
                         </select>
+                     </div>
 
+                     <div class="col-md-3">
+                        <label for="status" class="pb-2">Status</label>
+                        <select name="status" id="status" class="form-select" onchange="this.form.submit()">
+                           <option value="">Todos os status</option>
+                           <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pendente</option>
+                           <option value="In Preparation" {{ request('status') == 'In Preparation' ? 'selected' : '' }}>Em Preparação</option>
+                           <option value="Packed" {{ request('status') == 'Packed' ? 'selected' : '' }}>Embalado</option>
+                           <option value="Collected" {{ request('status') == 'Collected' ? 'selected' : '' }}>Coletado</option>
+                           <option value="Invoice Generated" {{ request('status') == 'Invoice Generated' ? 'selected' : '' }}>Fatura Gerada</option>
+                           <option value="Paid" {{ request('status') == 'Paid' ? 'selected' : '' }}>Pago</option>
+                           <option value="Presents Errors" {{ request('status') == 'Presents Errors' ? 'selected' : '' }}>Apresenta Erros</option>
+                        </select>
+                     </div>
+
+                     <div class="col-md-6">
+                        <label for="date_filter" class="pb-2">Filtrar por</label>
+                        <select name="date_filter" id="date_filter" class="form-select" onchange="this.form.submit()">
+                           <option value="created_at" {{ request('date_filter', 'created_at') == 'created_at' ? 'selected' : '' }}>Data da Criação</option>
+                           <option value="shipment_date" {{ request('date_filter') == 'shipment_date' ? 'selected' : '' }}>Data da Remessa</option>
+                           <option value="collection_date" {{ request('date_filter') == 'collection_date' ? 'selected' : '' }}>Data da Coleta</option>
+                        </select>
+                     </div>
+                  </div>
+
+                  <div class="row mt-3">
+                     <div class="col-md-4">
+                        <label for="date_from" class="pb-2">Data Inicial</label>
+                        <input type="date" name="date_from" id="date_from" class="form-control" 
+                           value="{{ request('date_from', now()->subDays(30)->format('Y-m-d')) }}">
+                     </div>
+
+                     <div class="col-md-4">
+                        <label for="date_to" class="pb-2">Data Final</label>
+                        <input type="date" name="date_to" id="date_to" class="form-control" 
+                           value="{{ request('date_to', now()->format('Y-m-d')) }}">
+                     </div>
+
+                     <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
                      </div>
                   </div>
                </form>

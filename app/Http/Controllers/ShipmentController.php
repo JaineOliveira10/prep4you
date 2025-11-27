@@ -24,20 +24,47 @@ class ShipmentController extends Controller
 
     public function index(Request $request)
     {
-        $shipments = $this->shipmentService->getAll();
+        $user = auth()->user();
         
-        if (auth()->user()->type === 'client' && auth()->user()->client) {
-            $shipments = $shipments->where('client_id', auth()->user()->client->id);
+        // Query base
+        $query = Shipment::query();
+        
+        // Filtro por cliente
+        if ($user->type === 'client') {
+            $query->where('client_id', $user->client_id);
+            $clients = collect([$user->client]);
+        } else {
+            if (request('client_id')) {
+                $query->where('client_id', request('client_id'));
+            }
+            $clients = Client::all();
         }
         
-        if ($request->filled('client_id')) {
-            $shipments = $shipments->where('client_id', $request->client_id);
+        // Filtro por status
+        if (request('status')) {
+            $query->where('status', request('status'));
         }
         
-        $clients = Client::all();
-        $distributionCenters =  DistributionCenter::all();
-        $assets = ['data-table'];
-        return view('pages.shipments.index', compact('shipments', 'clients', 'distributionCenters', 'assets'));
+        // Filtro por data
+        $dateFilter = request('date_filter', 'created_at');
+        $dateFrom = request('date_from', now()->subDays(30)->format('Y-m-d'));
+        $dateTo = request('date_to', now()->format('Y-m-d'));
+        
+        if ($dateFrom) {
+            $query->whereDate($dateFilter, '>=', $dateFrom);
+        }
+        
+        if ($dateTo) {
+            $query->whereDate($dateFilter, '<=', $dateTo);
+        }
+        
+        $shipments = $query->orderBy('created_at', 'desc')->get();
+        
+        return view('pages.shipments.index', [
+            'shipments' => $shipments,
+            'clients' => $clients,
+            'assets' => []
+        ]);
     }
 
     /**
@@ -175,15 +202,39 @@ class ShipmentController extends Controller
             if ($productId) {
                 $product = Product::where('id', $productId)
                     ->where('client_id', $clientId)
+                    ->where('type', $type)
                     ->first();
+                
+                // Fallback: buscar sem filtro de tipo se não encontrou
+                if (!$product) {
+                    $product = Product::where('id', $productId)
+                        ->where('client_id', $clientId)
+                        ->first();
+                }
             } elseif ($fsnku) {
                 $product = Product::where('fsnku', $fsnku)
                     ->where('client_id', $clientId)
+                    ->where('type', $type)
                     ->first();
+                
+                // Fallback: buscar sem filtro de tipo se não encontrou
+                if (!$product) {
+                    $product = Product::where('fsnku', $fsnku)
+                        ->where('client_id', $clientId)
+                        ->first();
+                }
             } elseif ($sku) {
                 $product = Product::where('sku', $sku)
                     ->where('client_id', $clientId)
+                    ->where('type', $type)
                     ->first();
+                
+                // Fallback: buscar sem filtro de tipo se não encontrou
+                if (!$product) {
+                    $product = Product::where('sku', $sku)
+                        ->where('client_id', $clientId)
+                        ->first();
+                }
             }
             
             if (!$product) {
@@ -191,12 +242,17 @@ class ShipmentController extends Controller
                     'product_id' => $productId,
                     'fsnku' => $fsnku,
                     'sku' => $sku,
+                    'type' => $type,
                     'clientId' => $clientId
                 ]);
                 return response()->json(['price' => 0, 'error' => 'Produto não encontrado']);
             }
             
-            \Log::info('Produto encontrado', ['product_id' => $product->id, 'fsnku' => $product->fsnku]);
+            \Log::info('Produto encontrado', [
+                'product_id' => $product->id,
+                'fsnku' => $product->fsnku,
+                'type' => $product->type
+            ]);
             
             // Usar o service para buscar o preço
             $result = $this->shipmentService->getProductPrice(
@@ -206,9 +262,13 @@ class ShipmentController extends Controller
                 $product->type
             );
             
-            $price = (float)$result['price'] ?? 0;
+            $price = (float)($result['price'] ?? 0);
             
-            \Log::info('Preço retornado', ['price' => $price, 'product_id' => $product->id]);
+            \Log::info('Preço retornado', [
+                'price' => $price,
+                'product_id' => $product->id,
+                'type' => $product->type
+            ]);
             
             return response()->json(['price' => $price]);
             

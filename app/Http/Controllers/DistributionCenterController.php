@@ -27,7 +27,7 @@ class DistributionCenterController extends Controller
      */
     public function create()
     {
-        return view('distribution-centers.form');
+        return view('pages.distribution-centers.form');
     }
 
     /**
@@ -53,7 +53,7 @@ class DistributionCenterController extends Controller
     public function edit(string $id)
     {
         $data = $this->distributionCenterService->findById($id);
-        return view('distribution-centers.form', compact('data', 'id'));
+        return view('pages.distribution-centers.form', compact('data', 'id'));
     }
 
     /**
