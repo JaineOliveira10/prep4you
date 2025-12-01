@@ -191,7 +191,7 @@
                      <input type="date" class="form-control" id="shipmentDate" name="shipment_date" required>
                   </div>
                   <div id="previewData" class="mt-4"></div>
-                  <div id="totalsContainer" class="row mt-3" style="display: none;">
+                  <div id="totalsContainer" class="row mt-3 mx-3" style="display: none;">
                      <div class="col-md-6 offset-md-6">
                         <div class="d-flex justify-content-between">
                               <strong>Total Itens:</strong>
