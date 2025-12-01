@@ -191,6 +191,20 @@
                      <input type="date" class="form-control" id="shipmentDate" name="shipment_date" required>
                   </div>
                   <div id="previewData" class="mt-4"></div>
+                  <div id="totalsContainer" class="row mt-3" style="display: none;">
+                     <div class="col-md-6 offset-md-6">
+                        <div class="d-flex justify-content-between">
+                              <strong>Total Itens:</strong>
+                              <strong id="modal-total-items">0</strong>
+                        </div>
+                     </div>
+                     <div class="col-md-6 offset-md-6">
+                        <div class="d-flex justify-content-between">
+                              <strong>Total Geral:</strong>
+                              <strong id="modal-total-value">R$ 0,00</strong>
+                        </div>
+                     </div>
+                  </div>
                </div>
                <div id="resultSection" style="display: none;"> 
                   <div class="alert alert-success"> 

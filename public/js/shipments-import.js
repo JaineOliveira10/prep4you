@@ -20,8 +20,6 @@ function registerProduct(fsnku, name, sku, asin) {
         return false;
     }
     
-    console.log('Cadastrando produto via AJAX...');
-    
     const formData = new FormData();
     formData.append('fsnku', fsnku);
     formData.append('name', truncateProductName(name));
@@ -76,17 +74,16 @@ async function getProductPrice(fsnku, sku, type) {
         const data = await response.json();
         return data.price || 0;
     } catch (error) {
-        console.error('Erro ao obter preço:', error);
         return 0;
     }
 }
 
 // Função para atualizar preview com data de coleta
-function updatePreview(shipmentDate) {
+async function updatePreview(shipmentDate) {  // ✅ Adicionar async
     if (!currentTsvData) return;
 
     calculateCollectionDate(shipmentDate)
-        .then(collectionDate => {
+        .then(async collectionDate => {  // ✅ Adicionar async aqui também
 
             let headerHtml = `
                 <p><strong>ID do Envio:</strong> ${currentTsvData['ID do envio'] || 'N/A'}</p>
@@ -100,12 +97,10 @@ function updatePreview(shipmentDate) {
             let productsHtml = '';
             if (currentTsvData.products) {
                 // Calcular totais (será atualizado após carregar preços)
-                let totalItems = 0;
-                let totalValue = 0;
+                let totalItems = 0;                let totalValue = 0;
                 
                 currentTsvData.products.forEach(p => {
                     totalItems += parseInt(p.qtd) || 0;
-                    totalValue += (parseFloat(p.price || 0) * parseInt(p.qtd || 0));
                 });
 
                 productsHtml = `
@@ -127,7 +122,6 @@ function updatePreview(shipmentDate) {
                             <tbody>
                                 ${currentTsvData.products.map(p => {
                                     const itemTotal = (parseFloat(p.price || 0) * parseInt(p.qtd || 0)).toFixed(2);
-                                    // Truncar nome e depois quebrar em linhas
                                     const truncatedName = truncateProductName(p.name || p.sku);
                                     const nameLines = truncatedName.match(/.{1,21}/g) || [truncatedName];
                                     const displayName = nameLines.slice(0, 2).join('<br>');
@@ -173,27 +167,17 @@ function updatePreview(shipmentDate) {
                             </tbody>
                         </table>
                     </div>
-                    
-                    <!-- Totalizadores -->
-                    <div class="row mt-3">
-                        <div class="col-md-6 offset-md-6">
-                            <div class="d-flex justify-content-between">
-                                <strong>Total Itens:</strong>
-                                <strong id="preview-total-items">${totalItems}</strong>
-                            </div>
-                        </div>
-                        <div class="col-md-6 offset-md-6">
-                            <div class="d-flex justify-content-between">
-                                <strong>Total Geral:</strong>
-                                <strong id="preview-total-value">R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
-                            </div>
-                        </div>
-                    </div>
                 `;
             }
 
             // Atualiza tudo no preview
             document.getElementById('previewData').innerHTML = headerHtml + productsHtml;
+            
+            // ✅ Mostrar o container de totais
+            document.getElementById('totalsContainer').style.display = 'block';
+            
+            // ✅ Atualizar valores dos totais
+            updateTotalValues();
             
             // Adicionar event listeners para os selects de tipo
             currentTsvData.products.forEach(p => {
@@ -203,15 +187,18 @@ function updatePreview(shipmentDate) {
                     if (typeSelect && kitInput) {
                         typeSelect.addEventListener('change', async function() {
                             kitInput.style.display = this.value === 'kit' ? 'inline-block' : 'none';
-                            // Recarregar preço ao mudar tipo
                             await loadProductPrice(p.fsnku, p.sku, this.value);
+                            updateTotalValues(); // ✅ Atualizar totais ao mudar tipo
                         });
                     }
                 }
             });
 
             // Carregar preços dos produtos
-            loadAllProductPrices();
+            await loadAllProductPrices();
+            
+            // ✅ ATUALIZAR totais APÓS carregar todos os preços
+            updateTotalValues();
             
             // Verificar se todos os produtos estão cadastrados
             const allRegistered = currentTsvData.products.every(p => p.exists);
@@ -232,7 +219,7 @@ function updatePriceInTable(fsnku, price) {
     if (row) {
         const product = currentTsvData.products.find(p => p.fsnku === fsnku);
         if (product) {
-            product.price = parseFloat(price) || 0;  // Garantir que está um número
+            product.price = parseFloat(price) || 0;
             
             const priceCell = row.querySelector('.product-price');
             const totalCell = row.querySelector('.product-total');
@@ -245,32 +232,36 @@ function updatePriceInTable(fsnku, price) {
                 totalCell.textContent = `${parseFloat(itemTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             }
             
-            // Atualizar totais gerais
+            // ✅ Atualizar totais gerais após atualizar preço
             updateTotalValues();
         }
     }
 }
 
-// Função para atualizar totais gerais (CORRIGIDA)
+// Função para atualizar totais gerais
 function updateTotalValues() {
+
     let totalItems = 0;
     let totalValue = 0;
     
+    if (!currentTsvData || !currentTsvData.products) return;
     currentTsvData.products.forEach(p => {
-        const qty = parseInt(p.qtd) || 0;
+        const qtd = parseInt(p.qtd) || 0;
         const price = parseFloat(p.price) || 0;
-        totalItems += qty;
-        totalValue += (price * qty);
+        totalItems += qtd;
+        totalValue += (price * qtd);
     });
     
-    const totalItemsEl = document.getElementById('preview-total-items');
-    const totalValueEl = document.getElementById('preview-total-value');
+    // ✅ Buscar elementos DO MODAL (não da tabela principal)
+    const totalItemsEl = document.getElementById('modal-total-items');
+    const totalValueEl = document.getElementById('modal-total-value');
     
     if (totalItemsEl) {
-        totalItemsEl.textContent = totalItems;
+        totalItemsEl.textContent = totalItems.toLocaleString('pt-BR');
     }
     if (totalValueEl) {
-        totalValueEl.textContent = `R$ ${totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        const formatted = 'R$ ' + totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        totalValueEl.textContent = formatted;
     }
 }
 
@@ -282,7 +273,6 @@ async function loadProductPrice(fsnku, sku, type = 'simple') {
         
         if (product) {
             product.price = parseFloat(price) || 0;
-            console.log(`Preço carregado para ${fsnku}: R$ ${product.price}`); // Debug
             updatePriceInTable(fsnku, product.price);
         }
     } catch (error) {
@@ -291,21 +281,15 @@ async function loadProductPrice(fsnku, sku, type = 'simple') {
 }
 
 // Função para carregar preços de todos os produtos COM DELAY
-async function loadAllProductPrices() {
-    console.log('Iniciando carregamento de preços...'); // Debug
-    
+async function loadAllProductPrices() {    
     for (const product of currentTsvData.products) {
-        await new Promise(resolve => setTimeout(resolve, 200)); // Delay de 200ms entre requisições
+        await new Promise(resolve => setTimeout(resolve, 200)); // Delay de 200ms
         
         const type = !product.exists ? 
             (document.getElementById(`type_${product.fsnku}`)?.value || 'simple') : 
             'simple';
         
-        await loadProductPrice(product.fsnku, product.sku, type);
-    }
-    
-    console.log('Carregamento de preços finalizado'); // Debug
-    updateTotalValues(); // Atualizar totais após carregar todos os preços
+        await loadProductPrice(product.fsnku, product.sku, type);    } 
 }
 
 // Função para calcular data de coleta
@@ -387,7 +371,6 @@ document.getElementById('previewBtn').addEventListener('click', function () {
         updatePreview(document.getElementById('shipmentDate').value);
     })
     .catch(error => {
-        console.error('Erro:', error);
         alert('Erro ao processar arquivo');
     });
 });
@@ -413,10 +396,7 @@ document.getElementById('createBtn').addEventListener('click', function () {
         body: formData,
         headers: { 'X-CSRF-TOKEN': window.csrfToken }
     })
-    .then(res => {
-        console.log('Status:', res.status);
-        console.log('Response:', res);
-        
+    .then(res => {        
         return res.text().then(text => {
             try {
                 return {
@@ -424,8 +404,6 @@ document.getElementById('createBtn').addEventListener('click', function () {
                     data: JSON.parse(text)
                 };
             } catch (e) {
-                console.error('Erro ao parsear JSON:', e);
-                console.error('Resposta recebida:', text);
                 return {
                     status: res.status,
                     data: { error: 'Erro do servidor: ' + text.substring(0, 100) }
@@ -433,9 +411,7 @@ document.getElementById('createBtn').addEventListener('click', function () {
             }
         });
     })
-    .then(response => {
-        console.log('Parsed Response:', response);
-        
+    .then(response => {        
         // Ocultar seções de upload e preview
         document.getElementById('uploadSection').style.display = 'none';
         document.getElementById('previewSection').style.display = 'none';
@@ -465,7 +441,6 @@ document.getElementById('createBtn').addEventListener('click', function () {
             }, 1000);
         } else {
             const errorMessage = response.data.error || response.data.message || 'Erro ao criar remessa';
-            console.log('Error Message:', errorMessage);
             document.getElementById('resultSection').innerHTML = `
                 <div class="alert alert-danger">
                     <h6>${errorMessage}</h6>
@@ -475,7 +450,6 @@ document.getElementById('createBtn').addEventListener('click', function () {
         }
     })
     .catch(error => {
-        console.error('Erro capturado:', error);
         document.getElementById('uploadSection').style.display = 'none';
         document.getElementById('previewSection').style.display = 'none';
         document.getElementById('resultSection').innerHTML = `
@@ -503,3 +477,5 @@ document.getElementById('importModal').addEventListener('hidden.bs.modal', funct
     tsvData = null;
     currentTsvData = null;
 });
+
+
