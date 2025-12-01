@@ -158,9 +158,18 @@
                                                     <td><input type="text" class="form-control sku" value="{{ $selectedProduct->sku ?? ($itemData->sku ?? '') }}" disabled></td>
                                                     <td><input type="text" class="form-control type_product" value="{{ $selectedProduct ? ($selectedProduct->type === 'simple' ? 'Simples' : ($selectedProduct->type === 'kit' ? 'Kit' : 'S.Kit')) : (isset($itemData->type) ? ($itemData->type === 'simple' ? 'Simples' : ($itemData->type === 'kit' ? 'Kit' : 'S.Kit')) : '') }}" disabled></td>
                                                     <td><input type="text" class="form-control kit-units text-end" value="{{ $selectedProduct->kit_units ?? ($itemData->kit_units ?? '') }}" disabled></td>
-                                                    <td><input type="number" name="items[{{ $index }}][quantity]" class="form-control quantity text-end" value="{{ $itemData->quantity ?? '' }}" min="1" required></td>
-                                                    <td><input type="number" name="items[{{ $index }}][unit_price]" class="form-control unit-price text-end" value="{{ $itemData->unit_price ?? '' }}" step="0.01" readonly></td>
-                                                    <td><input type="number" class="form-control total-value text-end" value="{{ $itemData->total_value ?? '' }}" step="0.01" disabled></td>
+                                                    <td>
+                                                        <input type="text" class="form-control quantity-display text-end" value="{{ !empty($itemData->quantity) ? number_format($itemData->quantity, 0, ',', '.') : '' }}" placeholder="0" min="1">
+                                                        <input type="hidden" name="items[{{ $index }}][quantity]" class="quantity" value="{{ $itemData->quantity ?? '' }}">
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control unit-price-display text-end" value="{{ !empty($itemData->unit_price) ? number_format($itemData->unit_price, 2, ',', '.') : '' }}" placeholder="0,00" readonly>
+                                                        <input type="hidden" name="items[{{ $index }}][unit_price]" class="unit-price" value="{{ $itemData->unit_price ?? '' }}">
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" class="form-control total-value-display text-end" value="{{ !empty($itemData->total_value) ? number_format($itemData->total_value, 2, ',', '.') : '' }}" placeholder="R$ 0,00" disabled>
+                                                        <input type="hidden" name="total_value" class="total-value" value="{{ $itemData->total_value ?? '' }}">
+                                                    </td>
                                                     <td><button type="button" class="btn btn-sm btn-danger remove-item">Remover</button></td>
                                                 </tr>
                                             @endforeach

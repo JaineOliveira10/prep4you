@@ -131,7 +131,7 @@ async function updatePreview(shipmentDate) {  // ✅ Adicionar async
                                             <td style="font-size: 0.85rem;">${p.fsnku}</td>
                                             <td style="font-size: 0.85rem; word-break: break-word;" title="${truncatedName}">${displayName}</td>
                                             <td style="font-size: 0.85rem;">${p.sku}</td>
-                                            <td class="text-center text-end">${p.qtd}</td>
+                                            <td class="text-center text-end">${p.qtd.toLocaleString('pt-BR')}</td>
                                             <td class="product-price text-end">${(parseFloat(p.price || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             <td class="product-total text-end">${parseFloat(itemTotal).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                             <td class="text-center">

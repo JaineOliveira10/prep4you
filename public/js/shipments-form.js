@@ -50,9 +50,18 @@ class ShipmentItemsManager {
             <td><input type="text" class="form-control sku" disabled></td>
             <td><input type="text" class="form-control type_product" disabled></td>
             <td><input type="text" class="form-control kit-units text-end" disabled></td>
-            <td><input type="number" name="items[${this.itemIndex}][quantity]" class="form-control quantity text-end" min="1" value="1" required></td>
-            <td><input type="number" name="items[${this.itemIndex}][unit_price]" class="form-control unit-price text-end" step="0.01" readonly></td>
-            <td><input type="number" class="form-control total-value text-end" step="0.01" disabled></td>
+            <td>
+                <input type="text" class="form-control quantity-display text-end" placeholder="0" min="1">
+                <input type="hidden" name="items[${this.itemIndex}][quantity]" class="quantity" value="0">
+            </td>
+            <td>
+                <input type="text" class="form-control unit-price-display text-end" placeholder="0,00" disabled>
+                <input type="hidden" name="items[${this.itemIndex}][unit_price]" class="unit-price" value="0.00">
+            </td>
+            <td>
+                <input type="text" class="form-control total-value-display text-end" placeholder="R$ 0,00" disabled>
+                <input type="hidden" name="total_value" class="total-value" value="0.00">
+            </td>
             <td><button type="button" class="btn btn-sm btn-danger remove-item">Remover</button></td>
         `;
         
@@ -65,7 +74,8 @@ class ShipmentItemsManager {
     addRowEvents(row) {
         const productSearch = row.querySelector('.product-search');
         const productResults = row.querySelector('.product-results');
-        const quantityInput = row.querySelector('.quantity');
+        const quantityDisplay = row.querySelector('.quantity-display');
+        const unitPriceDisplay = row.querySelector('.unit-price-display');
         const removeBtn = row.querySelector('.remove-item');
         
         if (productSearch) {
@@ -111,14 +121,27 @@ class ShipmentItemsManager {
             });
         }
         
-        if (quantityInput) {
-            quantityInput.addEventListener('input', () => {
-                const productId = row.querySelector('.product-id')?.value;
-                if (productId) {
-                    this.updateProductInfo(row, productId);
-                } else {
-                    this.updateTotalValue(row);
+        // Event listener para quantity-display
+        if (quantityDisplay) {
+            quantityDisplay.addEventListener('input', () => {
+                const displayValue = quantityDisplay.value.replace(/\D/g, '');
+                const quantityInput = row.querySelector('.quantity');
+                if (quantityInput) {
+                    quantityInput.value = displayValue;
                 }
+                this.updateTotalValue(row);
+            });
+        }
+        
+        // Event listener para unit-price-display
+        if (unitPriceDisplay) {
+            unitPriceDisplay.addEventListener('input', () => {
+                const displayValue = unitPriceDisplay.value.replace(/\D/g, '').replace(',', '.');
+                const unitPriceInput = row.querySelector('.unit-price');
+                if (unitPriceInput) {
+                    unitPriceInput.value = displayValue;
+                }
+                this.updateTotalValue(row);
             });
         }
         
@@ -222,6 +245,7 @@ class ShipmentItemsManager {
             const typeInput = row.querySelector('.type_product');
             const kitUnitsInput = row.querySelector('.kit-units');
             const unitPriceInput = row.querySelector('.unit-price');
+            const unitPriceDisplay = row.querySelector('.unit-price-display');
             
             if (fsnkuInput) fsnkuInput.value = product.fsnku || '';
             if (skuInput) skuInput.value = product.sku || '';
@@ -229,6 +253,15 @@ class ShipmentItemsManager {
             if (unitPriceInput) {
                 unitPriceInput.value = parseFloat(price || 0).toFixed(2);
                 console.log('Preço formatado:', unitPriceInput.value); // DEBUG
+            }
+            
+            // Atualizar campo de exibição do preço
+            if (unitPriceDisplay) {
+                const priceValue = parseFloat(price || 0);
+                unitPriceDisplay.value = priceValue.toLocaleString('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
             }
             
             // Tratar campo kit_units
@@ -270,16 +303,30 @@ class ShipmentItemsManager {
     }
     
     updateTotalValue(row) {
-        const quantityInput = row.querySelector('.quantity');
+        const quantityDisplay = row.querySelector('.quantity-display');
         const unitPriceInput = row.querySelector('.unit-price');
+        const totalValueDisplay = row.querySelector('.total-value-display');
         const totalValueInput = row.querySelector('.total-value');
         
-        if (quantityInput && unitPriceInput && totalValueInput) {
-            const quantity = parseFloat(quantityInput.value) || 0;
+        if (quantityDisplay && unitPriceInput && totalValueDisplay) {
+            // Extrair quantidade do campo de exibição
+            const quantity = parseInt(quantityDisplay.value.replace(/\D/g, '')) || 0;
+            // Usar o valor real do campo oculto (sem formatação)
             const unitPrice = parseFloat(unitPriceInput.value) || 0;
-            const totalValue = quantity * unitPrice;
+            const totalValue = (quantity * unitPrice);
             
-            totalValueInput.value = totalValue.toFixed(2);
+            console.log('DEBUG updateTotalValue:', { quantity, unitPrice, totalValue }); // DEBUG
+            
+            // Atualizar campo oculto
+            if (totalValueInput) {
+                totalValueInput.value = totalValue.toFixed(2);
+            }
+            
+            // Atualizar campo de exibição
+            totalValueDisplay.value = totalValue.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
         }
         
         this.updateGrandTotal();
@@ -314,7 +361,7 @@ class ShipmentItemsManager {
         }
         
         if (totalItemsDisplay) {
-            totalItemsDisplay.textContent = totalItems;
+            totalItemsDisplay.textContent = totalItems.toLocaleString('pt-BR');
         }
         
         if (totalItemsInput) {
@@ -407,6 +454,71 @@ class ShipmentItemsManager {
         });
     }
 }
+
+// Função para formatar número com separador de milhar
+function formatNumberInput(value) {
+    // Remove tudo que não é número
+    value = value.replace(/\D/g, '');
+    // Formata com separador de milhar
+    return new Intl.NumberFormat('pt-BR').format(value);
+}
+
+// Função para formatar decimal com separador de milhar
+function formatDecimalInput(value) {
+    // Remove tudo que não é número ou vírgula
+    value = value.replace(/[^\d,]/g, '');
+    // Se tiver mais de uma vírgula, remove as extras
+    let parts = value.split(',');
+    if (parts.length > 2) {
+        value = parts[0] + ',' + parts.slice(1).join('');
+    }
+    return value;
+}
+
+// Event listener para quantity-display
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('quantity-display')) {
+        const displayInput = e.target;
+        const hiddenInput = displayInput.nextElementSibling;
+        
+        // Formata o valor exibido
+        const formatted = formatNumberInput(displayInput.value);
+        displayInput.value = formatted;
+        
+        // Armazena o valor sem formatação no campo oculto
+        hiddenInput.value = displayInput.value.replace(/\D/g, '');
+    }
+});
+
+// Event listener para unit-price-display
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('unit-price-display')) {
+        const displayInput = e.target;
+        const hiddenInput = displayInput.nextElementSibling;
+        
+        // Formata o valor exibido
+        const formatted = formatDecimalInput(displayInput.value);
+        displayInput.value = formatted;
+        
+        // Armazena o valor sem formatação no campo oculto
+        let cleanValue = displayInput.value.replace('.', '').replace(',', '.');
+        hiddenInput.value = cleanValue;
+    }
+});
+
+// Antes de submeter o formulário, garante que os campos ocultos têm os valores corretos
+document.querySelector('form').addEventListener('submit', function(e) {
+    document.querySelectorAll('.quantity-display').forEach(function(input) {
+        const hiddenInput = input.nextElementSibling;
+        hiddenInput.value = input.value.replace(/\D/g, '');
+    });
+    
+    document.querySelectorAll('.unit-price-display').forEach(function(input) {
+        const hiddenInput = input.nextElementSibling;
+        let cleanValue = input.value.replace('.', '').replace(',', '.');
+        hiddenInput.value = cleanValue;
+    });
+});
 
 // Cálculo da data de coleta
 document.getElementById('shipment_date').addEventListener('change', function() {
