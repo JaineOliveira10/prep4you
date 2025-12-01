@@ -111,8 +111,8 @@
                         @foreach($shipments as $shipment)
                         <tr>
                            <td>{{ $shipment->shipment_code ? $shipment->shipment_code : 'N/A' }}</td>
-                           <td>{{ $shipment->total_items }}</td>
-                           <td>R$ {{ number_format($shipment->total_value, 2, ',', '.') }}</td>
+                           <td class="text-end">{{ $shipment->total_items }}</td>
+                           <td class="text-end">{{ number_format($shipment->total_value, 2, ',', '.') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>
@@ -142,24 +142,6 @@
                      </tbody>
                   </table>
                </div>
-               
-               <!-- Seção de Totais -->
-               @if($shipments->count() > 0)
-               <div class="row mt-5 mx-3">
-                  <div class="col-md-6 offset-md-6">
-                        <div class="d-flex justify-content-between">
-                           <strong>Total Itens:</strong>
-                           <strong id="preview-total-items">{{ $shipments->sum('total_items') }}</strong>
-                        </div>
-                  </div>
-                  <div class="col-md-6 offset-md-6">
-                        <div class="d-flex justify-content-between">
-                           <strong>Total Geral:</strong>
-                           <strong id="preview-total-value"> R$ {{ number_format($shipments->sum('total_value'), 2, ',', '.') }}</strong>
-                        </div>
-                  </div>
-               </div>
-               @endif
             </div>
          </div>
       </div>
