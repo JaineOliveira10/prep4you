@@ -49,10 +49,10 @@ class ShipmentItemsManager {
             <td><input type="text" class="form-control fsnku" disabled></td>
             <td><input type="text" class="form-control sku" disabled></td>
             <td><input type="text" class="form-control type_product" disabled></td>
-            <td><input type="text" class="form-control kit-units" disabled></td>
-            <td><input type="number" name="items[${this.itemIndex}][quantity]" class="form-control quantity" min="1" value="1" required></td>
-            <td><input type="number" name="items[${this.itemIndex}][unit_price]" class="form-control unit-price" step="0.01" readonly></td>
-            <td><input type="number" class="form-control total-value" step="0.01" disabled></td>
+            <td><input type="text" class="form-control kit-units text-end" disabled></td>
+            <td><input type="number" name="items[${this.itemIndex}][quantity]" class="form-control quantity text-end" min="1" value="1" required></td>
+            <td><input type="number" name="items[${this.itemIndex}][unit_price]" class="form-control unit-price text-end" step="0.01" readonly></td>
+            <td><input type="number" class="form-control total-value text-end" step="0.01" disabled></td>
             <td><button type="button" class="btn btn-sm btn-danger remove-item">Remover</button></td>
         `;
         
@@ -130,6 +130,30 @@ class ShipmentItemsManager {
         }
     }
     
+    formatDisplayValues(row) {
+        const quantityInput = row.querySelector('.quantity');
+        const totalValueInput = row.querySelector('.total-value');
+        
+        if (quantityInput) {
+            const value = parseInt(quantityInput.value) || 0;
+            const formatted = value.toLocaleString('pt-BR');
+            quantityInput.setAttribute('data-value', value); // Armazena valor real
+            quantityInput.value = formatted; // Exibe formatado
+            quantityInput.style.textAlign = 'right';
+        }
+        
+        if (totalValueInput) {
+            const value = parseFloat(totalValueInput.value) || 0;
+            const formatted = value.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            totalValueInput.setAttribute('data-value', value); // Armazena valor real
+            totalValueInput.value = formatted; // Exibe formatado
+            totalValueInput.style.textAlign = 'right';
+        }
+    }
+
     addEventsToExistingRows() {
         document.querySelectorAll('#items-tbody tr').forEach(row => {
             this.addRowEvents(row);
