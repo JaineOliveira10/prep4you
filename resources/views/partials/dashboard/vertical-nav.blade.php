@@ -138,7 +138,7 @@
         </a>
     </li>
 
-    @if(auth()->user()->type === 'client') 
+    
     <li><hr class="hr-horizontal"></li>
     <li class="nav-item static-item">
         <a class="nav-link static-item disabled" href="#" tabindex="-1">
@@ -146,7 +146,7 @@
             <span class="mini-icon">-</span>
         </a>
     </li>
-
+    @if(auth()->user()->type === 'client') 
     <li class="nav-item">
         <a class="nav-link {{activeRoute(route('shipments.index'))}}" href="{{route('shipments.index')}}">
             <i class="icon">
@@ -155,6 +155,18 @@
                 </svg>
             </i>
             <span class="item-name">Remessas</span>
+        </a>
+    </li>
+    @endif
+    @if(auth()->user()->type === 'admin') 
+    <li class="nav-item">
+        <a class="nav-link {{activeRoute(route('shipments.manage-shipments'))}}" href="{{route('shipments.manage-shipments')}}">
+            <i class="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </i>
+            <span class="item-name">Gerenciar Remessas</span>
         </a>
     </li>
     @endif

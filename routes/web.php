@@ -21,28 +21,6 @@ Route::middleware(['auth'])->group(function () {
         return view('dashboards.dashboard');
     })->name('dashboard');
 
-    Route::middleware(['restrict.admin'])->group(function () {
-        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
-        Route::get('/products/{product}/copy', [ProductController::class, 'copy'])->name('products.copy');
-        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-        Route::post('/products/ajax', [ProductController::class, 'storeAjax'])->name('products.store.ajax');
-        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
-        
-        Route::resource('shipments', ShipmentController::class);
-        Route::post('/shipments/calculate-collection-date', [ShipmentController::class, 'calculateCollectionDate'])->name('shipments.calculate-collection-date');
-        Route::post('/shipments/get-products-by-client', [ShipmentController::class, 'getProductsByClient'])->name('shipments.get-products-by-client');
-        Route::post('/shipments/get-product-price', [ShipmentController::class, 'getProductPrice'])->name('shipments.get-product-price');
-
-        Route::post('shipments/import', [ShipmentController::class, 'import'])->name('shipments.import');
-    Route::post('shipments/preview', [ShipmentController::class, 'preview'])->name('shipments.preview');
-        Route::post('shipments/{shipment}/pdf', [ShipmentPdfController::class, 'upload'])->name('shipments.pdf.upload');
-        Route::delete('shipment-pdfs/{pdf}', [ShipmentPdfController::class, 'destroy'])->name('shipments.pdf.destroy');
-    });
-
-    Route::resource('products', ProductController::class)->except(['create', 'store', 'destroy']);
-
-   
-
     Route::middleware(['restrict.client'])->group(function () {
 
         Route::resource('users', UserController::class)->except(['show']);
@@ -50,7 +28,31 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('price-tables', PriceTableController::class);
 
         Route::resource('distribution-centers', DistributionCenterController::class);
+
+        Route::get('shipments/manage-shipments', [ShipmentController::class, 'manageShipments'])->name('shipments.manage-shipments');
     });
+
+    Route::middleware(['restrict.admin'])->group(function () {
+        Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');
+        Route::get('/products/{product}/copy', [ProductController::class, 'copy'])->name('products.copy');
+        Route::post('/products', [ProductController::class, 'store'])->name('products.store');
+        Route::post('/products/ajax', [ProductController::class, 'storeAjax'])->name('products.store.ajax');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+        
+        Route::resource('shipments', ShipmentController::class)->except(['manageShipments']);
+        Route::post('/shipments/calculate-collection-date', [ShipmentController::class, 'calculateCollectionDate'])->name('shipments.calculate-collection-date');
+        Route::post('/shipments/get-products-by-client', [ShipmentController::class, 'getProductsByClient'])->name('shipments.get-products-by-client');
+        Route::post('/shipments/get-product-price', [ShipmentController::class, 'getProductPrice'])->name('shipments.get-product-price');
+
+        Route::post('shipments/import', [ShipmentController::class, 'import'])->name('shipments.import');
+        Route::post('shipments/preview', [ShipmentController::class, 'preview'])->name('shipments.preview');
+        Route::post('shipments/{shipment}/pdf', [ShipmentPdfController::class, 'upload'])->name('shipments.pdf.upload');
+        Route::delete('shipment-pdfs/{pdf}', [ShipmentPdfController::class, 'destroy'])->name('shipments.pdf.destroy');
+    });
+
+    Route::resource('products', ProductController::class)->except(['create', 'store', 'destroy']);
+
+
 
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
     Route::patch('/users/{user}/update-password', [UserController::class, 'updatePassword'])->name('users.update-password');

@@ -10,7 +10,7 @@ class RestrictAdmin
     public function handle(Request $request, Closure $next)
     {
         if (strtolower(auth()->user()->type) === 'admin') {
-            return redirect()->route('products.index');
+            return redirect()->route('dashboard');
         }
 
         return $next($request);

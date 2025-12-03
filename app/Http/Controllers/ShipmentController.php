@@ -25,10 +25,10 @@ class ShipmentController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        
+
         // Query base
         $query = Shipment::query();
-        
+
         // Filtro por cliente
         if ($user->type === 'client') {
             $query->where('client_id', $user->client_id);
@@ -63,6 +63,58 @@ class ShipmentController extends Controller
         return view('pages.shipments.index', [
             'shipments' => $shipments,
             'clients' => $clients,
+            'assets' => []
+        ]);
+    }
+
+    public function manageShipments(Request $request)
+    {
+        $user = auth()->user();
+        $distribution_centers = DistributionCenter::all();
+        
+        // Query base
+        $query = Shipment::query();
+        
+        // Filtro por cliente
+        if ($user->type === 'client') {
+            $query->where('client_id', $user->client_id);
+            $clients = collect([$user->client]);
+        } else {
+            if (request('client_id')) {
+                $query->where('client_id', request('client_id'));
+            }
+            $clients = Client::all();
+        }
+        
+        // Filtro por status
+        if (request('status')) {
+            $query->where('status', request('status'));
+        }
+
+        // Filtro por centro de distribuição
+        if (request('distribution_center_id')) {
+            $query->where('distribution_center_id', request('distribution_center_id'));
+        }
+        
+        // Filtro por data
+        $dateFilter = request('date_filter', 'created_at');
+        $dateFrom = request('date_from', now()->subDays(30)->format('Y-m-d'));
+        $dateTo = request('date_to', now()->format('Y-m-d'));
+        
+        if ($dateFrom) {
+            $query->whereDate($dateFilter, '>=', $dateFrom);
+        }
+        
+        if ($dateTo) {
+            $query->whereDate($dateFilter, '<=', $dateTo);
+        }
+        
+        $shipments = $query->orderBy('created_at', 'desc')->get();
+        
+        return view('pages.shipments.index-admin', [
+            'shipments' => $shipments,
+            'clients' => $clients,
+            'distribution_centers' => $distribution_centers,
             'assets' => []
         ]);
     }
