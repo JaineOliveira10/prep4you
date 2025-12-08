@@ -117,7 +117,7 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="form-group col-md-6">
+                                    <div class="form-group col-md-12">
                                         <label class="form-label" for="photo">Foto do Produto</label>
                                         <input type="file" name="photo" id="photo" class="form-control" accept="image/*" {{ auth()->user()->type == 'admin' ? 'disabled' : '' }}>
                                         @if(isset($data->photo_path) && $data->photo_path && !$isCopy)
@@ -134,6 +134,11 @@
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="observation">Observação</label>
                                         <textarea name="observation" id="observation" class="form-control" rows="4" placeholder="Observações sobre o produto" maxlength="200">{{ old('observation', $data->observation ?? '') }}</textarea>
+                                        <small class="text-muted">Máximo 200 caracteres</small>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label" for="prep_observation">Observação do Prep</label>
+                                        <textarea name="prep_observation" id="prep_observation" class="form-control" rows="4" placeholder="Observações do prep" maxlength="200" {{ auth()->user()->type == 'client' ? 'readonly' : '' }}>{{ old('prep_observation', $data->prep_observation ?? '') }}</textarea>
                                         <small class="text-muted">Máximo 200 caracteres</small>
                                     </div>
                                 </div>

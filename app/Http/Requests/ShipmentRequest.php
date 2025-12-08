@@ -17,16 +17,13 @@ class ShipmentRequest extends FormRequest
         $isUpdate = $this->route()->getActionMethod() === 'update';
         
         $shipmentId = null;
-        $shipment = null;
         
         if ($isUpdate) {
             $shipmentId = $this->route('shipment');
             
             // Se for string, buscar no banco
             if (is_string($shipmentId)) {
-                $shipment = \App\Models\Shipment::find($shipmentId);
-            } else {
-                $shipment = $shipmentId;
+                $shipmentId = $shipmentId;
             }
         }
         
@@ -34,13 +31,6 @@ class ShipmentRequest extends FormRequest
             ? Rule::unique('shipments', 'shipment_code')->ignore($shipmentId)
             : 'unique:shipments,shipment_code';
 
-        // Verificar se é importada E não tem PDFs
-        $isImported = $shipment ? $shipment->imported_flag : false;
-        $hasPdfs = $shipment ? $shipment->pdfs()->count() > 0 : false;
-        
-        // PDFs obrigatórios apenas se for importada E não tiver PDFs ainda
-        $requirePdfs = ($isImported && !$hasPdfs);
-        
         return [
             'name' => 'nullable|string|max:255',
             'shipment_date' => 'required|date',
@@ -57,9 +47,9 @@ class ShipmentRequest extends FormRequest
             'items.*.product_id' => 'required_if:items,!=null|exists:products,id',
             'items.*.quantity' => 'required_if:items,!=null|integer|min:1',
             'items.*.unit_price' => 'required_if:items,!=null|numeric|min:0',
-            'pdfs' => $requirePdfs ? 'required|array|min:1' : 'nullable|array',
-            'pdfs.*.tipo' => $requirePdfs ? 'required|in:individual_label,master_label,invoice' : 'nullable|in:individual_label,master_label,invoice',
-            'pdfs.*.pdf' => $requirePdfs ? 'required|mimes:pdf|max:5120' : 'nullable|mimes:pdf|max:5120',
+            'pdfs' => 'required|array|size:3',
+            'pdfs.*.tipo' => 'required|in:individual_label,master_label,invoice|distinct:strict',
+            'pdfs.*.pdf' => 'required|mimes:pdf|max:5120',
         ];
     }
 
@@ -76,9 +66,12 @@ class ShipmentRequest extends FormRequest
             'items.*.quantity.required_if' => 'A quantidade é obrigatória.',
             'items.*.quantity.min' => 'A quantidade deve ser pelo menos 1.',
             'items.*.unit_price.required_if' => 'O preço unitário é obrigatório.',
-            'pdfs.required' => 'Você precisa fazer upload de pelo menos um PDF para remessas importadas antes de salvar.',
+            'pdfs.required' => 'Você precisa fazer upload de exatamente 3 PDFs (um de cada tipo).',
+            'pdfs.size' => 'Você deve fazer upload de exatamente 3 PDFs, um de cada tipo.',
             'pdfs.*.tipo.required' => 'O tipo do PDF é obrigatório.',
-            'pdfs.*.pdf.required' => 'Você precisa fazer upload de pelo menos um PDF.',
+            'pdfs.*.tipo.in' => 'Os tipos devem ser: Etiqueta individual, Etiqueta master ou Nota fiscal.',
+            'pdfs.*.tipo.distinct' => 'Você deve fornecer um PDF de cada tipo.',
+            'pdfs.*.pdf.required' => 'Todos os PDFs são obrigatórios.',
             'pdfs.*.pdf.mimes' => 'O arquivo deve ser um PDF válido.',
             'pdfs.*.pdf.max' => 'O arquivo PDF deve ter no máximo 5MB.',
         ];

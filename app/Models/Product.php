@@ -15,6 +15,7 @@ class Product extends Model
         'sku', 
         'photo_path', 
         'observation', 
+        'prep_observation',
         'type', 
         'kit_units', 
         'unit_price', 

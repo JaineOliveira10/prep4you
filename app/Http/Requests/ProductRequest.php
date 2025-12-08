@@ -30,6 +30,7 @@ class ProductRequest extends FormRequest
             'sku' => 'nullable|string|max:40',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'observation' => 'nullable|string|max:200',
+            'prep_observation' => 'nullable|string|max:200',
             'type' => 'required|in:simple,kit,super_kit',
             'client_id' => ($isAdmin && $isEditing) ? 'nullable|exists:clients,id' : 'required|exists:clients,id',
         ];
