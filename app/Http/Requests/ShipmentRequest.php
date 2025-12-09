@@ -31,6 +31,24 @@ class ShipmentRequest extends FormRequest
             ? Rule::unique('shipments', 'shipment_code')->ignore($shipmentId)
             : 'unique:shipments,shipment_code';
 
+        $hasUploadedPdfs = $this->has('pdfs') && is_array($this->input('pdfs')) && 
+                           collect($this->input('pdfs'))->some(function($pdf) {
+                               return isset($pdf['pdf']) && $pdf['pdf'] !== null;
+                           });
+
+        if ($isUpdate && !$hasUploadedPdfs) {
+            $shipment = \App\Models\Shipment::find($shipmentId);
+            $hasSavedPdfs = $shipment && $shipment->pdfs()->count() > 0;
+            
+            $pdfRules = $hasSavedPdfs ? 'nullable|array' : 'required|array|size:3';
+            $pdfTypeRules = $hasSavedPdfs ? 'nullable|in:individual_label,master_label,invoice' : 'required|in:individual_label,master_label,invoice|distinct:strict';
+            $pdfFileRules = $hasSavedPdfs ? 'nullable|mimes:pdf|max:5120' : 'required|mimes:pdf|max:5120';
+        } else {
+            $pdfRules = 'required|array|size:3';
+            $pdfTypeRules = 'required|in:individual_label,master_label,invoice|distinct:strict';
+            $pdfFileRules = 'required|mimes:pdf|max:5120';
+        }
+
         return [
             'name' => 'nullable|string|max:255',
             'shipment_date' => 'required|date',
@@ -47,9 +65,9 @@ class ShipmentRequest extends FormRequest
             'items.*.product_id' => 'required_if:items,!=null|exists:products,id',
             'items.*.quantity' => 'required_if:items,!=null|integer|min:1',
             'items.*.unit_price' => 'required_if:items,!=null|numeric|min:0',
-            'pdfs' => 'required|array|size:3',
-            'pdfs.*.tipo' => 'required|in:individual_label,master_label,invoice|distinct:strict',
-            'pdfs.*.pdf' => 'required|mimes:pdf|max:5120',
+            'pdfs' => $pdfRules,
+            'pdfs.*.tipo' => $pdfTypeRules,
+            'pdfs.*.pdf' => $pdfFileRules,
         ];
     }
 

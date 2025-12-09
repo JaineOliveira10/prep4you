@@ -119,7 +119,7 @@
                            <th>Centro Dist.</th>
                            <th>Qtd</th>
                            <th>Vr Total</th>                         
-                           <!-- <th style="min-width: 100px">Ações</th> -->
+                           <th style="min-width: 100px">Ações</th>
                         </tr>
                      </thead>
                      <tbody>
@@ -149,9 +149,9 @@
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>
                            <td class="text-end">{{ number_format($shipment->total_items, 0, ',', '.') }}</td>
                            <td class="text-end">{{ number_format($shipment->total_value, 2, ',', '.') }}</td>
-                           <!-- <td>
+                           <td>
                               @include('pages.shipments.action', ['id' => $shipment->id, 'status' => $shipment->status])
-                           </td> -->
+                           </td>
                         </tr>
                         @endforeach
                      </tbody>

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\ShipmentPdfRepository;
+use App\Models\ShipmentPdf;
 use Illuminate\Support\Facades\Storage;
 
 class ShipmentPdfService
@@ -26,6 +27,7 @@ class ShipmentPdfService
             'shipment_id' => $shipmentId,
             'type' => $tipo,
             'path_pdf' => $path,
+            'file_name' => $fileName, // Armazenar o nome do arquivo também
         ]);
     }
 
@@ -36,5 +38,27 @@ class ShipmentPdfService
         Storage::disk('public')->delete($pdf->path_pdf);
         
         return $this->shipmentPdfRepository->delete($id);
+    }
+
+    /**
+     * View PDF from shipment
+     */
+    public function view(ShipmentPdf $pdf)
+    {
+        try {
+            // Verificar se o arquivo existe
+            if (!Storage::disk('public')->exists($pdf->path_pdf)) {
+                return back()->withErrors(['error' => 'Arquivo não encontrado.']);
+            }
+
+            // Retornar o arquivo para visualização (não download)
+            $filePath = Storage::disk('public')->path($pdf->path_pdf);
+            return response()->file($filePath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . basename($pdf->path_pdf) . '"'
+            ]);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Erro ao visualizar arquivo.']);
+        }
     }
 }

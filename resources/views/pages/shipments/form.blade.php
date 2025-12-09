@@ -308,7 +308,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ asset('storage/' . $pdf->path_pdf) }}" target="_blank" class="text-decoration-none">
+                                            <a href="{{ route('shipments.pdf.view', $pdf->id) }}" target="_blank" class="text-decoration-none">
                                                 <i class="fas fa-file-pdf text-danger"></i> Visualizar PDF
                                             </a>
                                         </td>
