@@ -31,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('distribution-centers', DistributionCenterController::class);
 
         Route::get('shipments/manage-shipments', [ShipmentController::class, 'manageShipments'])->name('shipments.manage-shipments');
+        
+        Route::get('shipments/{shipment}/download-pdfs', [ShipmentPdfController::class, 'downloadPdfs'])->name('shipments.pdfs.download');
     });
 
     Route::resource('shipments', ShipmentController::class)->except(['manageShipments']);

@@ -71,4 +71,16 @@ class ShipmentPdfController extends Controller
             return back()->withErrors(['error' => 'Erro ao excluir PDF.']);
         }
     }
+
+    /**
+     * Download all PDFs from shipment as ZIP
+     */
+    public function downloadPdfs(Shipment $shipment)
+    {
+        try {
+            return $this->shipmentPdfService->downloadPdfsAsZip($shipment);
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Erro ao fazer download dos PDFs: ' . $e->getMessage()]);
+        }
+    }
 }

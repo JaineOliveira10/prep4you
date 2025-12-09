@@ -61,4 +61,52 @@ class ShipmentPdfService
             return back()->withErrors(['error' => 'Erro ao visualizar arquivo.']);
         }
     }
+    
+    /**
+     * Download all PDFs from shipment as ZIP
+     */
+    public function downloadPdfsAsZip($shipment)
+    {
+        $pdfs = $shipment->pdfs()->get();
+        
+        if ($pdfs->isEmpty()) {
+            throw new \Exception('Nenhum PDF encontrado para esta remessa.');
+        }
+        
+        $zipPath = storage_path('app/temp/shipment_' . $shipment->id . '_' . time() . '.zip');
+        $zipDir = dirname($zipPath);
+        
+        // Criar diretório se não existir
+        if (!is_dir($zipDir)) {
+            mkdir($zipDir, 0755, true);
+        }
+        
+        $zip = new \ZipArchive();
+        
+        if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
+            throw new \Exception('Não foi possível criar o arquivo ZIP.');
+        }
+        
+        $typeMap = [
+            'master_label' => 'Etiqueta_Master',
+            'individual_label' => 'Etiqueta_Individual',
+            'invoice' => 'Nota_Fiscal',
+        ];
+        
+        foreach ($pdfs as $pdf) {
+            $filePath = Storage::disk('public')->path($pdf->path_pdf);
+            
+            if (file_exists($filePath)) {
+                // Gerar nome do arquivo: ID_Tipo.pdf
+                $typeLabel = $typeMap[$pdf->type] ?? $pdf->type;
+                $fileName = $shipment->shipment_code . '_' . $typeLabel . '.pdf';
+                
+                $zip->addFile($filePath, $fileName);
+            }
+        }
+        
+        $zip->close();
+        
+        return response()->download($zipPath, "Remessa_{$shipment->shipment_code}_PDFs.zip")->deleteFileAfterSend(true);
+    }
 }
