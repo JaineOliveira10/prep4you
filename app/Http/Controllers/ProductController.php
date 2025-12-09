@@ -7,6 +7,7 @@ use Illuminate\Database\QueryException;
 use App\Services\ProductService;
 use App\Http\Requests\ProductRequest;
 use App\Models\Client;
+use App\Models\Product;
 
 class ProductController extends Controller
 {
@@ -200,5 +201,21 @@ class ProductController extends Controller
                 'error' => 'Erro ao criar produto: ' . $e->getMessage()
             ], 422);
         }
+    }
+    
+    /**
+     * Retornar dados do produto em JSON
+     */
+    public function getJson(Product $product)
+    {
+        return response()->json([
+            'success' => true,
+            'product' => [
+                'id' => $product->id,
+                'name' => $product->name,
+                'fsnku' => $product->fsnku,
+                'sku' => $product->sku
+            ]
+        ]);
     }
 }

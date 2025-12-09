@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\DistributionCenterController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPdfController;
+use App\Http\Controllers\ProductLabelController;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -51,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::resource('products', ProductController::class)->except(['create', 'store', 'destroy']);
+    Route::get('/products/{product}/json', [ProductController::class, 'getJson'])->name('products.json');
 
 
 
@@ -62,4 +64,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('horizontal', [HomeController::class, 'horizontal'])->name('menu-style.horizontal');
         Route::get('dual-horizontal', [HomeController::class, 'dualhorizontal'])->name('menu-style.dualhorizontal');
     });
+
+    Route::post('/products/{product}/generate-labels', [ProductLabelController::class, 'generatePdf'])->name('products.labels.generate');
+    Route::get('/products/{product}/labels-modal', [ProductLabelController::class, 'showModal'])->name('products.labels.modal');
 });
