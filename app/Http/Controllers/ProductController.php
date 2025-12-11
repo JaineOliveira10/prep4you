@@ -154,8 +154,9 @@ class ProductController extends Controller
             abort(403, 'Você não pode editar este produto.');
         }
         
-        $this->productService->update($id, $request->validated());
-        return redirect()->route('products.index')->with('success', 'Produto atualizado com sucesso!');
+        $this->productService->updateWithShipmentRecalculation($id, $request->validated());
+        
+        return redirect()->route('products.index')->with('success', 'Produto atualizado com sucesso! Remessas contendo este produto foram recalculadas.');
     }
 
     public function destroy(string $id)

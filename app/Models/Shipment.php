@@ -20,28 +20,26 @@ class Shipment extends Model
         'creation_date',
         'total_value',
         'total_items',
-        'error_message'
+        'error_message',
+        'pendency_reason',
+        'collection_proof'
     ];
 
     // Define os status válidos
     public const STATUS_PENDING = 'Pending';
     public const STATUS_IN_PREPARATION = 'In Preparation';
+    public const STATUS_HAS_PENDENCY = 'Has Pendency';
     public const STATUS_PACKED = 'Packed';
     public const STATUS_COLLECTED = 'Collected';
-    public const STATUS_INVOICE_GENERATED = 'Invoice Generated';
-    public const STATUS_PAID = 'Paid';
-    public const STATUS_PRESENTS_ERRORS = 'Presents Errors';
 
     public static function getValidStatuses()
     {
         return [
             self::STATUS_PENDING,
             self::STATUS_IN_PREPARATION,
+            self::STATUS_HAS_PENDENCY,
             self::STATUS_PACKED,
-            self::STATUS_COLLECTED,
-            self::STATUS_INVOICE_GENERATED,
-            self::STATUS_PAID,
-            self::STATUS_PRESENTS_ERRORS
+            self::STATUS_COLLECTED
         ];
     }
 
@@ -71,9 +69,9 @@ class Shipment extends Model
         return in_array($status, self::getValidStatuses());
     }
 
-    // Verificar se tem erros
-    public function hasErrors()
+    // Verificar se tem pendência
+    public function hasPendency()
     {
-        return $this->status === self::STATUS_PRESENTS_ERRORS;
+        return $this->status === self::STATUS_HAS_PENDENCY;
     }
 }

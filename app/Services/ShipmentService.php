@@ -414,4 +414,81 @@ class ShipmentService
         
         return view('shipments.index', compact('shipments', 'clients'));
     }
+    
+    public function recalculateShipmentItems($shipmentId)
+    {
+        $shipment = $this->shipmentRepository->find($shipmentId);
+        
+        if (!$shipment) {
+            return ['error' => 'Remessa não encontrada'];
+        }
+        
+        $totalValue = 0;
+        $totalItems = 0;
+        
+        foreach ($shipment->items as $shipmentItem) {
+            if ($shipmentItem->product) {
+                $priceResult = $this->getProductPrice(
+                    $shipmentItem->product_id,
+                    $shipment->client_id,
+                    $shipmentItem->quantity
+                );
+                
+                $unitPrice = $priceResult['price'] ?? 0;
+                $itemTotal = $shipmentItem->quantity * $unitPrice;
+                
+                $shipmentItem->update([
+                    'unit_price' => $unitPrice,
+                    'total_value' => $itemTotal,
+                    'type' => $shipmentItem->product->type,
+                    'kit_units' => $shipmentItem->product->kit_units
+                ]);
+                
+                $totalValue += $itemTotal;
+                $totalItems += $shipmentItem->quantity;
+            }
+        }
+        
+        $shipment->update([
+            'total_value' => $totalValue,
+            'total_items' => $totalItems
+        ]);
+        
+        return [
+            'success' => true,
+            'shipment' => $shipment->fresh(),
+            'message' => 'Remessa recalculada com sucesso!'
+        ];
+    }
+
+    public function updateShipmentsForProduct($productId)
+    {
+        try {
+            $shipmentIds = ShipmentItem::where('product_id', $productId)
+                ->distinct()
+                ->pluck('shipment_id')
+                ->toArray();
+            
+            $updatedShipments = [];
+            
+            foreach ($shipmentIds as $shipmentId) {
+                $result = $this->recalculateShipmentItems($shipmentId);
+                if (isset($result['success']) && $result['success']) {
+                    $updatedShipments[] = $result['shipment'];
+                }
+            }
+            
+            return [
+                'success' => true,
+                'updated_count' => count($updatedShipments),
+                'shipments' => $updatedShipments,
+                'message' => count($updatedShipments) . ' remessa(s) atualizada(s) com sucesso!'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'error' => 'Erro ao atualizar remessas: ' . $e->getMessage()
+            ];
+        }
+    }
 }

@@ -50,11 +50,9 @@
                            <option value="">Todos os status</option>
                            <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pendente</option>
                            <option value="In Preparation" {{ request('status') == 'In Preparation' ? 'selected' : '' }}>Em Preparação</option>
+                           <option value="Has Pendency" {{ request('status') == 'Has Pendency' ? 'selected' : '' }}>Apresenta Pendência</option>
                            <option value="Packed" {{ request('status') == 'Packed' ? 'selected' : '' }}>Embalado</option>
                            <option value="Collected" {{ request('status') == 'Collected' ? 'selected' : '' }}>Coletado</option>
-                           <option value="Invoice Generated" {{ request('status') == 'Invoice Generated' ? 'selected' : '' }}>Fatura Gerada</option>
-                           <option value="Paid" {{ request('status') == 'Paid' ? 'selected' : '' }}>Pago</option>
-                           <option value="Presents Errors" {{ request('status') == 'Presents Errors' ? 'selected' : '' }}>Apresenta Erros</option>
                         </select>
                      </div>
 
@@ -122,14 +120,12 @@
                                    <span class="badge bg-warning">Pendente</span>
                                @elseif($shipment->status == 'In Preparation')
                                    <span class="badge bg-info">Em Preparação</span>
+                               @elseif($shipment->status == 'Has Pendency')
+                                   <span class="badge bg-dark">Há Pendências</span>
                                @elseif($shipment->status == 'Packed')
                                    <span class="badge bg-primary">Embalado</span>
                                @elseif($shipment->status == 'Collected')
                                    <span class="badge bg-secondary">Coletado</span>
-                               @elseif($shipment->status == 'Invoice Generated')
-                                   <span class="badge bg-dark">Fatura Gerada</span>
-                               @elseif($shipment->status == 'Paid')
-                                   <span class="badge bg-success">Pago</span>
                                @else
                                    <span class="badge bg-light text-dark">{{ $shipment->status }}</span>
                                @endif

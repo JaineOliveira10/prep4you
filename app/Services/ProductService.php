@@ -94,4 +94,18 @@ class ProductService
         }
         return $this->productRepository->delete($id);
     }
+    /**
+     * Atualiza um produto e recalcula todas as remessas que o contêm
+     */
+    public function updateWithShipmentRecalculation($id, array $data)
+    {
+        // Atualizar o produto
+        $product = $this->update($id, $data);
+        
+        // Recalcular todas as remessas que contêm este produto
+        $shipmentService = app(ShipmentService::class);
+        $shipmentService->updateShipmentsForProduct($id);
+        
+        return $product;
+    }
 }
