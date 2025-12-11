@@ -9,6 +9,35 @@
         </span>
     </a>
 
+    <!-- Botão para alterar status (aparece apenas se o status permite) -->
+    @php
+        $allowStatusChange = in_array($status, ['Pending', 'In Preparation', 'Has Pendency', 'Packed']);
+    @endphp
+
+    @if($allowStatusChange && auth()->user()->type == 'admin')
+        <a class="btn btn-sm btn-icon btn-info" data-bs-toggle="tooltip" title="Alterar status" href="#" onclick="showStatusChangeModal(event, '{{ $id }}', '{{ $status }}')">
+            <span class="btn-inner">
+                <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8.5 10.5H15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M8.5 15.5H15.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M9 3.5H15C19.4183 3.5 22.5 6.58172 22.5 11V13C22.5 17.4183 19.4183 20.5 15 20.5H9C4.58172 20.5 1.5 17.4183 1.5 13V11C1.5 6.58172 4.58172 3.5 9 3.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </span>
+        </a>
+    @endif
+
+    <!-- Botão para baixar comprovante de coleta (apenas se status é Coletado) -->
+    @if($status == 'Collected' && auth()->user()->type == 'client')
+        <a class="btn btn-sm btn-icon btn-success" data-bs-toggle="tooltip" title="Baixar comprovante de coleta" href="{{ route('shipments.download-proof', $id) }}">
+            <span class="btn-inner">
+                <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8.5 13L12 16.5M12 16.5L15.5 13M12 16.5V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <path d="M2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C10.3431 21.5 8.75407 21.1143 7.36687 20.4057C6.51962 20.0181 5.52477 20.2707 5.22561 21.0272C4.90181 21.8567 5.45543 22.8127 6.38694 23.1272C8.17127 23.8137 10.0502 24.1429 12 24.1429" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </span>
+        </a>
+    @endif
+
     @if(auth()->user()->type == 'admin')
     <a class="btn btn-sm btn-icon btn-success" data-bs-toggle="tooltip" title="Baixar PDFs" href="#" onclick="downloadShipmentPdfs(event, '{{ $id }}')">
         <span class="btn-inner">
@@ -35,6 +64,48 @@
     </form>
 </div>
 
+<!-- Modal para alterar status -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Alterar Status da Remessa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="statusChangeForm" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <input type="hidden" id="shipmentId" name="shipment_id">
+                    <input type="hidden" id="newStatus" name="status">
+                    <input type="hidden" name="_method" value="PATCH">
+                    
+                    <!-- Campo para motivo da pendência -->
+                    <div id="pendencyReasonField" style="display: none;">
+                        <label for="pendencyReason" class="form-label">Motivo da Pendência *</label>
+                        <textarea class="form-control" id="pendencyReason" name="pendency_reason" rows="4" placeholder="Informe o motivo da pendência"></textarea>
+                    </div>
+
+                    <!-- Campo para comprovante de coleta -->
+                    <div id="collectionProofField" style="display: none;">
+                        <label for="collectionProof" class="form-label">Comprovante de Coleta (PDF ou Foto) *</label>
+                        <input type="file" class="form-control" id="collectionProof" name="collection_proof" accept=".pdf,.jpg,.jpeg,.png">
+                        <small class="form-text text-muted">Formatos aceitos: PDF, JPG, JPEG, PNG</small>
+                    </div>
+
+                    <!-- Mensagem de confirmação para transições simples -->
+                    <div id="confirmationMessage" style="display: none;">
+                        <p id="confirmationText"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Alterar Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 function checkStatusAndEdit(event, id, status) {
     event.preventDefault();
@@ -55,8 +126,6 @@ function checkStatusAndEdit(event, id, status) {
 
 function downloadShipmentPdfs(event, id) {
     event.preventDefault();
-    
-    // Redireciona para a rota de download
     window.location.href = `/shipments/${id}/download-pdfs`;
 }
 
@@ -76,4 +145,256 @@ function checkStatusAndDelete(event, id, status) {
     
     confirmDelete('shipments-delete-' + id, 'Deseja realmente excluir esta remessa?');
 }
+
+function showStatusChangeModal(event, shipmentId, currentStatus) {
+    event.preventDefault();
+
+    const modal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+    const pendencyField = document.getElementById('pendencyReasonField');
+    const collectionProofField = document.getElementById('collectionProofField');
+    const confirmationMessage = document.getElementById('confirmationMessage');
+    const confirmationText = document.getElementById('confirmationText');
+
+    // Limpar apenas os campos visíveis, não os hidden inputs
+    document.getElementById('pendencyReason').value = '';
+    document.getElementById('collectionProof').value = '';
+
+    pendencyField.style.display = 'none';
+    collectionProofField.style.display = 'none';
+    confirmationMessage.style.display = 'none';
+
+    document.getElementById('shipmentId').value = shipmentId;
+
+    let newStatus = null;
+    let statusLabel = '';
+
+    if (currentStatus === 'Pending') {
+        newStatus = 'In Preparation';
+        statusLabel = 'Em Preparação';
+        confirmationMessage.style.display = 'block';
+        confirmationText.textContent = `Deseja alterar o status para "${statusLabel}"?`;
+    } else if (currentStatus === 'In Preparation') {
+        Swal.fire({
+            title: 'Alterar Status',
+            text: 'Selecione a ação desejada:',
+            icon: 'question',
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'Possui Pendência',
+            denyButtonText: 'Embalado',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                showPendencyModal(shipmentId);
+            } else if (result.isDenied) {
+                updateStatusDirect(shipmentId, 'Packed');
+            }
+        });
+        return;
+    } else if (currentStatus === 'Has Pendency') {
+        newStatus = 'In Preparation';
+        statusLabel = 'Em Preparação';
+        confirmationMessage.style.display = 'block';
+        confirmationText.textContent = `Deseja retornar o status para "${statusLabel}"?`;
+    } else if (currentStatus === 'Packed') {
+        showCollectionProofModal(shipmentId);
+        return;
+    }
+
+    if (newStatus) {
+        document.getElementById('newStatus').value = newStatus;
+        modal.show();
+    }
+}
+
+function showPendencyModal(shipmentId) {
+    const modal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+    const pendencyField = document.getElementById('pendencyReasonField');
+    const collectionProofField = document.getElementById('collectionProofField');
+    const confirmationMessage = document.getElementById('confirmationMessage');
+
+    // Limpar apenas o campo de pendência
+    document.getElementById('pendencyReason').value = '';
+    
+    // Setar os valores dos hidden inputs
+    document.getElementById('shipmentId').value = shipmentId;
+    document.getElementById('newStatus').value = 'Has Pendency';
+
+    // Mostrar/ocultar campos
+    pendencyField.style.display = 'block';
+    collectionProofField.style.display = 'none';
+    confirmationMessage.style.display = 'none';
+
+    modal.show();
+}
+
+function showCollectionProofModal(shipmentId) {
+    const modal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+    const pendencyField = document.getElementById('pendencyReasonField');
+    const collectionProofField = document.getElementById('collectionProofField');
+    const confirmationMessage = document.getElementById('confirmationMessage');
+
+    // Limpar apenas o campo de arquivo
+    document.getElementById('collectionProof').value = '';
+    
+    // Setar os valores dos hidden inputs
+    document.getElementById('shipmentId').value = shipmentId;
+    document.getElementById('newStatus').value = 'Collected';
+
+    // Mostrar/ocultar campos
+    pendencyField.style.display = 'none';
+    collectionProofField.style.display = 'block';
+    confirmationMessage.style.display = 'none';
+
+    modal.show();
+}
+
+function updateStatusDirect(shipmentId, newStatus) {
+    const formData = new FormData();
+    formData.append('status', newStatus);
+    formData.append('_method', 'PATCH');
+    formData.append('_token', getCsrfToken());
+
+    fetch(`/shipments/${shipmentId}/update-status`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso',
+                text: data.message || 'Status atualizado com sucesso',
+                confirmButtonText: 'Ok'
+            }).then(() => {
+                location.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: data.error || 'Erro ao atualizar status',
+                confirmButtonText: 'Ok'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Erro ao atualizar status',
+            confirmButtonText: 'Ok'
+        });
+    });
+}
+
+function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+           document.querySelector('input[name="_token"]')?.value || '';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('statusChangeForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const newStatus = document.getElementById('newStatus').value;
+            const pendencyReasonField = document.getElementById('pendencyReason');
+            const collectionProofField = document.getElementById('collectionProof');
+
+            if (newStatus === 'Has Pendency' && !pendencyReasonField.value.trim()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo obrigatório',
+                    text: 'Por favor, informe o motivo da pendência',
+                    confirmButtonText: 'Ok'
+                });
+                return;
+            }
+
+            if (newStatus === 'Collected' && !collectionProofField.files.length) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo obrigatório',
+                    text: 'Por favor, envie o comprovante de coleta',
+                    confirmButtonText: 'Ok'
+                });
+                return;
+            }
+
+            const shipmentId = document.getElementById('shipmentId').value;
+            const newStatusValue = document.getElementById('newStatus').value;
+            const formData = new FormData(this);
+
+            console.log('=== DEBUG STATUS CHANGE ===');
+            console.log('Shipment ID:', shipmentId);
+            console.log('New Status:', newStatusValue);
+            console.log('FormData contents:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`  ${key}:`, value);
+            }
+
+            fetch(`/shipments/${shipmentId}/update-status`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
+                return response.json().then(data => {
+                    console.log('Response data:', data);
+                    if (!response.ok) {
+                        return Promise.reject(data);
+                    }
+                    return data;
+                });
+            })
+            .then(data => {
+                console.log('Success - Data:', data);
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sucesso',
+                        text: data.message || 'Status atualizado com sucesso',
+                        confirmButtonText: 'Ok'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro na API',
+                        text: data.error || 'Erro ao atualizar status',
+                        confirmButtonText: 'Ok'
+                    });
+                }
+            })
+            .catch(error => {                
+                let errorMessage = 'Erro ao atualizar status';
+                
+                if (error?.error) {
+                    errorMessage = error.error;
+                } else if (error?.message) {
+                    errorMessage = error.message;
+                }
+                
+                console.log('Final error message:', errorMessage);
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro ao atualizar',
+                    text: errorMessage,
+                    confirmButtonText: 'Ok',
+                    didOpen: () => {
+                        // Log no console também
+                        console.log('%c[SHIPMENT ERROR] ' + errorMessage, 'color: red; font-weight: bold;');
+                    }
+                });
+            });
+        });
+    }
+});
 </script>

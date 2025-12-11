@@ -50,7 +50,7 @@
                            <option value="">Todos os status</option>
                            <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pendente</option>
                            <option value="In Preparation" {{ request('status') == 'In Preparation' ? 'selected' : '' }}>Em Preparação</option>
-                           <option value="Has Pendency" {{ request('status') == 'Has Pendency' ? 'selected' : '' }}>Apresenta Pendência</option>
+                           <option value="Has Pendency" {{ request('status') == 'Has Pendency' ? 'selected' : '' }}>Há Pendências</option>
                            <option value="Packed" {{ request('status') == 'Packed' ? 'selected' : '' }}>Embalado</option>
                            <option value="Collected" {{ request('status') == 'Collected' ? 'selected' : '' }}>Coletado</option>
                         </select>

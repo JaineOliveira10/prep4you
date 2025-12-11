@@ -25,6 +25,11 @@ class Shipment extends Model
         'collection_proof'
     ];
 
+    protected $casts = [
+        'status' => 'string',
+        'imported_flag' => 'boolean',
+    ];
+
     // Define os status válidos
     public const STATUS_PENDING = 'Pending';
     public const STATUS_IN_PREPARATION = 'In Preparation';

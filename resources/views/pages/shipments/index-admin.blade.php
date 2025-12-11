@@ -50,7 +50,7 @@
                            <option value="">Todos os status</option>
                            <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pendente</option>
                            <option value="In Preparation" {{ request('status') == 'In Preparation' ? 'selected' : '' }}>Em Preparação</option>
-                           <option value="Has Pendency" {{ request('status') == 'Has Pendency' ? 'selected' : '' }}>Apresenta Pendência</option>
+                           <option value="Has Pendency" {{ request('status') == 'Has Pendency' ? 'selected' : '' }}>Há Pendências</option>
                            <option value="Packed" {{ request('status') == 'Packed' ? 'selected' : '' }}>Embalado</option>
                            <option value="Collected" {{ request('status') == 'Collected' ? 'selected' : '' }}>Coletado</option>
                         </select>
@@ -128,32 +128,24 @@
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
                            <td>{{ $shipment->client ? $shipment->client->name : 'N/A' }}</td>
                            <td>
-                              <select class="form-select form-select-sm status-select" 
-                                    data-shipment-id="{{ $shipment->id }}"
-                                    data-current-status="{{ $shipment->status }}">
-                                  <option value="">{{ ucfirst(str_replace('-', ' ', $shipment->status)) }}</option>
-                                  @php
-                                      $validTransitions = match($shipment->status) {
-                                          'Pending' => ['In Preparation'],
-                                          'In Preparation' => ['Has Pendency', 'Packed'],
-                                          'Has Pendency' => ['In Preparation'],
-                                          'Packed' => ['Collected'],
-                                          'Collected' => [],
-                                          default => []
-                                      };
-                                      
-                                      $statusLabels = [
-                                          'Pending' => 'Pendente',
-                                          'In Preparation' => 'Em Preparação',
-                                          'Has Pendency' => 'Há Pendências',
-                                          'Packed' => 'Embalado',
-                                          'Collected' => 'Coletado'
-                                      ];
-                                  @endphp
-                                  @foreach($validTransitions as $status)
-                                      <option value="{{ $status }}">{{ $statusLabels[$status] ?? $status }}</option>
-                                  @endforeach
-                              </select>
+                               @if($shipment->status == 'Pending')
+                                   <span class="badge bg-warning">Pendente</span>
+                               @elseif($shipment->status == 'In Preparation')
+                                   <span class="badge bg-info">Em Preparação</span>
+                               @elseif($shipment->status == 'Has Pendency')
+                                   <span class="badge bg-dark">Há Pendências</span>
+                                   @if($shipment->pendency_reason)
+                                       <div class="alert alert-danger mt-2 py-1 px-2" style="font-size: 0.85rem;">
+                                           <strong>Motivo:</strong> {{ $shipment->pendency_reason }}
+                                       </div>
+                                   @endif
+                               @elseif($shipment->status == 'Packed')
+                                   <span class="badge bg-primary">Embalado</span>
+                               @elseif($shipment->status == 'Collected')
+                                   <span class="badge bg-secondary">Coletado</span>
+                               @else
+                                   <span class="badge bg-light text-dark">{{ $shipment->status }}</span>
+                               @endif
                            </td>
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>
                            <td class="text-end">{{ number_format($shipment->total_items, 0, ',', '.') }}</td>
@@ -173,6 +165,5 @@
 </div>
 </x-app-layout>
 
-@push('scripts')
 
 

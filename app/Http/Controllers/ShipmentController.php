@@ -12,6 +12,8 @@ use App\Models\Product;
 use App\Models\PriceTable;
 use App\Models\PriceRange;
 use App\Models\Shipment;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ShipmentController extends Controller
 {
@@ -411,6 +413,151 @@ class ShipmentController extends Controller
                 'success' => false,
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Update shipment status
+     */
+    public function updateStatus(Request $request, string $id)
+    {
+        try {
+            \Log::info('=== UPDATE STATUS DEBUG ===');
+            \Log::info('Request ID: ' . $id);
+            \Log::info('Request data:', $request->all());
+            
+            $shipment = Shipment::findOrFail($id);
+            \Log::info('Shipment found:', ['id' => $shipment->id, 'current_status' => $shipment->status]);
+            
+            // Validar se o usuário tem permissão
+            if (auth()->user()->type === 'client' && $shipment->client_id !== auth()->user()->client_id) {
+                \Log::warning('Permission denied for user: ' . auth()->user()->id);
+                return response()->json(['error' => 'Você não tem permissão para atualizar esta remessa'], 403);
+            }
+            
+            $newStatus = $request->input('status');
+            $currentStatus = $shipment->status;
+            
+            \Log::info('Status transition:', [
+                'current' => $currentStatus,
+                'new' => $newStatus
+            ]);
+            
+            // Validar transições de status
+            $validTransitions = [
+                Shipment::STATUS_PENDING => [Shipment::STATUS_IN_PREPARATION],
+                Shipment::STATUS_IN_PREPARATION => [Shipment::STATUS_HAS_PENDENCY, Shipment::STATUS_PACKED],
+                Shipment::STATUS_HAS_PENDENCY => [Shipment::STATUS_IN_PREPARATION],
+                Shipment::STATUS_PACKED => [Shipment::STATUS_COLLECTED],
+            ];
+            
+            \Log::info('Valid transitions for current status:', $validTransitions[$currentStatus] ?? []);
+            
+            if (!isset($validTransitions[$currentStatus]) || !in_array($newStatus, $validTransitions[$currentStatus])) {
+                \Log::error('Invalid transition', [
+                    'current_status' => $currentStatus,
+                    'new_status' => $newStatus,
+                    'valid_transitions' => $validTransitions[$currentStatus] ?? 'No transitions defined'
+                ]);
+                return response()->json(['error' => 'Transição de status inválida'], 422);
+            }
+            
+            // Preparar os dados a atualizar
+            $updateData = [
+                'status' => $newStatus,
+            ];
+            
+            // Processar dados específicos por novo status
+            if ($newStatus === Shipment::STATUS_HAS_PENDENCY) {
+                $pendencyReason = $request->input('pendency_reason');
+                if (empty($pendencyReason)) {
+                    return response()->json(['error' => 'Motivo da pendência é obrigatório'], 422);
+                }
+                $updateData['pendency_reason'] = $pendencyReason;
+            } elseif ($newStatus === Shipment::STATUS_IN_PREPARATION && $currentStatus === Shipment::STATUS_HAS_PENDENCY) {
+                $updateData['pendency_reason'] = null;
+            } elseif ($newStatus === Shipment::STATUS_COLLECTED) {
+                $collectionProof = $request->file('collection_proof');
+                if (!$collectionProof) {
+                    return response()->json(['error' => 'Comprovante de coleta é obrigatório'], 422);
+                }
+                
+                // Armazenar o arquivo
+                $path = $collectionProof->store('shipments/proofs', 'public');
+                $updateData['collection_proof'] = $path;
+            }
+            
+            \Log::info('About to update shipment with data:', $updateData);
+            
+            // Use raw query to properly cast enum type
+            $setClauses = [];
+            $bindings = [];
+            
+            foreach ($updateData as $key => $value) {
+                if ($key === 'status') {
+                    $setClauses[] = "\"{$key}\" = ?::shipment_status";
+                } else {
+                    $setClauses[] = "\"{$key}\" = ?";
+                }
+                $bindings[] = $value;
+            }
+            
+            $setClauses[] = '"updated_at" = now()';
+            $bindings[] = $id;
+            
+            $sql = 'UPDATE "shipments" SET ' . implode(', ', $setClauses) . ' WHERE "id" = ?';
+            
+            \Log::info('SQL Query: ' . $sql);
+            \Log::info('Bindings: ', $bindings);
+            
+            DB::update($sql, $bindings);
+            
+            // Refresh the model
+            $shipment->refresh();
+            
+            \Log::info('Shipment updated successfully');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Status atualizado com sucesso',
+                'shipment' => $shipment
+            ]);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            \Log::error('Shipment not found: ' . $e->getMessage());
+            return response()->json(['error' => 'Remessa não encontrada'], 404);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao atualizar status', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Erro ao atualizar status: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Download collection proof
+     */
+    public function downloadCollectionProof(string $id)
+    {
+        try {
+            $shipment = Shipment::findOrFail($id);
+            
+            // Validar se o usuário tem permissão
+            if (auth()->user()->type === 'client' && $shipment->client_id !== auth()->user()->client_id) {
+                abort(403, 'Você não tem permissão para acessar este arquivo');
+            }
+            
+            if (!$shipment->collection_proof || !Storage::disk('public')->exists($shipment->collection_proof)) {
+                abort(404, 'Comprovante não encontrado');
+            }
+            
+            return Storage::disk('public')->download($shipment->collection_proof);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Remessa não encontrada');
         }
     }
 }
