@@ -435,12 +435,14 @@ class ShipmentController extends Controller
                 return response()->json(['error' => 'Você não tem permissão para atualizar esta remessa'], 403);
             }
             
-            $newStatus = $request->input('status');
-            $currentStatus = $shipment->status;
+            $newStatus = trim($request->input('status'));
+            $currentStatus = trim($shipment->status);
             
-            \Log::info('Status transition:', [
+            \Log::info('Status transition (trimmed):', [
                 'current' => $currentStatus,
-                'new' => $newStatus
+                'new' => $newStatus,
+                'current_bytes' => bin2hex($currentStatus),
+                'new_bytes' => bin2hex($newStatus)
             ]);
             
             // Validar transições de status
@@ -452,6 +454,10 @@ class ShipmentController extends Controller
             ];
             
             \Log::info('Valid transitions for current status:', $validTransitions[$currentStatus] ?? []);
+            \Log::info('Is transition valid?', [
+                'isset' => isset($validTransitions[$currentStatus]),
+                'in_array' => in_array($newStatus, $validTransitions[$currentStatus] ?? [])
+            ]);
             
             if (!isset($validTransitions[$currentStatus]) || !in_array($newStatus, $validTransitions[$currentStatus])) {
                 \Log::error('Invalid transition', [
@@ -459,7 +465,7 @@ class ShipmentController extends Controller
                     'new_status' => $newStatus,
                     'valid_transitions' => $validTransitions[$currentStatus] ?? 'No transitions defined'
                 ]);
-                return response()->json(['error' => 'Transição de status inválida'], 422);
+                return response()->json(['error' => 'Transição de status inválida: ' . $currentStatus . ' -> ' . $newStatus], 422);
             }
             
             // Preparar os dados a atualizar

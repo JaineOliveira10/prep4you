@@ -133,7 +133,7 @@
                                @elseif($shipment->status == 'In Preparation')
                                    <span class="badge bg-info">Em Preparação</span>
                                @elseif($shipment->status == 'Has Pendency')
-                                   <span class="badge bg-dark">Há Pendências</span>
+                                   <span class="badge bg-danger">Há Pendências</span>
                                    @if($shipment->pendency_reason)
                                        <div class="alert alert-danger mt-2 py-1 px-2" style="font-size: 0.85rem;">
                                            <strong>Motivo:</strong> {{ $shipment->pendency_reason }}
@@ -142,7 +142,7 @@
                                @elseif($shipment->status == 'Packed')
                                    <span class="badge bg-primary">Embalado</span>
                                @elseif($shipment->status == 'Collected')
-                                   <span class="badge bg-secondary">Coletado</span>
+                                   <span class="badge bg-success">Coletado</span>
                                @else
                                    <span class="badge bg-light text-dark">{{ $shipment->status }}</span>
                                @endif
