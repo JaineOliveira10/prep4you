@@ -46,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('shipment-pdfs/{pdf}', [ShipmentPdfController::class, 'destroy'])->name('shipments.pdf.destroy');
     Route::patch('shipments/{shipment}/update-status', [ShipmentController::class, 'updateStatus'])->name('shipments.update-status');
     Route::get('shipments/{shipment}/download-proof', [ShipmentController::class, 'downloadCollectionProof'])->name('shipments.download-proof');
+    Route::get('shipments/{shipment}/download-preparation-order', [ShipmentController::class, 'downloadPreparationOrder'])->name('shipments.download-preparation-order');
 
     Route::middleware(['restrict.admin'])->group(function () {
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');

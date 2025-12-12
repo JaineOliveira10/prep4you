@@ -1,6 +1,3 @@
-// Arquivo: /public/js/shipments-action.js
-// Gerencia todas as ações relacionadas a remessas (editar, alterar status, deletar, baixar PDFs)
-
 /**
  * Verifica permissões de status antes de permitir edição
  */
@@ -27,6 +24,14 @@ function checkStatusAndEdit(event, id, status) {
 function downloadShipmentPdfs(event, id) {
     event.preventDefault();
     window.location.href = `/shipments/${id}/download-pdfs`;
+}
+
+/**
+ * Baixa a ordem de preparação em PDF
+ */
+function downloadPreparationOrder(event, id) {
+    event.preventDefault();
+    window.location.href = `/shipments/${id}/download-preparation-order`;
 }
 
 /**
@@ -62,7 +67,6 @@ function showStatusChangeModal(event, shipmentId, currentStatus) {
     const confirmationMessage = document.getElementById('confirmationMessage');
     const confirmationText = document.getElementById('confirmationText');
 
-    // Limpar apenas os campos visíveis, não os hidden inputs
     document.getElementById('pendencyReason').value = '';
     document.getElementById('collectionProof').value = '';
 
@@ -123,14 +127,11 @@ function showPendencyModal(shipmentId) {
     const collectionProofField = document.getElementById('collectionProofField');
     const confirmationMessage = document.getElementById('confirmationMessage');
 
-    // Limpar apenas o campo de pendência
     document.getElementById('pendencyReason').value = '';
     
-    // Setar os valores dos hidden inputs
     document.getElementById('shipmentId').value = shipmentId;
     document.getElementById('newStatus').value = 'Has Pendency';
 
-    // Mostrar/ocultar campos
     pendencyField.style.display = 'block';
     collectionProofField.style.display = 'none';
     confirmationMessage.style.display = 'none';
@@ -147,14 +148,11 @@ function showCollectionProofModal(shipmentId) {
     const collectionProofField = document.getElementById('collectionProofField');
     const confirmationMessage = document.getElementById('confirmationMessage');
 
-    // Limpar apenas o campo de arquivo
     document.getElementById('collectionProof').value = '';
     
-    // Setar os valores dos hidden inputs
     document.getElementById('shipmentId').value = shipmentId;
     document.getElementById('newStatus').value = 'Collected';
 
-    // Mostrar/ocultar campos
     pendencyField.style.display = 'none';
     collectionProofField.style.display = 'block';
     confirmationMessage.style.display = 'none';
@@ -179,14 +177,12 @@ function updateStatusDirect(shipmentId, newStatus) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Fechar o modal Bootstrap imediatamente
             const modalElement = document.getElementById('statusChangeModal');
             const modal = bootstrap.Modal.getInstance(modalElement);
             if (modal) {
                 modal.hide();
             }
             
-            // Mostrar sucesso e recarregar
             Swal.fire({
                 icon: 'success',
                 title: 'Sucesso',
@@ -195,7 +191,6 @@ function updateStatusDirect(shipmentId, newStatus) {
                 allowOutsideClick: false,
                 allowEscapeKey: false
             }).then(() => {
-                // Recarregar após clicar Ok
                 window.location.href = window.location.href;
             });
         } else {
@@ -225,7 +220,6 @@ function getCsrfToken() {
            document.querySelector('input[name="_token"]')?.value || '';
 }
 
-// Flag global para evitar submissões duplicadas
 let isSubmitting = false;
 
 /**
@@ -244,7 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
 function handleStatusFormSubmit(e) {
     e.preventDefault();
     
-    // Evitar submissões duplicadas
     if (isSubmitting) {
         return;
     }
@@ -294,14 +287,12 @@ function handleStatusFormSubmit(e) {
     })
     .then(data => {
         if (data.success) {
-            // Fechar o modal Bootstrap imediatamente
             const modalElement = document.getElementById('statusChangeModal');
             const modal = bootstrap.Modal.getInstance(modalElement);
             if (modal) {
                 modal.hide();
             }
             
-            // Mostrar sucesso e recarregar
             Swal.fire({
                 icon: 'success',
                 title: 'Sucesso',
@@ -311,7 +302,6 @@ function handleStatusFormSubmit(e) {
                 allowEscapeKey: false
             }).then(() => {
                 isSubmitting = false;
-                // Recarregar após clicar Ok
                 window.location.href = window.location.href;
             });
         } else {

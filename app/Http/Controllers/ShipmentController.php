@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\PriceTable;
 use App\Models\PriceRange;
 use App\Models\Shipment;
+use App\Services\PreparationOrderService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 
@@ -564,6 +565,38 @@ class ShipmentController extends Controller
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             abort(404, 'Remessa não encontrada');
+        }
+    }
+    
+    /**
+     * Download preparation order PDF
+     */
+    public function downloadPreparationOrder(string $id)
+    {
+        try {
+            $shipment = Shipment::with('client', 'distributionCenter', 'items.product')->findOrFail($id);
+            
+            // Validar se o usuário tem permissão (apenas admin)
+            if (auth()->user()->type !== 'admin') {
+                abort(403, 'Apenas administradores podem baixar a ordem de preparação');
+            }
+            
+            $preparationOrderService = app(PreparationOrderService::class);
+            $pdfContent = $preparationOrderService->generatePreparationOrderPdf($shipment);
+            
+            return response($pdfContent)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="ordem-preparacao_' . $shipment->shipment_code . '.pdf"');
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            abort(404, 'Remessa não encontrada');
+        } catch (\Exception $e) {
+            \Log::error('Erro ao gerar ordem de preparação', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            abort(500, 'Erro ao gerar PDF: ' . $e->getMessage());
         }
     }
 }

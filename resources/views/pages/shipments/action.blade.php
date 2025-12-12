@@ -9,7 +9,6 @@
         </span>
     </a>
 
-    <!-- Botão para alterar status (aparece apenas se o status permite) -->
     @php
         $allowStatusChange = in_array($status, ['Pending', 'In Preparation', 'Has Pendency', 'Packed']);
     @endphp
@@ -26,7 +25,6 @@
         </a>
     @endif
 
-    <!-- Botão para baixar comprovante de coleta (apenas se status é Coletado) -->
     @if($status == 'Collected' && auth()->user()->type == 'client')
         <a class="btn btn-sm btn-icon btn-success" data-bs-toggle="tooltip" title="Baixar comprovante de coleta" href="{{ route('shipments.download-proof', $id) }}">
             <span class="btn-inner">
@@ -47,6 +45,17 @@
             </svg>
         </span>
     </a>
+
+    <a class="btn btn-sm btn-icon btn-primary" data-bs-toggle="tooltip" title="Baixar Ordem de Preparação" href="#" onclick="downloadPreparationOrder(event, '{{ $id }}')">
+        <span class="btn-inner">
+            <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V9L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M13 2V9H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M12 13L12 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M15 16L12 19L9 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+        </span>
+    </a>
     @endif
 
     <a class="btn btn-sm btn-icon btn-danger" data-bs-toggle="tooltip" title="Excluir remessa" href="#" onclick="checkStatusAndDelete(event, '{{ $id }}', '{{ $status }}')">
@@ -64,7 +73,6 @@
     </form>
 </div>
 
-<!-- Modal para alterar status -->
 <div class="modal fade" id="statusChangeModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -79,20 +87,17 @@
                     <input type="hidden" id="newStatus" name="status">
                     <input type="hidden" name="_method" value="PATCH">
                     
-                    <!-- Campo para motivo da pendência -->
                     <div id="pendencyReasonField" style="display: none;">
                         <label for="pendencyReason" class="form-label">Motivo da Pendência *</label>
                         <textarea class="form-control" id="pendencyReason" name="pendency_reason" rows="4" placeholder="Informe o motivo da pendência"></textarea>
                     </div>
 
-                    <!-- Campo para comprovante de coleta -->
                     <div id="collectionProofField" style="display: none;">
                         <label for="collectionProof" class="form-label">Comprovante de Coleta (PDF ou Foto) *</label>
                         <input type="file" class="form-control" id="collectionProof" name="collection_proof" accept=".pdf,.jpg,.jpeg,.png">
                         <small class="form-text text-muted">Formatos aceitos: PDF, JPG, JPEG, PNG</small>
                     </div>
 
-                    <!-- Mensagem de confirmação para transições simples -->
                     <div id="confirmationMessage" style="display: none;">
                         <p id="confirmationText"></p>
                     </div>
