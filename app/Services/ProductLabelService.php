@@ -144,28 +144,36 @@ class ProductLabelService
         .wrapper {
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
+            position: relative;
         }
 
-        .barcode-section {
-            width: 100%;
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
             text-align: center;
         }
 
+        .barcode-section {
+            width: 90%;
+            text-align: center;
+            margin-bottom: 1mm;
+            margin: 0 auto;
+        }
+
         .barcode-section img {
-            width: 95%;
+            width: 70%;
             height: auto;
             max-height: '.$barcodeHeight.'mm;
-            margin-top: 1mm;
+            display: block;
+            margin: 0 auto;
         }
 
         .info {
             text-align: center;
             width: 100%;
-            padding: 0 1mm;
         }
 
         .fsnku-code {
@@ -194,10 +202,12 @@ class ProductLabelService
             $html .= '
     <div class="label '.$breakClass.'">
         <div class="wrapper">
-            <div class="barcode-section">'.$barcodeHtml.'</div>
-            <div class="info">
-                <div class="fsnku-code">'.$fsnkuDisplay.'</div>
-                <div class="product-name">'.$productName.'</div>
+            <div class="content">
+                <div class="barcode-section">'.$barcodeHtml.'</div>
+                <div class="info">
+                    <div class="fsnku-code">'.$fsnkuDisplay.'</div>
+                    <div class="product-name">'.$productName.'</div>
+                </div>
             </div>
         </div>
     </div>';

@@ -125,33 +125,30 @@ $(document).ready(function() {
                     </div>
                     <div class="mb-3">
                         <label for="quantity" class="form-label fw-bold">Quantidade de Etiquetas</label>
-                        <input type="number" id="quantity" class="form-control" name="quantity" min="1" max="1000" value="1" required>
+                        <input type="number" id="quantity" class="form-control" name="quantity" min="1" max="1000" placeholder="0" required>
                         <small class="text-muted">Mínimo 1, máximo 1000</small>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="width" class="form-label fw-bold">Largura (mm)</label>
-                                <input type="number" id="width" class="form-control" name="width" min="10" max="200" value="100" step="0.1" required>
+                                <input type="number" id="width" class="form-control" name="width" min="10" max="200" placeholder="0" step="0.1" required>
                                 <small class="text-muted">10 a 200mm</small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="height" class="form-label fw-bold">Altura (mm)</label>
-                                <input type="number" id="height" class="form-control" name="height" min="10" max="200" value="50" step="0.1" required>
+                                <input type="number" id="height" class="form-control" name="height" min="10" max="200" placeholder="0" step="0.1" required>
                                 <small class="text-muted">10 a 200mm</small>
                             </div>
                         </div>
-                    </div>
-                    <div class="alert alert-info" role="alert">
-                        <small><strong>Dica:</strong> Use 100x50mm para etiquetas padrão</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary" id="generateBtn">
-                        <span id="btnText">Gerar PDF</span>
+                        <span id="btnText">Gerar Etiquetas</span>
                         <span id="spinner" class="spinner-border spinner-border-sm ms-2" style="display:none;" role="status" aria-hidden="true"></span>
                     </button>
                 </div>

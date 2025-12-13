@@ -75,10 +75,8 @@ class ShipmentController extends Controller
         $user = auth()->user();
         $distribution_centers = DistributionCenter::all();
         
-        // Query base
         $query = Shipment::query();
         
-        // Filtro por cliente
         if ($user->type === 'client') {
             $query->where('client_id', $user->client_id);
             $clients = collect([$user->client]);
@@ -89,20 +87,21 @@ class ShipmentController extends Controller
             $clients = Client::all();
         }
         
-        // Filtro por status
         if (request('status')) {
             $query->where('status', request('status'));
         }
 
-        // Filtro por centro de distribuição
         if (request('distribution_center_id')) {
             $query->where('distribution_center_id', request('distribution_center_id'));
         }
         
-        // Filtro por data
-        $dateFilter = request('date_filter', 'created_at');
-        $dateFrom = request('date_from', now()->subDays(30)->format('Y-m-d'));
-        $dateTo = request('date_to', now()->format('Y-m-d'));
+        $dateFilter = request('date_filter', 'collection_date');
+        $dateFrom = request('date_from', now()->format('Y-m-d'));
+        if (request('date_to')) {
+            $dateTo = request('date_to');
+        } else {
+            $dateTo = \Carbon\Carbon::parse($dateFrom)->addDays(7)->format('Y-m-d');
+        }
         
         if ($dateFrom) {
             $query->whereDate($dateFilter, '>=', $dateFrom);
@@ -112,7 +111,7 @@ class ShipmentController extends Controller
             $query->whereDate($dateFilter, '<=', $dateTo);
         }
         
-        $shipments = $query->orderBy('created_at', 'desc')->get();
+        $shipments = $query->orderBy('collection_date', 'desc')->get();
         
         return view('pages.shipments.index-admin', [
             'shipments' => $shipments,

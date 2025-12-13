@@ -74,24 +74,36 @@
                      <div class="col-md-3">
                         <label for="date_filter" class="pb-2">Filtrar por</label>
                         <select name="date_filter" id="date_filter" class="form-select" onchange="this.form.submit()">
-                           <option value="created_at" {{ request('date_filter', 'created_at') == 'created_at' ? 'selected' : '' }}>Data da Criação</option>
-                           <option value="shipment_date" {{ request('date_filter') == 'shipment_date' ? 'selected' : '' }}>Data da Remessa</option>
-                           <option value="collection_date" {{ request('date_filter') == 'collection_date' ? 'selected' : '' }}>Data da Coleta</option>
+                           <option value="created_at" {{ request('date_filter', 'collection_date') == 'created_at' ? 'selected' : '' }}>Data da Criação</option>
+                           <option value="shipment_date" {{ request('date_filter', 'collection_date') == 'shipment_date' ? 'selected' : '' }}>Data da Remessa</option>
+                           <option value="collection_date" {{ request('date_filter', 'collection_date') == 'collection_date' ? 'selected' : '' }}>Data da Coleta</option>
+
                         </select>
                      </div>
                   </div>
+
+                  @php
+                     $dateFrom = request('date_from')
+                        ? \Carbon\Carbon::parse(request('date_from'))
+                        : now('America/Sao_Paulo');
+
+                     $dateTo = request('date_to')
+                        ? \Carbon\Carbon::parse(request('date_to'))
+                        : $dateFrom->copy()->addDays(7);
+                  @endphp
+
 
                   <div class="row mt-3">
                      <div class="col-md-4">
                         <label for="date_from" class="pb-2">Data Inicial</label>
                         <input type="date" name="date_from" id="date_from" class="form-control" 
-                           value="{{ request('date_from', now()->subDays(30)->format('Y-m-d')) }}">
+                           value="{{ $dateFrom->format('Y-m-d') }}">
                      </div>
 
                      <div class="col-md-4">
                         <label for="date_to" class="pb-2">Data Final</label>
                         <input type="date" name="date_to" id="date_to" class="form-control" 
-                           value="{{ request('date_to', now()->format('Y-m-d')) }}">
+                           value="{{ $dateTo->format('Y-m-d') }}">
                      </div>
 
                      <div class="col-md-4 d-flex align-items-end gap-2">
