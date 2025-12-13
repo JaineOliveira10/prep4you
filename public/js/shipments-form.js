@@ -129,7 +129,13 @@ class ShipmentItemsManager {
                 if (quantityInput) {
                     quantityInput.value = displayValue;
                 }
-                this.updateTotalValue(row);
+                
+                const productId = row.querySelector('.product-id').value;
+                if (productId) {
+                    this.updateProductInfo(row, productId);
+                } else {
+                    this.updateTotalValue(row);
+                }
             });
         }
         

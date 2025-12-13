@@ -56,7 +56,7 @@ function registerProduct(fsnku, name, sku, asin) {
 }
 
 // Função para obter preço do produto
-async function getProductPrice(fsnku, sku, type) {
+async function getProductPrice(fsnku, sku, type, quantity = 1) {  // ✅ Adicionar quantity
     try {
         const response = await fetch(window.shipmentRoutes.getProductPrice, {
             method: 'POST',
@@ -68,7 +68,8 @@ async function getProductPrice(fsnku, sku, type) {
             body: JSON.stringify({ 
                 fsnku: fsnku, 
                 sku: sku,
-                type: type 
+                type: type,
+                quantity: quantity  // ✅ Enviar quantidade
             })
         });
         const data = await response.json();
@@ -187,7 +188,7 @@ async function updatePreview(shipmentDate) {  // ✅ Adicionar async
                     if (typeSelect && kitInput) {
                         typeSelect.addEventListener('change', async function() {
                             kitInput.style.display = this.value === 'kit' ? 'inline-block' : 'none';
-                            await loadProductPrice(p.fsnku, p.sku, this.value);
+                            await loadProductPrice(p.fsnku, p.sku, this.value, parseInt(p.qtd) || 1);  // ✅ Adicionar quantidade
                             updateTotalValues(); // ✅ Atualizar totais ao mudar tipo
                         });
                     }
@@ -266,9 +267,9 @@ function updateTotalValues() {
 }
 
 // Função para carregar preço de um produto
-async function loadProductPrice(fsnku, sku, type = 'simple') {
+async function loadProductPrice(fsnku, sku, type = 'simple', quantity = 1) {  // ✅ Adicionar quantity
     try {
-        const price = await getProductPrice(fsnku, sku, type);
+        const price = await getProductPrice(fsnku, sku, type, quantity);  // ✅ Passar quantity
         const product = currentTsvData.products.find(p => p.fsnku === fsnku);
         
         if (product) {
@@ -289,7 +290,9 @@ async function loadAllProductPrices() {
             (document.getElementById(`type_${product.fsnku}`)?.value || 'simple') : 
             'simple';
         
-        await loadProductPrice(product.fsnku, product.sku, type);    } 
+        // ✅ Passar a quantidade do produto
+        await loadProductPrice(product.fsnku, product.sku, type, parseInt(product.qtd) || 1);    
+    } 
 }
 
 // Função para calcular data de coleta
@@ -303,7 +306,7 @@ function calculateCollectionDate(shipmentDate) {
         body: JSON.stringify({ shipment_date: shipmentDate })
     })
     .then(response => response.json())
-    .then(data => data.collection_date);
+    .then( data => data.collection_date);
 }
 
 // Listener para data da remessa
