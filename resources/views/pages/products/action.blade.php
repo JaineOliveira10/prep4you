@@ -26,6 +26,15 @@
             </span>
         </a>
     @endif
+    <a class="btn btn-sm btn-icon btn-primary" data-bs-toggle="tooltip" title="Imprimir etiquetas" 
+       onclick="openLabelModal({{ $id }})" href="javascript:void(0);">
+        <span class="btn-inner">
+            <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 9V2h12v7M6 14h12v8H6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10 17h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+    </a>
     @if(auth()->user()->type == 'client')
         <a class="btn btn-sm btn-icon btn-danger" onclick="confirmDelete('products-delete-{{$id}}', 'Deseja realmente excluir este produto?')" data-bs-toggle="tooltip" title="Excluir produto" href="#">
             <span class="btn-inner">
@@ -37,15 +46,6 @@
             </span>
         </a>
     @endif
-    <a class="btn btn-sm btn-icon btn-primary" data-bs-toggle="tooltip" title="Imprimir etiquetas" 
-       onclick="openLabelModal({{ $id }})" href="javascript:void(0);">
-        <span class="btn-inner">
-            <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6 9V2h12v7M6 14h12v8H6z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M10 17h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </span>
-    </a>
     <form action="{{route('products.destroy',$id)}}" id="products-delete-{{$id}}" method="post">
         @method('delete')
         @csrf()
