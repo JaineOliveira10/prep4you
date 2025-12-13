@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\ShipmentPdfRepository;
 use App\Models\ShipmentPdf;
 use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class ShipmentPdfService
 {
@@ -21,13 +22,14 @@ class ShipmentPdfService
             throw new \Exception('Limite máximo de 6 PDFs atingido.');
         }
 
+        $fileName = $file->getClientOriginalName();
         $path = $file->store("shipments/{$shipmentId}", 'public');
 
         return $this->shipmentPdfRepository->create([
             'shipment_id' => $shipmentId,
             'type' => $tipo,
             'path_pdf' => $path,
-            'file_name' => $fileName, // Armazenar o nome do arquivo também
+            'file_name' => $fileName,
         ]);
     }
 
@@ -64,6 +66,7 @@ class ShipmentPdfService
     
     /**
      * Download all PDFs from shipment as ZIP
+     * Gera ZIP em memória para evitar problemas com sistema de arquivos efêmero no Render
      */
     public function downloadPdfsAsZip($shipment)
     {
@@ -73,40 +76,48 @@ class ShipmentPdfService
             throw new \Exception('Nenhum PDF encontrado para esta remessa.');
         }
         
-        $zipPath = storage_path('app/temp/shipment_' . $shipment->id . '_' . time() . '.zip');
-        $zipDir = dirname($zipPath);
+        // Usar stream para criar ZIP em memória
+        $tempFile = tempnam(sys_get_temp_dir(), 'zip_');
         
-        // Criar diretório se não existir
-        if (!is_dir($zipDir)) {
-            mkdir($zipDir, 0755, true);
-        }
-        
-        $zip = new \ZipArchive();
-        
-        if ($zip->open($zipPath, \ZipArchive::CREATE) !== true) {
-            throw new \Exception('Não foi possível criar o arquivo ZIP.');
-        }
-        
-        $typeMap = [
-            'master_label' => 'Etiqueta_Master',
-            'individual_label' => 'Etiqueta_Individual',
-            'invoice' => 'Nota_Fiscal',
-        ];
-        
-        foreach ($pdfs as $pdf) {
-            $filePath = Storage::disk('public')->path($pdf->path_pdf);
+        try {
+            $zip = new ZipArchive();
             
-            if (file_exists($filePath)) {
-                // Gerar nome do arquivo: ID_Tipo.pdf
-                $typeLabel = $typeMap[$pdf->type] ?? $pdf->type;
-                $fileName = $shipment->shipment_code . '_' . $typeLabel . '.pdf';
-                
-                $zip->addFile($filePath, $fileName);
+            if ($zip->open($tempFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+                throw new \Exception('Não foi possível criar o arquivo ZIP.');
             }
+            
+            $typeMap = [
+                'master_label' => 'Etiqueta_Master',
+                'individual_label' => 'Etiqueta_Individual',
+                'invoice' => 'Nota_Fiscal',
+            ];
+            
+            foreach ($pdfs as $pdf) {
+                $filePath = Storage::disk('public')->path($pdf->path_pdf);
+                
+                if (file_exists($filePath)) {
+                    $typeLabel = $typeMap[$pdf->type] ?? $pdf->type;
+                    $fileName = $shipment->shipment_code . '_' . $typeLabel . '.pdf';
+                    $zip->addFile($filePath, $fileName);
+                }
+            }
+            
+            $zip->close();
+            
+            // Ler conteúdo e deletar arquivo temporário
+            $zipContent = file_get_contents($tempFile);
+            unlink($tempFile);
+            
+            return response($zipContent)
+                ->header('Content-Type', 'application/zip')
+                ->header('Content-Disposition', 'attachment; filename="Remessa_' . $shipment->shipment_code . '_PDFs.zip"')
+                ->header('Content-Length', strlen($zipContent));
+                
+        } catch (\Exception $e) {
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+            throw $e;
         }
-        
-        $zip->close();
-        
-        return response()->download($zipPath, "Remessa_{$shipment->shipment_code}_PDFs.zip")->deleteFileAfterSend(true);
     }
 }

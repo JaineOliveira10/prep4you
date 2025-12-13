@@ -18,6 +18,10 @@ RUN apt-get update && apt-get install -y \
 # Habilita mod_rewrite do Apache
 RUN a2enmod rewrite
 
+# Configura Apache para ouvir na porta 10000 (necessário para Render)
+RUN sed -i 's/80/10000/g' /etc/apache2/ports.conf
+RUN sed -i 's/80/10000/g' /etc/apache2/sites-available/000-default.conf
+
 # Instala Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
@@ -27,11 +31,14 @@ WORKDIR /var/www/html
 # Copia código do projeto
 COPY . /var/www/html
 
-# Ajusta permissões de storage e cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
 # Configura Apache para servir a pasta public
 RUN sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available/000-default.conf
+
+# Ajusta permissões de storage, bootstrap/cache e temp
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
+    mkdir -p /var/www/html/storage/app/temp && \
+    chmod -R 775 /var/www/html/storage/app/temp
 
 # Instala dependências PHP
 RUN composer install --no-dev --optimize-autoloader
