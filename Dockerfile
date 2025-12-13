@@ -4,11 +4,15 @@ FROM php:8.3-apache
 # Instala extensões e dependências do sistema
 RUN apt-get update && apt-get install -y \
     libpq-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
     unzip \
     git \
     curl \
     nodejs npm \
-    && docker-php-ext-install pdo pdo_pgsql \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql \
     && apt-get clean
 
 # Habilita mod_rewrite do Apache
