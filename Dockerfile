@@ -7,12 +7,13 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     libpng-dev \
+    libzip-dev \
     unzip \
     git \
     curl \
     nodejs npm \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql \
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql zip \
     && apt-get clean
 
 # Habilita mod_rewrite do Apache
