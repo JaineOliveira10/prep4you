@@ -34,11 +34,17 @@ COPY . /var/www/html
 # Configura Apache para servir a pasta public
 RUN sed -i 's#/var/www/html#/var/www/html/public#g' /etc/apache2/sites-available/000-default.conf
 
+# Cria diretórios necessários pré-build
+RUN mkdir -p /var/www/html/storage/framework/dompdf \
+    && mkdir -p /var/www/html/storage/framework/fonts \
+    && mkdir -p /var/www/html/storage/logs \
+    && mkdir -p /var/www/html/storage/app/temp \
+    && mkdir -p /var/www/html/resources/fonts \
+    && mkdir -p /var/www/html/bootstrap/cache
+
 # Ajusta permissões de storage, bootstrap/cache e temp
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
-    mkdir -p /var/www/html/storage/app/temp && \
-    chmod -R 775 /var/www/html/storage/app/temp
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/resources/fonts && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/resources/fonts
 
 # Instala dependências PHP
 RUN composer install --no-dev --optimize-autoloader
