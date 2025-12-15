@@ -423,6 +423,12 @@ class ShipmentService
             return ['error' => 'Remessa não encontrada'];
         }
         
+        // Apenas atualizar remessas que ainda estão em preparação
+        $allowedStatuses = ['Pending', 'Has Pendency', 'In Preparation', 'Packed'];
+        if (!in_array($shipment->status, $allowedStatuses)) {
+            return ['error' => 'Remessa já foi coletada ou finalizada. Não é possível recalcular.'];
+        }
+        
         $totalValue = 0;
         $totalItems = 0;
         
@@ -464,6 +470,8 @@ class ShipmentService
     public function updateShipmentsForProduct($productId)
     {
         try {
+            $allowedStatuses = ['Pending', 'Has Pendency', 'In Preparation', 'Packed'];
+            
             $shipmentIds = ShipmentItem::where('product_id', $productId)
                 ->distinct()
                 ->pluck('shipment_id')
@@ -472,9 +480,14 @@ class ShipmentService
             $updatedShipments = [];
             
             foreach ($shipmentIds as $shipmentId) {
-                $result = $this->recalculateShipmentItems($shipmentId);
-                if (isset($result['success']) && $result['success']) {
-                    $updatedShipments[] = $result['shipment'];
+                $shipment = Shipment::find($shipmentId);
+                
+                // Apenas atualizar remessas com status permitido
+                if ($shipment && in_array($shipment->status, $allowedStatuses)) {
+                    $result = $this->recalculateShipmentItems($shipmentId);
+                    if (isset($result['success']) && $result['success']) {
+                        $updatedShipments[] = $result['shipment'];
+                    }
                 }
             }
             

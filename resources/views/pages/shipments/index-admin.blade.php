@@ -50,7 +50,7 @@
                            <option value="">Todos os status</option>
                            <option value="Pending" {{ request('status') == 'Pending' ? 'selected' : '' }}>Pendente</option>
                            <option value="In Preparation" {{ request('status') == 'In Preparation' ? 'selected' : '' }}>Em Preparação</option>
-                           <option value="Has Pendency" {{ request('status') == 'Has Pendency' ? 'selected' : '' }}>Há Pendências</option>
+                           <option value="Has Pendency" {{ request('status') == 'Has Pendency' ? 'selected' : '' }}>Possui Pendências</option>
                            <option value="Packed" {{ request('status') == 'Packed' ? 'selected' : '' }}>Embalado</option>
                            <option value="Collected" {{ request('status') == 'Collected' ? 'selected' : '' }}>Coletado</option>
                         </select>
@@ -145,14 +145,14 @@
                                @elseif($shipment->status == 'In Preparation')
                                    <span class="badge bg-info">Em Preparação</span>
                                @elseif($shipment->status == 'Has Pendency')
-                                   <span class="badge bg-danger">Há Pendências</span>
+                                   <span class="badge bg-danger">Possui Pendências</span>
                                    @if($shipment->pendency_reason)
                                        <div class="alert alert-danger mt-2 py-1 px-2" style="font-size: 0.85rem;">
                                            <strong>Motivo:</strong> {{ $shipment->pendency_reason }}
                                        </div>
                                    @endif
                                @elseif($shipment->status == 'Packed')
-                                   <span class="badge bg-primary">Embalado</span>
+                                   <span class="badge bg-secondary">Embalado</span>
                                @elseif($shipment->status == 'Collected')
                                    <span class="badge bg-success">Coletado</span>
                                @else

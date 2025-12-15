@@ -85,7 +85,7 @@ class ShipmentRequest extends FormRequest
             'items.*.quantity.min' => 'A quantidade deve ser pelo menos 1.',
             'items.*.unit_price.required_if' => 'O preço unitário é obrigatório.',
             'pdfs.required' => 'Você precisa fazer upload de exatamente 3 PDFs (um de cada tipo).',
-            'pdfs.size' => 'Você deve fazer upload de exatamente 3 PDFs, um de cada tipo.',
+            'pdfs.size' => 'Informe os 3 PDFs da Remessa: Nota Fiscal, Etiquetas Master e Etiquetas Individuais.',
             'pdfs.*.tipo.required' => 'O tipo do PDF é obrigatório.',
             'pdfs.*.tipo.in' => 'Os tipos devem ser: Etiqueta individual, Etiqueta master ou Nota fiscal.',
             'pdfs.*.tipo.distinct' => 'Você deve fornecer um PDF de cada tipo.',

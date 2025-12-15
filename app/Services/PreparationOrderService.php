@@ -321,21 +321,21 @@ class PreparationOrderService
             $quantity = $item->quantity ?? 0;
             $type = strtolower($item->type ?? 'simples');
             $kitUnits = $item->kit_units ?? 0;
-            $observation = htmlspecialchars($product->observation ?? $product->prep_observation ?? '-');
+            $observation = htmlspecialchars($product->observation ?? '-');
 
             // Mapear tipo para exibição
             $typeDisplay = match($type) {
-                'simples' => 'Simples',
+                'simples', 'simple' => 'Simples',
                 'kit' => 'Kit',
-                'super kit', 'super-kit' => 'Super Kit',
+                'super kit', 'super-kit', 'super_kit' => 'Super Kit',
                 default => ucfirst($type)
             };
 
             // Determinar classe CSS para tipo
             $typeClass = match($type) {
-                'simples' => 'type-simple',
+                'simples', 'simple' => 'type-simple',
                 'kit' => 'type-kit',
-                'super_kit', 'super-kit' => 'type-super-kit',
+                'super_kit', 'super-kit', 'super kit' => 'type-super-kit',
                 default => 'type-simple'
             };
 

@@ -3,13 +3,13 @@
  */
 function checkStatusAndEdit(event, id, status) {
     event.preventDefault();
-    const allowedStatuses = ['Pending', 'Apresenta Errors'];
+    const allowedStatuses = ['Pending', 'Has Pendency'];
     
     if (!allowedStatuses.includes(status)) {
         Swal.fire({
             icon: 'warning',
             title: 'Ação não permitida',
-            text: `Você só pode editar remessas com status "Pendente" ou "Apresenta Erros".`,
+            text: `Você só pode editar remessas com status "Pendente" ou "Possui Pendências".`,
             confirmButtonText: 'Ok'
         });
         return;
