@@ -107,7 +107,7 @@
                                     </div>
                                     <div class="form-group col-md-12" id="pendency-reason-field" style="display: none;">
                                         <label class="form-label" for="pendency_reason">Motivo da Pendência <span class="text-danger">*</span></label>
-                                        <textarea name="pendency_reason" id="pendency_reason" class="form-control" rows="3" placeholder="Informe o motivo da pendência">{{ old('pendency_reason', $data->pendency_reason ?? '') }}</textarea>
+                                        <textarea name="pendency_reason" id="pendency_reason" class="form-control" rows="3" placeholder="Informe o motivo da pendência" readonly>{{ old('pendency_reason', $data->pendency_reason ?? '') }}</textarea>
                                     </div>
                                 </div>
                             </div>
