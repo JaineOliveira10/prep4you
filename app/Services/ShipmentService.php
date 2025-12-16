@@ -30,16 +30,22 @@ class ShipmentService
 
     public function create(array $data)
     {
-        // Calcular collection_date automaticamente se não fornecida
         if (!isset($data['collection_date']) && isset($data['shipment_date'])) {
             $collectionDate = BusinessDaysHelper::addBusinessDays($data['shipment_date'], 3);
             $data['collection_date'] = $collectionDate->format('Y-m-d');
         }
         
+        $status = $data['status'] ?? 'Pending';
+        $pendency_reason = $data['pendency_reason'] ?? null;
+        if ($status === 'Has Pendency') {
+            $status = 'Pending';
+            $pendency_reason = null;
+        }
+        
         $shipment = $this->shipmentRepository->create([
             'shipment_date' => $data['shipment_date'],
             'collection_date' => $data['collection_date'],
-            'status' => $data['status'] ?? 'Pending',
+            'status' => $status,
             'name' => $data['name'],
             'client_id' => $data['client_id'],
             'distribution_center_id' => $data['distribution_center_id'],
@@ -48,6 +54,7 @@ class ShipmentService
             'creation_date' => $data['creation_date'],
             'total_value' => floatval($data['total_value'] ?? 0),
             'total_items' => intval($data['total_items'] ?? 0),
+            'pendency_reason' => $pendency_reason
         ]);
 
         // Criar itens da remessa se fornecidos
@@ -92,19 +99,24 @@ class ShipmentService
 
     public function update($id, array $data)
     {
-        // Buscar remessa atual para preservar creation_date e imported_flag
         $currentShipment = $this->shipmentRepository->find($id);
         
-        // Calcular collection_date automaticamente se não fornecida
         if (!isset($data['collection_date']) && isset($data['shipment_date'])) {
             $collectionDate = BusinessDaysHelper::addBusinessDays($data['shipment_date'], 3);
             $data['collection_date'] = $collectionDate->format('Y-m-d');
         }
         
+        $status = $data['status'] ?? 'Pending';
+        $pendency_reason = $data['pendency_reason'] ?? null;
+        if ($status === 'Has Pendency') {
+            $status = 'Pending';
+            $pendency_reason = null;
+        }
+        
         $shipment = $this->shipmentRepository->update($id, [
             'shipment_date' => $data['shipment_date'],
             'collection_date' => $data['collection_date'],
-            'status' => $data['status'] ?? 'Pending',
+            'status' => $status,
             'name' => $data['name'],
             'client_id' => $data['client_id'],
             'distribution_center_id' => $data['distribution_center_id'],
@@ -113,6 +125,7 @@ class ShipmentService
             'creation_date' => $currentShipment->creation_date,
             'total_value' => floatval($data['total_value'] ?? 0),
             'total_items' => intval($data['total_items'] ?? 0),
+            'pendency_reason' => $pendency_reason,
         ]);
 
         // Atualizar itens da remessa

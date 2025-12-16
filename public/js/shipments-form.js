@@ -60,7 +60,7 @@ class ShipmentItemsManager {
             </td>
             <td>
                 <input type="text" class="form-control total-value-display text-end" placeholder="R$ 0,00" disabled>
-                <input type="hidden" name="total_value" class="total-value" value="0.00">
+                <input type="hidden" name="items[${this.itemIndex}][total_value]" class="total-value" value="0.00">
             </td>
             <td><button type="button" class="btn btn-sm btn-danger remove-item">Remover</button></td>
         `;
@@ -552,6 +552,28 @@ document.getElementById('shipment_date').addEventListener('change', function() {
         document.querySelector('input[name="collection_date"]').value = collectionDate;
     })
     .catch(error => console.error('Erro ao calcular data de coleta:', error));
+});
+
+// Gerenciar visibilidade do campo de motivo de pendência
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('status');
+    const pendencyReasonField = document.getElementById('pendency-reason-field');
+    
+    function togglePendencyField() {
+        if (statusSelect && pendencyReasonField) {
+            if (statusSelect.value === 'Has Pendency') {
+                pendencyReasonField.style.display = 'block';
+            } else {
+                pendencyReasonField.style.display = 'none';
+            }
+        }
+    }
+    
+    if (statusSelect) {
+        statusSelect.addEventListener('change', togglePendencyField);
+        // Chamar ao carregar a página para mostrar o campo se necessário
+        togglePendencyField();
+    }
 });
 
 // Inicializar gerenciador de itens

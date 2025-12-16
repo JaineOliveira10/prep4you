@@ -99,12 +99,15 @@
                                             <option value="In Preparation" {{ old('status', $data->status ?? '') == 'In Preparation' ? 'selected' : '' }}>Em Preparação</option>
                                             <option value="Packed" {{ old('status', $data->status ?? '') == 'Packed' ? 'selected' : '' }}>Embalado</option>
                                             <option value="Collected" {{ old('status', $data->status ?? '') == 'Collected' ? 'selected' : '' }}>Coletado</option>
-                                            <option value="Invoice Generated" {{ old('status', $data->status ?? '') == 'Invoice Generated' ? 'selected' : '' }}>Fatura Gerada</option>
-                                            <option value="Paid" {{ old('status', $data->status ?? '') == 'Paid' ? 'selected' : '' }}>Pago</option>
+                                            <option value="Has Pendency" {{ old('status', $data->status ?? '') == 'Has Pendency' ? 'selected' : '' }}>Possui Pendências</option>
                                         </select>
                                         @if(auth()->user()->type == 'client')
                                             <input type="hidden" name="status" value="{{ old('status', $data->status ?? 'Pending') }}">
                                         @endif
+                                    </div>
+                                    <div class="form-group col-md-12" id="pendency-reason-field" style="display: none;">
+                                        <label class="form-label" for="pendency_reason">Motivo da Pendência <span class="text-danger">*</span></label>
+                                        <textarea name="pendency_reason" id="pendency_reason" class="form-control" rows="3" placeholder="Informe o motivo da pendência">{{ old('pendency_reason', $data->pendency_reason ?? '') }}</textarea>
                                     </div>
                                 </div>
                             </div>
@@ -168,7 +171,7 @@
                                                     </td>
                                                     <td>
                                                         <input type="text" class="form-control total-value-display text-end" value="{{ !empty($itemData->total_value) ? number_format($itemData->total_value, 2, ',', '.') : '' }}" placeholder="R$ 0,00" disabled>
-                                                        <input type="hidden" name="total_value" class="total-value" value="{{ $itemData->total_value ?? '' }}">
+                                                        <input type="hidden" name="items[{{ $index }}][total_value]" class="total-value" value="{{ $itemData->total_value ?? '' }}">
                                                     </td>
                                                     <td><button type="button" class="btn btn-sm btn-danger remove-item">Remover</button></td>
                                                 </tr>
@@ -231,7 +234,7 @@
                                                 <label class="form-label">Arquivo PDF</label>
                                                 <input type="file" name="pdfs[{{ $index }}][pdf]" class="form-control" accept=".pdf">
                                             </div>
-                                            <div class="col-md-2">
+                                            <div class="col-md-2 d-flex justify-content-end align-items-end">
                                                 <label class="form-label">&nbsp;</label>
                                                 <button type="button" class="btn btn-danger d-block remove-pdf" style="{{ count($pdfs) > 1 ? '' : 'display: none;' }}">Remover</button>
                                             </div>
