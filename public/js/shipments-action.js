@@ -91,7 +91,8 @@ function showStatusChangeModal(event, shipmentId, currentStatus) {
             icon: 'question',
             showCancelButton: false,
             showConfirmButton: false,
-            allowOutsideClick: false,
+            allowOutsideClick: true,
+            allowEscapeKey: true,
             didOpen: (modal) => {
                 const content = modal.querySelector('.swal2-content');
                 
@@ -206,7 +207,7 @@ function showStatusChangeModal(event, shipmentId, currentStatus) {
             icon: 'question',
             showCancelButton: false,
             showConfirmButton: false,
-            allowOutsideClick: false,
+            allowOutsideClick: true,
             allowEscapeKey: true,
             didOpen: (modal) => {
                 const content = modal.querySelector('.swal2-content');
@@ -297,7 +298,7 @@ function showStatusChangeModal(event, shipmentId, currentStatus) {
             icon: 'question',
             showCancelButton: false,
             showConfirmButton: false,
-            allowOutsideClick: false,
+            allowOutsideClick: true,
             allowEscapeKey: true,
             didOpen: (modal) => {
                 const content = modal.querySelector('.swal2-content');
@@ -440,7 +441,7 @@ function updateStatusDirect(shipmentId, newStatus) {
                 allowOutsideClick: false,
                 allowEscapeKey: false
             }).then(() => {
-                window.location.href = window.location.href;
+                window.location.reload();
             });
         } else {
             Swal.fire({
@@ -551,7 +552,7 @@ function handleStatusFormSubmit(e) {
                 allowEscapeKey: false
             }).then(() => {
                 isSubmitting = false;
-                window.location.href = window.location.href;
+                window.location.reload();
             });
         } else {
             isSubmitting = false;
