@@ -124,6 +124,7 @@
                            <th>Dt Criação</th>
                            <th>Dt Remessa</th>
                            <th>Dt Coleta</th>
+                           <th>ID da remessa</th>
                            <th>Cliente</th>
                            <th>Status</th>
                            <th>Centro Dist.</th>
@@ -138,6 +139,7 @@
                            <td>{{ \Carbon\Carbon::parse($shipment->creation_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
+                           <td>{{ $shipment->shipment_code ? $shipment->shipment_code : 'N/A' }}</td>
                            <td>{{ $shipment->client ? $shipment->client->name : 'N/A' }}</td>
                            <td>
                                @if($shipment->status == 'Pending')

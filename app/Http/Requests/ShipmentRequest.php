@@ -26,10 +26,6 @@ class ShipmentRequest extends FormRequest
                 $shipmentId = $shipmentId;
             }
         }
-        
-        $uniqueRule = $isUpdate && $shipmentId
-            ? Rule::unique('shipments', 'shipment_code')->ignore($shipmentId)
-            : 'unique:shipments,shipment_code';
 
         $hasUploadedPdfs = $this->has('pdfs') && is_array($this->input('pdfs')) && 
                            collect($this->input('pdfs'))->some(function($pdf) {
@@ -57,7 +53,7 @@ class ShipmentRequest extends FormRequest
             'pendency_reason' => 'required_if:status,Has Pendency|nullable|string|max:1000',
             'client_id' => 'required|exists:clients,id',
             'distribution_center_id' => 'required|exists:distribution_centers,id',
-            'shipment_code' => ['nullable', 'string', 'max:20', $uniqueRule],
+            'shipment_code' => 'required|string|max:20',
             'imported_flag' => 'nullable|boolean',
             'creation_date' => 'required|date',
             'total_value' => 'nullable|numeric|min:0',
