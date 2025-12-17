@@ -29,8 +29,10 @@ class ShipmentController extends Controller
     {
         $user = auth()->user();
 
+        // Query base
         $query = Shipment::query();
 
+        // Filtro por cliente
         if ($user->type === 'client') {
             $query->where('client_id', $user->client_id);
             $clients = collect([$user->client]);
@@ -41,10 +43,12 @@ class ShipmentController extends Controller
             $clients = Client::all();
         }
         
+        // Filtro por status
         if (request('status')) {
             $query->where('status', request('status'));
         }
-
+        
+        // Filtro por data
         $dateFilter = request('date_filter', 'created_at');
         $dateFrom = request('date_from', now()->subDays(30)->format('Y-m-d'));
         $dateTo = request('date_to', now()->format('Y-m-d'));
@@ -239,6 +243,7 @@ class ShipmentController extends Controller
             $quantity = $request->input('quantity', 1);
             $type = $request->input('type', 'simple');
             
+            // Aceitar client_id do request ou usar o do usuário autenticado
             $clientId = $request->input('client_id') ?? auth()->user()->client->id;
             
             \Log::info('getProductPrice chamado', [
@@ -250,7 +255,7 @@ class ShipmentController extends Controller
                 'clientId' => $clientId
             ]);
             
-
+            // Buscar produto pelo ID ou FSNKU ou SKU
             $product = null;
             
             if ($productId) {
@@ -259,6 +264,7 @@ class ShipmentController extends Controller
                     ->where('type', $type)
                     ->first();
                 
+                // Fallback: buscar sem filtro de tipo se não encontrou
                 if (!$product) {
                     $product = Product::where('id', $productId)
                         ->where('client_id', $clientId)
@@ -270,7 +276,7 @@ class ShipmentController extends Controller
                     ->where('type', $type)
                     ->first();
                 
-
+                // Fallback: buscar sem filtro de tipo se não encontrou
                 if (!$product) {
                     $product = Product::where('fsnku', $fsnku)
                         ->where('client_id', $clientId)
@@ -282,6 +288,7 @@ class ShipmentController extends Controller
                     ->where('type', $type)
                     ->first();
                 
+                // Fallback: buscar sem filtro de tipo se não encontrou
                 if (!$product) {
                     $product = Product::where('sku', $sku)
                         ->where('client_id', $clientId)
@@ -306,6 +313,7 @@ class ShipmentController extends Controller
                 'type' => $product->type
             ]);
             
+            // Usar o service para buscar o preço
             $result = $this->shipmentService->getProductPrice(
                 $product->id, 
                 $clientId, 
@@ -426,6 +434,7 @@ class ShipmentController extends Controller
             $shipment = Shipment::findOrFail($id);
             \Log::info('Shipment found:', ['id' => $shipment->id, 'current_status' => $shipment->status]);
             
+            // Validar se o usuário tem permissão
             if (auth()->user()->type === 'client' && $shipment->client_id !== auth()->user()->client_id) {
                 \Log::warning('Permission denied for user: ' . auth()->user()->id);
                 return response()->json(['error' => 'Você não tem permissão para atualizar esta remessa'], 403);
@@ -441,6 +450,7 @@ class ShipmentController extends Controller
                 'new_bytes' => bin2hex($newStatus)
             ]);
             
+            // Validar transições de status
             $validTransitions = [
                 Shipment::STATUS_PENDING => [Shipment::STATUS_IN_PREPARATION],
                 Shipment::STATUS_IN_PREPARATION => [Shipment::STATUS_HAS_PENDENCY, Shipment::STATUS_PACKED, Shipment::STATUS_PENDING],
@@ -464,10 +474,12 @@ class ShipmentController extends Controller
                 return response()->json(['error' => 'Transição de status inválida: ' . $currentStatus . ' -> ' . $newStatus], 422);
             }
             
+            // Preparar os dados a atualizar
             $updateData = [
                 'status' => $newStatus,
             ];
             
+            // Processar dados específicos por novo status
             if ($newStatus === Shipment::STATUS_HAS_PENDENCY) {
                 $pendencyReason = $request->input('pendency_reason');
                 if (empty($pendencyReason)) {
@@ -482,13 +494,17 @@ class ShipmentController extends Controller
                     return response()->json(['error' => 'Comprovante de coleta é obrigatório'], 422);
                 }
                 
+                // Obter extensão do arquivo
                 $extension = $collectionProof->getClientOriginalExtension();
                 
+                // Criar nome customizado com shipment_code
                 $filename = 'coleta_' . $shipment->shipment_code . '.' . $extension;
                 
+                // Armazenar o arquivo com nome customizado
                 $path = $collectionProof->storeAs('shipments/proofs', $filename, 'public');
                 $updateData['collection_proof'] = $path;
             } elseif ($newStatus === Shipment::STATUS_PACKED && $currentStatus === Shipment::STATUS_COLLECTED) {
+                // Deletar o comprovante de coleta ao voltar para Packed
                 if ($shipment->collection_proof && \Storage::disk('public')->exists($shipment->collection_proof)) {
                     \Storage::disk('public')->delete($shipment->collection_proof);
                 }
@@ -497,6 +513,7 @@ class ShipmentController extends Controller
             
             \Log::info('About to update shipment with data:', $updateData);
             
+            // Use raw query to properly cast enum type
             $setClauses = [];
             $bindings = [];
             
@@ -518,7 +535,8 @@ class ShipmentController extends Controller
             \Log::info('Bindings: ', $bindings);
             
             DB::update($sql, $bindings);
-
+            
+            // Refresh the model
             $shipment->refresh();
             
             \Log::info('Shipment updated successfully');
@@ -551,6 +569,7 @@ class ShipmentController extends Controller
         try {
             $shipment = Shipment::findOrFail($id);
             
+            // Validar se o usuário tem permissão
             if (auth()->user()->type === 'client' && $shipment->client_id !== auth()->user()->client_id) {
                 abort(403, 'Você não tem permissão para acessar este arquivo');
             }
@@ -574,6 +593,7 @@ class ShipmentController extends Controller
         try {
             $shipment = Shipment::with('client', 'distributionCenter', 'items.product')->findOrFail($id);
             
+            // Validar se o usuário tem permissão (apenas admin)
             if (auth()->user()->type !== 'admin') {
                 abort(403, 'Apenas administradores podem baixar a ordem de preparação');
             }

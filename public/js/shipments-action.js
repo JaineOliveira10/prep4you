@@ -87,18 +87,110 @@ function showStatusChangeModal(event, shipmentId, currentStatus) {
     } else if (currentStatus === 'In Preparation') {
         Swal.fire({
             title: 'Alterar Status',
-            text: 'Selecione a ação desejada:',
+            html: '<p style="margin-bottom: 20px; font-size: 14px; color: #666;">Selecione a ação desejada:</p>',
             icon: 'question',
-            showDenyButton: true,
-            showCancelButton: true,
-            confirmButtonText: 'Possui Pendência',
-            denyButtonText: 'Embalado',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                showPendencyModal(shipmentId);
-            } else if (result.isDenied) {
-                updateStatusDirect(shipmentId, 'Packed');
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            didOpen: (modal) => {
+                const content = modal.querySelector('.swal2-content');
+                
+                // Criar container para os botões
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.display = 'grid';
+                buttonContainer.style.gridTemplateColumns = '1fr';
+                buttonContainer.style.gap = '12px';
+                buttonContainer.style.marginTop = '20px';
+                buttonContainer.style.width = '100%';
+                buttonContainer.style.boxSizing = 'border-box';
+                
+                // Botão Possui Pendência (Danger - Vermelho)
+                const pendencyBtn = document.createElement('button');
+                pendencyBtn.textContent = 'Possui Pendência';
+                pendencyBtn.style.width = '100%';
+                pendencyBtn.style.padding = '12px';
+                pendencyBtn.style.fontSize = '14px';
+                pendencyBtn.style.fontWeight = '500';
+                pendencyBtn.style.borderRadius = '5px';
+                pendencyBtn.style.backgroundColor = '#dc3545';
+                pendencyBtn.style.border = 'none';
+                pendencyBtn.style.cursor = 'pointer';
+                pendencyBtn.style.transition = 'background-color 0.3s';
+                pendencyBtn.style.color = '#fff';
+                pendencyBtn.onmouseover = () => pendencyBtn.style.backgroundColor = '#dc3545';
+                pendencyBtn.onmouseout = () => pendencyBtn.style.backgroundColor = '#dc3545';
+                pendencyBtn.onclick = () => {
+                    Swal.close();
+                    showPendencyModal(shipmentId);
+                };
+                
+                // Botão Embalado (Success - Cinza)
+                const packedBtn = document.createElement('button');
+                packedBtn.textContent = 'Embalado';
+                packedBtn.style.width = '100%';
+                packedBtn.style.padding = '12px';
+                packedBtn.style.fontSize = '14px';
+                packedBtn.style.fontWeight = '500';
+                packedBtn.style.borderRadius = '5px';
+                packedBtn.style.backgroundColor = '#6c757d';
+                packedBtn.style.border = 'none';
+                packedBtn.style.cursor = 'pointer';
+                packedBtn.style.transition = 'background-color 0.3s';
+                packedBtn.style.color = '#fff';
+                packedBtn.onmouseover = () => packedBtn.style.backgroundColor = '#6c757d';
+                packedBtn.onmouseout = () => packedBtn.style.backgroundColor = '#6c757d';
+                packedBtn.onclick = () => {
+                    Swal.close();
+                    updateStatusDirect(shipmentId, 'Packed');
+                };
+                
+                // Botão Voltar para Pendente (Warning - Amarelo)
+                const returnBtn = document.createElement('button');
+                returnBtn.textContent = 'Voltar para Pendente';
+                returnBtn.style.width = '100%';
+                returnBtn.style.padding = '12px';
+                returnBtn.style.fontSize = '14px';
+                returnBtn.style.fontWeight = '500';
+                returnBtn.style.borderRadius = '5px';
+                returnBtn.style.backgroundColor = '#EA6A12';
+                returnBtn.style.border = 'none';
+                returnBtn.style.cursor = 'pointer';
+                returnBtn.style.transition = 'background-color 0.3s';
+                returnBtn.style.color = '#fff';
+                returnBtn.onmouseover = () => returnBtn.style.backgroundColor = '#EA6A12';
+                returnBtn.onmouseout = () => returnBtn.style.backgroundColor = '#EA6A12';
+                returnBtn.onclick = () => {
+                    Swal.close();
+                    updateStatusDirect(shipmentId, 'Pending');
+                };
+                
+                buttonContainer.appendChild(pendencyBtn);
+                buttonContainer.appendChild(packedBtn);
+                buttonContainer.appendChild(returnBtn);
+                
+                content.appendChild(buttonContainer);
+
+                const header = modal.querySelector('.swal2-header');
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '×';
+                closeBtn.style.position = 'absolute';
+                closeBtn.style.top = '10px';
+                closeBtn.style.right = '15px';
+                closeBtn.style.backgroundColor = 'transparent';
+                closeBtn.style.border = 'none';
+                closeBtn.style.fontSize = '32px';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.style.color = '#999';
+                closeBtn.style.padding = '0';
+                closeBtn.style.width = '32px';
+                closeBtn.style.height = '32px';
+                closeBtn.style.lineHeight = '32px';
+                closeBtn.style.transition = 'color 0.3s';
+                closeBtn.onmouseover = () => closeBtn.style.color = '#333';
+                closeBtn.onmouseout = () => closeBtn.style.color = '#999';
+                closeBtn.onclick = () => Swal.close();
+                header.style.position = 'relative';
+                header.appendChild(closeBtn);
             }
         });
         return;
@@ -108,7 +200,164 @@ function showStatusChangeModal(event, shipmentId, currentStatus) {
         confirmationMessage.style.display = 'block';
         confirmationText.textContent = `Deseja retornar o status para "${statusLabel}"?`;
     } else if (currentStatus === 'Packed') {
-        showCollectionProofModal(shipmentId);
+        Swal.fire({
+            title: 'Alterar Status',
+            html: '<p style="margin-bottom: 20px; font-size: 14px; color: #666;">Selecione a ação desejada:</p>',
+            icon: 'question',
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: true,
+            didOpen: (modal) => {
+                const content = modal.querySelector('.swal2-content');
+                
+                // Criar container para os botões
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.display = 'grid';
+                buttonContainer.style.gridTemplateColumns = '1fr';
+                buttonContainer.style.gap = '12px';
+                buttonContainer.style.marginTop = '20px';
+                buttonContainer.style.width = '100%';
+                buttonContainer.style.boxSizing = 'border-box';
+                
+                // Botão Coletado (Success - Verde)
+                const collectedBtn = document.createElement('button');
+                collectedBtn.textContent = 'Coletado';
+                collectedBtn.style.width = '100%';
+                collectedBtn.style.padding = '12px';
+                collectedBtn.style.fontSize = '14px';
+                collectedBtn.style.fontWeight = '500';
+                collectedBtn.style.borderRadius = '5px';
+                collectedBtn.style.backgroundColor = '#28a745';
+                collectedBtn.style.border = 'none';
+                collectedBtn.style.cursor = 'pointer';
+                collectedBtn.style.transition = 'background-color 0.3s';
+                collectedBtn.style.color = '#fff';
+                collectedBtn.onmouseover = () => collectedBtn.style.backgroundColor = '#218838';
+                collectedBtn.onmouseout = () => collectedBtn.style.backgroundColor = '#28a745';
+                collectedBtn.onclick = () => {
+                    Swal.close();
+                    showCollectionProofModal(shipmentId);
+                };
+                
+                // Botão Voltar para Preparação (Azul)
+                const returnBtn = document.createElement('button');
+                returnBtn.textContent = 'Voltar para Preparação';
+                returnBtn.style.width = '100%';
+                returnBtn.style.padding = '12px';
+                returnBtn.style.fontSize = '14px';
+                returnBtn.style.fontWeight = '500';
+                returnBtn.style.borderRadius = '5px';
+                returnBtn.style.backgroundColor = '#6410F1';
+                returnBtn.style.border = 'none';
+                returnBtn.style.cursor = 'pointer';
+                returnBtn.style.transition = 'background-color 0.3s';
+                returnBtn.style.color = '#fff';
+                returnBtn.onmouseover = () => returnBtn.style.backgroundColor = '#6410F1';
+                returnBtn.onmouseout = () => returnBtn.style.backgroundColor = '#6410F1';
+                returnBtn.onclick = () => {
+                    Swal.close();
+                    updateStatusDirect(shipmentId, 'In Preparation');
+                };
+                
+                buttonContainer.appendChild(collectedBtn);
+                buttonContainer.appendChild(returnBtn);
+                
+                content.appendChild(buttonContainer);
+                
+                // Adicionar botão de fechar (X) no header
+                const header = modal.querySelector('.swal2-header');
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '×';
+                closeBtn.style.position = 'absolute';
+                closeBtn.style.top = '10px';
+                closeBtn.style.right = '15px';
+                closeBtn.style.backgroundColor = 'transparent';
+                closeBtn.style.border = 'none';
+                closeBtn.style.fontSize = '32px';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.style.color = '#999';
+                closeBtn.style.padding = '0';
+                closeBtn.style.width = '32px';
+                closeBtn.style.height = '32px';
+                closeBtn.style.lineHeight = '32px';
+                closeBtn.style.transition = 'color 0.3s';
+                closeBtn.onmouseover = () => closeBtn.style.color = '#333';
+                closeBtn.onmouseout = () => closeBtn.style.color = '#999';
+                closeBtn.onclick = () => Swal.close();
+                header.style.position = 'relative';
+                header.appendChild(closeBtn);
+            }
+        });
+        return;
+    } else if (currentStatus === 'Collected') {
+        Swal.fire({
+            title: 'Alterar Status',
+            html: '<p style="margin-bottom: 20px; font-size: 14px; color: #666;">Selecione a ação desejada:</p>',
+            icon: 'question',
+            showCancelButton: false,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            allowEscapeKey: true,
+            didOpen: (modal) => {
+                const content = modal.querySelector('.swal2-content');
+                
+                // Criar container para o botão
+                const buttonContainer = document.createElement('div');
+                buttonContainer.style.display = 'grid';
+                buttonContainer.style.gridTemplateColumns = '1fr';
+                buttonContainer.style.gap = '12px';
+                buttonContainer.style.marginTop = '20px';
+                buttonContainer.style.width = '100%';
+                buttonContainer.style.boxSizing = 'border-box';
+                
+                // Botão Voltar para Embalado (Warning - Amarelo)
+                const returnBtn = document.createElement('button');
+                returnBtn.textContent = 'Voltar para Embalado';
+                returnBtn.style.width = '100%';
+                returnBtn.style.padding = '12px';
+                returnBtn.style.fontSize = '14px';
+                returnBtn.style.fontWeight = '500';
+                returnBtn.style.borderRadius = '5px';
+                returnBtn.style.backgroundColor = '#6c757d';
+                returnBtn.style.border = 'none';
+                returnBtn.style.cursor = 'pointer';
+                returnBtn.style.transition = 'background-color 0.3s';
+                returnBtn.style.color = '#fff';
+                returnBtn.onmouseover = () => returnBtn.style.backgroundColor = '#6c757d';
+                returnBtn.onmouseout = () => returnBtn.style.backgroundColor = '#6c757d';
+                returnBtn.onclick = () => {
+                    Swal.close();
+                    updateStatusDirect(shipmentId, 'Packed');
+                };
+                
+                buttonContainer.appendChild(returnBtn);
+                content.appendChild(buttonContainer);
+                
+                // Adicionar botão de fechar (X) no header
+                const header = modal.querySelector('.swal2-header');
+                const closeBtn = document.createElement('button');
+                closeBtn.innerHTML = '×';
+                closeBtn.style.position = 'absolute';
+                closeBtn.style.top = '10px';
+                closeBtn.style.right = '15px';
+                closeBtn.style.backgroundColor = 'transparent';
+                closeBtn.style.border = 'none';
+                closeBtn.style.fontSize = '32px';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.style.color = '#999';
+                closeBtn.style.padding = '0';
+                closeBtn.style.width = '32px';
+                closeBtn.style.height = '32px';
+                closeBtn.style.lineHeight = '32px';
+                closeBtn.style.transition = 'color 0.3s';
+                closeBtn.onmouseover = () => closeBtn.style.color = '#333';
+                closeBtn.onmouseout = () => closeBtn.style.color = '#999';
+                closeBtn.onclick = () => Swal.close();
+                header.style.position = 'relative';
+                header.appendChild(closeBtn);
+            }
+        });
         return;
     }
 

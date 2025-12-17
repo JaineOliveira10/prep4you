@@ -10,7 +10,7 @@
     </a>
 
     @php
-        $allowStatusChange = in_array($status, ['Pending', 'In Preparation', 'Has Pendency', 'Packed']);
+        $allowStatusChange = in_array($status, ['Pending', 'In Preparation', 'Has Pendency', 'Packed', 'Collected']);
     @endphp
 
     @if($allowStatusChange && auth()->user()->type == 'admin')
