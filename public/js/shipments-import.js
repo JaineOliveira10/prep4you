@@ -367,9 +367,11 @@ document.getElementById('previewBtn').addEventListener('click', function () {
         document.getElementById('previewBtn').style.display = 'none';
         document.getElementById('createBtn').style.display = 'inline-block';
 
-        // Preenche data atual automaticamente
-        document.getElementById('shipmentDate').value =
-            new Date().toISOString().split('T')[0];
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        document.getElementById('shipmentDate').value = `${year}-${month}-${day}`;
 
         updatePreview(document.getElementById('shipmentDate').value);
     })
