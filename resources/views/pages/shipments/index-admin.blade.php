@@ -121,23 +121,20 @@
                   <table id="product-list-table" class="table table-striped" role="grid" data-toggle="data-table">
                      <thead>
                         <tr class="ligth">                          
-                           <th>Dt Criação</th>
-                           <th>Dt Remessa</th>
-                           <th>Dt Coleta</th>
+                           <th>Criação<br>Remessa</th>
+                           <th>Coleta</th>
                            <th>ID da remessa</th>
                            <th>Cliente</th>
                            <th>Status</th>
-                           <th>Centro Dist.</th>
-                           <th>Qtd</th>
-                           <th>Vr Total</th>                         
+                           <th>CD</th>
+                           <th>Qtd<br>Vr Total</th>                      
                            <th style="min-width: 100px">Ações</th>
                         </tr>
                      </thead>
                      <tbody>
                         @foreach($shipments as $shipment)
                         <tr>
-                           <td>{{ \Carbon\Carbon::parse($shipment->creation_date)->format('d/m/Y') }}</td>
-                           <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
+                           <td>{{ \Carbon\Carbon::parse($shipment->creation_date)->format('d/m/Y') }}<br>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
                            <td>{{ $shipment->shipment_code ? $shipment->shipment_code : 'N/A' }}</td>
                            <td>{{ $shipment->client ? $shipment->client->name : 'N/A' }}</td>
@@ -162,8 +159,7 @@
                                @endif
                            </td>
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>
-                           <td class="text-end">{{ number_format($shipment->total_items, 0, ',', '.') }}</td>
-                           <td class="text-end">{{ number_format($shipment->total_value, 2, ',', '.') }}</td>
+                           <td class="text-end">{{ number_format($shipment->total_items, 0, ',', '.') }}<br>{{ number_format($shipment->total_value, 2, ',', '.') }}</td>
                            <td>
                               @include('pages.shipments.action', ['id' => $shipment->id, 'status' => $shipment->status])
                            </td>

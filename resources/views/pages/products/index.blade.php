@@ -63,10 +63,9 @@ $(document).ready(function() {
                      <thead>
                         <tr class="ligth">
                            <th>Imagem</th>
-                           <th>Nome</th>
+                           <th>Nome<br>SKU</th>
                            <th>Tipo</th>
                            <th>FSNKU</th>
-                           <th>SKU</th>
                            <th style="min-width: 100px">Ações</th>
                         </tr>
                      </thead>
@@ -82,7 +81,7 @@ $(document).ready(function() {
                                  </div>
                               @endif
                            </td>
-                           <td>{{ $product->name }}</td>
+                           <td>{{ $product->name }}<br>{{ $product->sku ?? '-' }}</td>
                            <td>
                                @if($product->type == 'simple')
                                    <span class="badge bg-primary">Simples</span>
@@ -93,7 +92,6 @@ $(document).ready(function() {
                                @endif
                            </td>
                            <td>{{ $product->fsnku ?? '-' }}</td>
-                           <td>{{ $product->sku ?? '-' }}</td>
                            <td>
                               @include('pages.products.action', ['id' => $product->id])
                            </td>

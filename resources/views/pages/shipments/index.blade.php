@@ -95,12 +95,11 @@
                      <thead>
                         <tr class="ligth">
                            <th>ID Remessa</th>
-                           <th>Qtd</th>
-                           <th>Vr Total</th>
-                           <th>Dt Remessa</th>
-                           <th>Dt Coleta</th>
-                           <th>Centro Dist.</th>
-                           <th>Importado?</th>
+                           <th>Qtd<br>Vr Total</th>
+                           <th>Remessa</th>
+                           <th>Coleta</th>
+                           <th>CD</th>
+                           <th>Imp</th>
                            <th>Status</th>
                            <th style="min-width: 100px">Ações</th>
                         </tr>
@@ -109,8 +108,7 @@
                         @foreach($shipments as $shipment)
                         <tr>
                            <td>{{ $shipment->shipment_code ? $shipment->shipment_code : 'N/A' }}</td>
-                           <td class="text-end">{{ number_format($shipment->total_items, 0, ',', '.') }}</td>
-                           <td class="text-end">{{ number_format($shipment->total_value, 2, ',', '.') }}</td>
+                           <td class="text-end">{{ number_format($shipment->total_items, 0, ',', '.') }}<br>{{ number_format($shipment->total_value, 2, ',', '.') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>
