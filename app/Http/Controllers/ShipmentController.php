@@ -481,9 +481,8 @@ class ShipmentController extends Controller
                 )->header('Content-Type', 'application/json');
             }
             
-            $updateData = [
-                'status' => $newStatus,
-            ];
+            // Preparar dados para atualização
+            $shipment->status = $newStatus;
             
             if ($newStatus === Shipment::STATUS_HAS_PENDENCY) {
                 $pendencyReason = trim($request->input('pendency_reason', ''));
@@ -491,9 +490,9 @@ class ShipmentController extends Controller
                     return response()->json(['error' => 'Motivo da pendência é obrigatório'], 422)
                         ->header('Content-Type', 'application/json');
                 }
-                $updateData['pendency_reason'] = $pendencyReason;
+                $shipment->pendency_reason = $pendencyReason;
             } elseif ($newStatus === Shipment::STATUS_IN_PREPARATION && $currentStatus === Shipment::STATUS_HAS_PENDENCY) {
-                $updateData['pendency_reason'] = null;
+                $shipment->pendency_reason = null;
             } elseif ($newStatus === Shipment::STATUS_COLLECTED) {
                 $collectionProof = $request->file('collection_proof');
                 if (!$collectionProof) {
@@ -507,47 +506,37 @@ class ShipmentController extends Controller
                         ->header('Content-Type', 'application/json');
                 }
                 
-                $extension = $collectionProof->getClientOriginalExtension();
-                
-                $filename = 'coleta_' . $shipment->shipment_code . '.' . $extension;
-                
-                $path = $collectionProof->storeAs('shipments/proofs', $filename, 'public');
-                if (!$path) {
-                    \Log::error('Failed to store collection proof');
-                    return response()->json(['error' => 'Erro ao salvar comprovante de coleta'], 500)
+                try {
+                    $extension = $collectionProof->getClientOriginalExtension();
+                    $filename = 'coleta_' . $shipment->shipment_code . '.' . $extension;
+                    
+                    $path = $collectionProof->storeAs('shipments/proofs', $filename, 'public');
+                    if (!$path) {
+                        \Log::error('Failed to store collection proof');
+                        return response()->json(['error' => 'Erro ao salvar comprovante de coleta'], 500)
+                            ->header('Content-Type', 'application/json');
+                    }
+                    $shipment->collection_proof = $path;
+                } catch (\Exception $e) {
+                    \Log::error('Error uploading file: ' . $e->getMessage());
+                    return response()->json(['error' => 'Erro ao fazer upload do arquivo: ' . $e->getMessage()], 500)
                         ->header('Content-Type', 'application/json');
                 }
-                $updateData['collection_proof'] = $path;
             } elseif ($newStatus === Shipment::STATUS_PACKED && $currentStatus === Shipment::STATUS_COLLECTED) {
                 if ($shipment->collection_proof && \Storage::disk('public')->exists($shipment->collection_proof)) {
-                    \Storage::disk('public')->delete($shipment->collection_proof);
+                    try {
+                        \Storage::disk('public')->delete($shipment->collection_proof);
+                    } catch (\Exception $e) {
+                        \Log::warning('Could not delete old proof: ' . $e->getMessage());
+                    }
                 }
-                $updateData['collection_proof'] = null;
+                $shipment->collection_proof = null;
             }
             
-            \Log::info('About to update shipment with data:', $updateData);
+            \Log::info('About to save shipment with data:', $shipment->toArray());
             
-            $setClauses = [];
-            $bindings = [];
-            
-            foreach ($updateData as $key => $value) {
-                if ($key === 'status') {
-                    $setClauses[] = "\"{$key}\" = ?::shipment_status";
-                } else {
-                    $setClauses[] = "\"{$key}\" = ?";
-                }
-                $bindings[] = $value;
-            }
-            
-            $setClauses[] = '"updated_at" = now()';
-            $bindings[] = $id;
-            
-            $sql = 'UPDATE "shipments" SET ' . implode(', ', $setClauses) . ' WHERE "id" = ?';
-            
-            \Log::info('SQL Query: ' . $sql);
-            \Log::info('Bindings: ', $bindings);
-            
-            DB::update($sql, $bindings);
+            // Usar Eloquent save em vez de SQL raw
+            $shipment->save();
 
             $shipment->refresh();
             
@@ -566,10 +555,10 @@ class ShipmentController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             \Log::error('Database error updating status', [
                 'error' => $e->getMessage(),
-                'sql' => $e->getSql(),
-                'bindings' => $e->getBindings()
+                'sql' => $e->getSql() ?? 'N/A',
+                'bindings' => $e->getBindings() ?? []
             ]);
-            return response()->json(['error' => 'Erro ao atualizar status: ' . $e->getMessage()], 500)
+            return response()->json(['error' => 'Erro ao atualizar status no banco de dados: ' . $e->getMessage()], 500)
                 ->header('Content-Type', 'application/json');
         } catch (\Exception $e) {
             \Log::error('Erro ao atualizar status', [
