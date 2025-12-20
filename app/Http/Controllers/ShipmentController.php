@@ -419,6 +419,12 @@ class ShipmentController extends Controller
     public function updateStatus(Request $request, string $id)
     {
         try {
+            if (empty($id) || !is_numeric($id)) {
+                \Log::warning('Invalid shipment ID provided: ' . $id);
+                return response()->json(['error' => 'ID de remessa inválido'], 400)
+                    ->header('Content-Type', 'application/json');
+            }
+
             \Log::info('=== UPDATE STATUS DEBUG ===');
             \Log::info('Request ID: ' . $id);
             \Log::info('Request data:', $request->all());
@@ -428,11 +434,19 @@ class ShipmentController extends Controller
             
             if (auth()->user()->type === 'client' && $shipment->client_id !== auth()->user()->client_id) {
                 \Log::warning('Permission denied for user: ' . auth()->user()->id);
-                return response()->json(['error' => 'Você não tem permissão para atualizar esta remessa'], 403);
+                return response()->json(['error' => 'Você não tem permissão para atualizar esta remessa'], 403)
+                    ->header('Content-Type', 'application/json');
             }
             
-            $newStatus = trim($request->input('status'));
-            $currentStatus = trim($shipment->status);
+            // Garantir string vazia se null
+            $newStatus = trim((string)$request->input('status', ''));
+            $currentStatus = trim((string)$shipment->status);
+            
+            if (empty($newStatus)) {
+                \Log::warning('Empty status provided');
+                return response()->json(['error' => 'Status não pode estar vazio'], 400)
+                    ->header('Content-Type', 'application/json');
+            }
             
             \Log::info('Status transition (trimmed):', [
                 'current' => $currentStatus,
@@ -461,7 +475,10 @@ class ShipmentController extends Controller
                     'new_status' => $newStatus,
                     'valid_transitions' => $validTransitions[$currentStatus] ?? 'No transitions defined'
                 ]);
-                return response()->json(['error' => 'Transição de status inválida: ' . $currentStatus . ' -> ' . $newStatus], 422);
+                return response()->json(
+                    ['error' => 'Transição de status inválida: ' . $currentStatus . ' -> ' . $newStatus],
+                    422
+                )->header('Content-Type', 'application/json');
             }
             
             $updateData = [
@@ -469,9 +486,10 @@ class ShipmentController extends Controller
             ];
             
             if ($newStatus === Shipment::STATUS_HAS_PENDENCY) {
-                $pendencyReason = $request->input('pendency_reason');
+                $pendencyReason = trim($request->input('pendency_reason', ''));
                 if (empty($pendencyReason)) {
-                    return response()->json(['error' => 'Motivo da pendência é obrigatório'], 422);
+                    return response()->json(['error' => 'Motivo da pendência é obrigatório'], 422)
+                        ->header('Content-Type', 'application/json');
                 }
                 $updateData['pendency_reason'] = $pendencyReason;
             } elseif ($newStatus === Shipment::STATUS_IN_PREPARATION && $currentStatus === Shipment::STATUS_HAS_PENDENCY) {
@@ -479,7 +497,14 @@ class ShipmentController extends Controller
             } elseif ($newStatus === Shipment::STATUS_COLLECTED) {
                 $collectionProof = $request->file('collection_proof');
                 if (!$collectionProof) {
-                    return response()->json(['error' => 'Comprovante de coleta é obrigatório'], 422);
+                    return response()->json(['error' => 'Comprovante de coleta é obrigatório'], 422)
+                        ->header('Content-Type', 'application/json');
+                }
+                
+                if (!$collectionProof->isValid()) {
+                    \Log::error('Invalid file upload: ' . $collectionProof->getErrorMessage());
+                    return response()->json(['error' => 'Erro ao fazer upload do arquivo'], 422)
+                        ->header('Content-Type', 'application/json');
                 }
                 
                 $extension = $collectionProof->getClientOriginalExtension();
@@ -487,6 +512,11 @@ class ShipmentController extends Controller
                 $filename = 'coleta_' . $shipment->shipment_code . '.' . $extension;
                 
                 $path = $collectionProof->storeAs('shipments/proofs', $filename, 'public');
+                if (!$path) {
+                    \Log::error('Failed to store collection proof');
+                    return response()->json(['error' => 'Erro ao salvar comprovante de coleta'], 500)
+                        ->header('Content-Type', 'application/json');
+                }
                 $updateData['collection_proof'] = $path;
             } elseif ($newStatus === Shipment::STATUS_PACKED && $currentStatus === Shipment::STATUS_COLLECTED) {
                 if ($shipment->collection_proof && \Storage::disk('public')->exists($shipment->collection_proof)) {
@@ -527,11 +557,20 @@ class ShipmentController extends Controller
                 'success' => true,
                 'message' => 'Status atualizado com sucesso',
                 'shipment' => $shipment
-            ]);
+            ])->header('Content-Type', 'application/json');
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             \Log::error('Shipment not found: ' . $e->getMessage());
-            return response()->json(['error' => 'Remessa não encontrada'], 404);
+            return response()->json(['error' => 'Remessa não encontrada'], 404)
+                ->header('Content-Type', 'application/json');
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Database error updating status', [
+                'error' => $e->getMessage(),
+                'sql' => $e->getSql(),
+                'bindings' => $e->getBindings()
+            ]);
+            return response()->json(['error' => 'Erro ao atualizar status: ' . $e->getMessage()], 500)
+                ->header('Content-Type', 'application/json');
         } catch (\Exception $e) {
             \Log::error('Erro ao atualizar status', [
                 'error' => $e->getMessage(),
@@ -539,7 +578,8 @@ class ShipmentController extends Controller
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return response()->json(['error' => 'Erro ao atualizar status: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'Erro ao atualizar status: ' . $e->getMessage()], 500)
+                ->header('Content-Type', 'application/json');
         }
     }
 

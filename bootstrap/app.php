@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
+        $middleware->append(\App\Http\Middleware\JsonResponseMiddleware::class);
         $middleware->alias([
             'restrict.client' => \App\Http\Middleware\RestrictClient::class,
             'restrict.admin' => \App\Http\Middleware\RestrictAdmin::class,

@@ -422,9 +422,22 @@ function updateStatusDirect(shipmentId, newStatus) {
 
     fetch(`/shipments/${shipmentId}/update-status`, {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('Response status:', response.status);
+                console.error('Response text:', text);
+                throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             const modalElement = document.getElementById('statusChangeModal');
@@ -453,10 +466,11 @@ function updateStatusDirect(shipmentId, newStatus) {
         }
     })
     .catch(error => {
+        console.error('Update status error:', error);
         Swal.fire({
             icon: 'error',
             title: 'Erro',
-            text: 'Erro ao atualizar status',
+            text: error.message || 'Erro ao atualizar status',
             confirmButtonText: 'Ok'
         });
     });
@@ -525,15 +539,21 @@ function handleStatusFormSubmit(e) {
 
     fetch(`/shipments/${shipmentId}/update-status`, {
         method: 'POST',
-        body: formData
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
     })
     .then(response => {
-        return response.json().then(data => {
-            if (!response.ok) {
-                return Promise.reject(data);
-            }
-            return data;
-        });
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('Response status:', response.status);
+                console.error('Response text:', text);
+                throw new Error(`HTTP ${response.status}: ${text.substring(0, 200)}`);
+            });
+        }
+        return response.json();
     })
     .then(data => {
         if (data.success) {
@@ -567,12 +587,9 @@ function handleStatusFormSubmit(e) {
     .catch(error => {
         isSubmitting = false;
         
-        let errorMessage = 'Erro ao atualizar status';
-        if (error?.error) {
-            errorMessage = error.error;
-        } else if (error?.message) {
-            errorMessage = error.message;
-        }
+        console.error('Form submission error:', error);
+        
+        let errorMessage = error.message || 'Erro ao atualizar status';
         
         Swal.fire({
             icon: 'error',
