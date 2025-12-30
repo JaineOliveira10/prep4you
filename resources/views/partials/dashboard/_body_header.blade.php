@@ -37,6 +37,12 @@
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
             <li><a class="dropdown-item" href="{{route('users.show', auth()->id())}}">Perfil</a></li>
             <li><hr class="dropdown-divider"></li>
+            @if(strtolower(auth()->user()->type) === 'admin')
+              <li><a class="dropdown-item" href="{{route('manual.show-admin', ['pagina' => 'visao-geral'])}}">Manual de Administradores</a></li>
+              <li><hr class="dropdown-divider"></li>
+            @endif
+            <li><a class="dropdown-item" href="{{route('manual.show-client', ['pagina' => 'visao-geral'])}}">Manual de Clientes</a></li>
+            <li><hr class="dropdown-divider"></li>
             <li><form method="POST" action="{{route('logout')}}">
               @csrf
               <a href="javascript:void(0)" class="dropdown-item"

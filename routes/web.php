@@ -10,6 +10,7 @@ use App\Http\Controllers\DistributionCenterController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPdfController;
 use App\Http\Controllers\ProductLabelController;
+use App\Http\Controllers\ManualController;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -33,6 +34,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('shipments/manage-shipments', [ShipmentController::class, 'manageShipments'])->name('shipments.manage-shipments');
         
         Route::get('shipments/{shipment}/download-pdfs', [ShipmentPdfController::class, 'downloadPdfs'])->name('shipments.pdfs.download');
+
+        Route::get('/manual/admin/{pagina}', [ManualController::class, 'showAdmin'])
+        ->name('manual.show-admin');
     });
 
     Route::resource('shipments', ShipmentController::class)->except(['manageShipments']);
@@ -70,4 +74,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/products/{product}/generate-labels', [ProductLabelController::class, 'generatePdf'])->name('products.labels.generate');
     Route::get('/products/{product}/labels-modal', [ProductLabelController::class, 'showModal'])->name('products.labels.modal');
+
+    Route::get('/manual/cliente/{pagina}', [ManualController::class, 'showClient'])
+        ->name('manual.show-client');
 });
