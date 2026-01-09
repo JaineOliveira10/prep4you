@@ -373,7 +373,8 @@ class ShipmentController extends Controller
         try {
             $request->validate([
                 'tsv_file' => 'required|file|mimes:tsv,txt',
-                'shipment_date' => 'required|date'
+                'shipment_date' => 'required|date',
+                'collection_date' => 'nullable|date'
             ]);
 
             $productsData = json_decode($request->input('products_data'), true) ?? [];
@@ -382,7 +383,8 @@ class ShipmentController extends Controller
                 $request->file('tsv_file'),
                 auth()->user()->client->id,
                 $request->input('shipment_date'),
-                $productsData
+                $productsData,
+                $request->input('collection_date')
             );
 
             if (isset($result['error'])) {

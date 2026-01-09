@@ -526,33 +526,6 @@ document.querySelector('form').addEventListener('submit', function(e) {
     });
 });
 
-// Cálculo da data de coleta
-document.getElementById('shipment_date').addEventListener('change', function() {
-    const shipmentDate = this.value;
-    
-    if (!shipmentDate) return;
-
-    // Chamar a rota para calcular a data de coleta
-    fetch(window.shipmentRoutes.calculateCollectionDate, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': window.csrfToken,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            shipment_date: shipmentDate
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Atualizar o input visível e o hidden
-        const collectionDate = data.collection_date;
-        document.getElementById('collection_date').value = collectionDate;
-        document.querySelector('input[name="collection_date"]').value = collectionDate;
-    })
-    .catch(error => console.error('Erro ao calcular data de coleta:', error));
-});
 
 // Gerenciar visibilidade do campo de motivo de pendência
 document.addEventListener('DOMContentLoaded', function() {

@@ -48,7 +48,7 @@ class ShipmentRequest extends FormRequest
         return [
             'name' => 'nullable|string|max:255',
             'shipment_date' => 'required|date',
-            'collection_date' => 'nullable|date|after_or_equal:shipment_date',
+            'collection_date' => 'required|date|after_or_equal:shipment_date',
             'status' => 'required|in:Pending,In Preparation,Packed,Collected,Invoice Generated,Paid,Has Pendency',
             'pendency_reason' => 'required_if:status,Has Pendency|nullable|string|max:1000',
             'client_id' => 'required|exists:clients,id',

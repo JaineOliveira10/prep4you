@@ -170,6 +170,9 @@
                   <div class="mb-3 mt-3">
                      <label for="shipmentDate" class="form-label">Data da Remessa</label>
                      <input type="date" class="form-control" id="shipmentDate" name="shipment_date" required>
+
+                     <label for="collectionDate" class="form-label my-2">Data da Coleta <span class="text-danger">*</span></label>
+                     <input type="date" class="form-control" id="collectionDate" name="collection_date" required>
                   </div>
                   <div id="previewData" class="mt-4"></div>
                   <div id="totalsContainer" class="row mt-3 mx-3" style="display: none;">

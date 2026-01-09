@@ -75,9 +75,7 @@
                                     </div>
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="collection_date">Data da Coleta</label>
-                                        <input type="date" id="collection_date" class="form-control" value="{{ old('collection_date', $data->collection_date ?? '') }}" disabled>
-                                        <input type="hidden" name="collection_date" value="{{ old('collection_date', $data->collection_date ?? '') }}">
-                                        <small class="text-muted">Será calculada como 3 dias úteis após a data da remessa</small>
+                                        <input type="date" name="collection_date" id="collection_date" class="form-control" value="{{ old('collection_date', $data->collection_date ?? '') }}" required>
                                     </div>
                                 </div>
                                 <div class="row">

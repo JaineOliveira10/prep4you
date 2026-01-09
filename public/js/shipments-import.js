@@ -79,19 +79,15 @@ async function getProductPrice(fsnku, sku, type, quantity = 1) {  // ✅ Adicion
     }
 }
 
-// Função para atualizar preview com data de coleta
-async function updatePreview(shipmentDate) {  // ✅ Adicionar async
+// Função para atualizar preview
+async function updatePreview(shipmentDate) {
     if (!currentTsvData) return;
-
-    calculateCollectionDate(shipmentDate)
-        .then(async collectionDate => {  // ✅ Adicionar async aqui também
 
             let headerHtml = `
                 <p><strong>ID do Envio:</strong> ${currentTsvData['ID do envio'] || 'N/A'}</p>
                 <p><strong>Nome:</strong> ${currentTsvData.Nome || 'N/A'}</p>
                 <p><strong>Enviar para:</strong> ${currentTsvData['Enviar para'] || 'N/A'}</p>
                 <p><strong>Data de criação:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
-                <p><strong>Data da Coleta:</strong> ${collectionDate.split('-').reverse().join('/')}</p>
             `;
 
             // Montar tabela de produtos
@@ -211,7 +207,6 @@ async function updatePreview(shipmentDate) {  // ✅ Adicionar async
                 createBtn.disabled = true;
                 createBtn.textContent = 'Cadastre todos os produtos primeiro';
             }
-        });
 }
 
 // Função para atualizar preço na tabela
@@ -295,20 +290,6 @@ async function loadAllProductPrices() {
     } 
 }
 
-// Função para calcular data de coleta
-function calculateCollectionDate(shipmentDate) {
-    return fetch(window.shipmentRoutes.calculateCollectionDate, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': window.csrfToken
-        },
-        body: JSON.stringify({ shipment_date: shipmentDate })
-    })
-    .then(response => response.json())
-    .then( data => data.collection_date);
-}
-
 // Listener para data da remessa
 document.getElementById('shipmentDate').addEventListener('change', function () {
     if (currentTsvData) updatePreview(this.value);
@@ -383,14 +364,32 @@ document.getElementById('previewBtn').addEventListener('click', function () {
 // Criar remessa
 document.getElementById('createBtn').addEventListener('click', function () {
     const shipmentDate = document.getElementById('shipmentDate').value;
+    const collectionDate = document.getElementById('collectionDate')?.value;
+    
     if (!shipmentDate) {
-        alert('Escolha uma data para a remessa');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            text: 'Escolha uma data para a remessa'
+        });
+        return;
+    }
+
+    if (!collectionDate) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            text: 'A data de coleta é obrigatória'
+        });
         return;
     }
 
     const formData = new FormData();
     formData.append('tsv_file', document.getElementById('tsvFile').files[0]);
     formData.append('shipment_date', shipmentDate);
+    if (collectionDate) {
+        formData.append('collection_date', collectionDate);
+    }
     formData.append('products_data', JSON.stringify(currentTsvData.products));
 
     this.disabled = true;

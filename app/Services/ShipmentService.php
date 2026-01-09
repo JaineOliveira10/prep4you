@@ -30,11 +30,6 @@ class ShipmentService
 
     public function create(array $data)
     {
-        if (!isset($data['collection_date']) && isset($data['shipment_date'])) {
-            $collectionDate = BusinessDaysHelper::addBusinessDays($data['shipment_date'], 3);
-            $data['collection_date'] = $collectionDate->format('Y-m-d');
-        }
-        
         $status = $data['status'] ?? 'Pending';
         $pendency_reason = $data['pendency_reason'] ?? null;
         if ($status === 'Has Pendency') {
@@ -44,7 +39,7 @@ class ShipmentService
         
         $shipment = $this->shipmentRepository->create([
             'shipment_date' => $data['shipment_date'],
-            'collection_date' => $data['collection_date'],
+            'collection_date' => $data['collection_date'] ?? null,
             'status' => $status,
             'name' => $data['name'],
             'client_id' => $data['client_id'],
@@ -312,7 +307,7 @@ class ShipmentService
     }
 
     
-    public function importFromTsv($file, $clientId, $shipmentDate = null, $productsData = [])
+    public function importFromTsv($file, $clientId, $shipmentDate = null, $productsData = [], $collectionDate = null)
     {
         try {
             $fileHandle = fopen($file->getRealPath(), 'r');
@@ -369,6 +364,7 @@ class ShipmentService
                 'client_id' => $clientId,
                 'distribution_center_id' => $dc->id,
                 'shipment_date' => $shipmentDate ?: now()->format('Y-m-d'),
+                'collection_date' => $collectionDate,
                 'status' => 'Pending',
                 'creation_date' => now()->format('Y-m-d'),
                 'total_value' => $totalValue,
