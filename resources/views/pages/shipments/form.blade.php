@@ -74,7 +74,7 @@
                                         <input type="date" name="shipment_date" id="shipment_date" class="form-control" value="{{ old('shipment_date', $data->shipment_date ?? '') }}" required>
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label class="form-label" for="collection_date">Data da Coleta</label>
+                                        <label class="form-label" for="collection_date">Data da Coleta <span class="text-danger">*</span></label>
                                         <input type="date" name="collection_date" id="collection_date" class="form-control" value="{{ old('collection_date', $data->collection_date ?? '') }}" required>
                                     </div>
                                 </div>
