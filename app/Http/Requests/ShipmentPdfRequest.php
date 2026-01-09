@@ -14,7 +14,7 @@ class ShipmentPdfRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pdf' => 'required|mimes:pdf|max:5120',
+            'pdf' => 'required|mimes:pdf|max:10240',
             'tipo' => 'required|in:individual_label,master_label,invoice',
         ];
     }
