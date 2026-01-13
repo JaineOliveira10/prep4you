@@ -287,6 +287,8 @@
        });
    });
 </script>
+
+<script src="{{ asset('js/shipments-action.js') }}"></script>
 <script src="{{ asset('js/shipments-import.js') }}"></script>
 
 
