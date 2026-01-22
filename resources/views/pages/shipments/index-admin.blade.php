@@ -53,6 +53,7 @@
                            <option value="Has Pendency" {{ request('status') == 'Has Pendency' ? 'selected' : '' }}>Possui Pendências</option>
                            <option value="Packed" {{ request('status') == 'Packed' ? 'selected' : '' }}>Embalado</option>
                            <option value="Collected" {{ request('status') == 'Collected' ? 'selected' : '' }}>Coletado</option>
+                           <option value="Invoice Generated" {{ request('status') == 'Invoice Generated' ? 'selected' : '' }}>Gerado Fatura</option>
                         </select>
                      </div>
 
@@ -154,7 +155,9 @@
                                    <span class="badge bg-secondary">Embalado</span>
                                @elseif($shipment->status == 'Collected')
                                    <span class="badge bg-success">Coletado</span>
-                               @else
+                              @elseif($shipment->status == 'Invoice Generated')      
+                                   <span class="badge bg-secondary">Gerado Fatura</span>
+                              @else
                                    <span class="badge bg-light text-dark">{{ $shipment->status }}</span>
                                @endif
                            </td>

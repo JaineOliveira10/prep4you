@@ -16,14 +16,16 @@ class JsonResponseMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        // Se for uma requisição AJAX, API ou shipments update-status, garante que sempre retorna JSON
+        if ($request->is('*pdf*') || $request->is('*download*')) {
+            return $next($request);
+        }
+
         if ($request->expectsJson() || $request->is('shipments/*/update-status') || $this->isApiRequest($request)) {
             $request->headers->set('Accept', 'application/json');
         }
 
         $response = $next($request);
 
-        // Se for uma requisição AJAX ou para API, garante o header JSON
         if ($request->expectsJson() || $request->is('shipments/*/update-status') || $this->isApiRequest($request)) {
             $response->header('Content-Type', 'application/json; charset=UTF-8');
         }

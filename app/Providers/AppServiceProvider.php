@@ -15,6 +15,8 @@ use App\Interfaces\ProductRepositoryInterface;
 use App\Repositories\ProductRepository;
 use App\Interfaces\ShipmentRepositoryInterface;
 use App\Repositories\ShipmentRepository;
+use App\Interfaces\MonthlyClosureRepositoryInterface;
+use App\Repositories\MonthlyClosureRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DistributionCenterRepositoryInterface::class, DistributionCenterRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(ShipmentRepositoryInterface::class, ShipmentRepository::class);
+        $this->app->bind(MonthlyClosureRepositoryInterface::class, MonthlyClosureRepository::class);
     }
 
     public function boot(): void

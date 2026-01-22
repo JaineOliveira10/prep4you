@@ -11,6 +11,7 @@ use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPdfController;
 use App\Http\Controllers\ProductLabelController;
 use App\Http\Controllers\ManualController;
+use App\Http\Controllers\MonthlyClosureController;
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -37,6 +38,13 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('/manual/admin/{pagina}', [ManualController::class, 'showAdmin'])
         ->name('manual.show-admin');
+
+        Route::resource('monthly-closures', MonthlyClosureController::class);
+        Route::get('monthly-closures/{closure}/download', [MonthlyClosureController::class, 'download'])->name('monthly-closures.download');
+        Route::delete('monthly-closures/{closure}/client/{client}', [MonthlyClosureController::class, 'destroyClient'])->name('monthly-closures.destroy-client');
+        Route::get('monthly-closures/{closure}/details/{closureClient}', [MonthlyClosureController::class, 'details'])->name('monthly-closures.details');
+        Route::post('api/monthly-closure/preview', [MonthlyClosureController::class, 'previewClosure']);
+        Route::post('api/monthly-closure/preview-pdf', [MonthlyClosureController::class, 'previewPdf'])->name('monthly-closures.preview-pdf');        
     });
 
     Route::resource('shipments', ShipmentController::class)->except(['manageShipments']);
