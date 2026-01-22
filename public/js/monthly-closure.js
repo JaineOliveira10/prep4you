@@ -61,6 +61,16 @@ function previewNewClosure() {
          throw new Error(data.error);
       }
 
+      if (!data.shipments || data.shipments.length === 0) {
+         document.getElementById('loadingMessage').style.display = 'none';
+         Swal.fire({
+            icon: 'warning',
+            title: 'Sem Remessas',
+            text: 'O cliente não possui remessas neste período. Não é possível criar fechamento sem remessas.'
+         });
+         return;
+      }
+
       document.getElementById('new-closure-month').textContent = `${month}/${year}`;
       document.getElementById('new-closure-client').textContent = clientName;
       document.getElementById('new-closure-simple-labels').textContent = data.total_simple_labels || 0;
