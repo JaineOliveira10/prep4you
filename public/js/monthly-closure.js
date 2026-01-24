@@ -39,9 +39,63 @@ function previewNewClosure() {
    document.getElementById('loadingMessage').style.display = 'block';
    document.getElementById('step2Preview').style.display = 'none';
 
+   // Verificar se já existe fechamento para este período e cliente
+   checkExistingClosure(yearMonth, parseInt(clientId))
+      .then(exists => {
+         if (exists) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            Swal.fire({
+               icon: 'warning',
+               title: 'Fechamento Existente',
+               text: 'Já existe um fechamento para este cliente neste período. É necessário excluir o fechamento anterior antes de criar um novo.',
+               showCancelButton: true,
+               confirmButtonText: 'Ir para Listagem',
+               cancelButtonText: 'Cancelar'
+            }).then((result) => {
+               if (result.isConfirmed) {
+                  // Fechar modal e redirecionar para listagem
+                  const modal = bootstrap.Modal.getInstance(document.getElementById('newClosureModal'));
+                  modal.hide();
+               }
+            });
+            return;
+         }
+         
+         // Continuar com o preview
+         loadClosurePreview(yearMonth);
+      });
+}
+
+function checkExistingClosure(yearMonth, clientId) {
+   const [year, month] = yearMonth.split('-');
+   
+   return fetch('/api/monthly-closure/check-existing', {
+      method: 'POST',
+      headers: {
+         'Content-Type': 'application/json',
+         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({
+         year: parseInt(year),
+         month: parseInt(month),
+         client_id: clientId
+      })
+   })
+   .then(response => response.json())
+   .then(data => data.exists || false)
+   .catch(error => {
+      console.error('Erro ao verificar fechamento:', error);
+      return false;
+   });
+}
+
+function loadClosurePreview(yearMonth) {
+   const clientIdSelect = document.getElementById('closure_client_id');
+   const clientName = clientIdSelect.options[clientIdSelect.selectedIndex].text;
+   const clientId = newClosureData.client_id;
+
    // Buscar dados da procedure sem criar ainda
    const [year, month] = yearMonth.split('-');
-   const clientName = clientIdSelect.options[clientIdSelect.selectedIndex].text;
 
    fetch(`/api/monthly-closure/preview`, {
       method: 'POST',
@@ -91,10 +145,10 @@ function previewNewClosure() {
       // Preencher remessas
       let shipmentsHtml = '';
       if (data.shipments && data.shipments.length > 0) {
-         shipmentsHtml = '<table class="table table-sm table-striped"><thead><tr><th>ID</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
+         shipmentsHtml = '<table class="table table-sm table-striped"><thead><tr><th>ID Remessa</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
          data.shipments.forEach(shipment => {
             shipmentsHtml += `<tr>
-               <td>${shipment.id}</td>
+               <td>${shipment.shipment_code}</td>
                <td>${shipment.creation_date}</td>
                <td>${shipment.total_items || 0}</td>
                <td>R$ ${parseFloat(shipment.value || 0).toFixed(2).replace('.', ',')}</td>
@@ -132,7 +186,119 @@ function backToStep1() {
    document.getElementById('step2Footer').style.display = 'none';
 }
 
-// Confirmar e criar o fechamento
+// Salvar o novo fechamento (executar procedure)
+function saveNewClosure() {
+   // Usar dados armazenados em newClosureData
+   const yearMonth = newClosureData.year_month;
+   const clientId = newClosureData.client_id;
+
+   if (!yearMonth || !clientId) {
+      Swal.fire({
+         icon: 'error',
+         title: 'Erro',
+         text: 'Dados insuficientes para criar o fechamento'
+      });
+      return;
+   }
+
+   const formData = new FormData();
+   formData.append('year_month', yearMonth);
+   formData.append('client_id', clientId);
+   formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+   // Salvar no banco (executar procedure)
+   fetch(window.storeRoute || '/monthly-closures', {
+      method: 'POST',
+      body: formData
+   })
+   .then(response => {
+      if (!response.ok) {
+         return response.json().then(data => {
+            throw new Error(data.message || 'Erro ao criar fechamento');
+         });
+      }
+      return response.json();
+   })
+   .then(data => {
+      // Sucesso ao salvar, agora fazer download do PDF
+      downloadNewClosurePdf();
+   })
+   .catch(error => {
+      console.error(error);
+      Swal.fire({
+         icon: 'error',
+         title: 'Erro',
+         text: error.message || 'Erro ao criar fechamento'
+      });
+   });
+}
+
+// Fazer download do PDF após salvar
+function downloadNewClosurePdf() {
+   const [year, month] = newClosureData.year_month.split('-');
+   const formData = new FormData();
+   formData.append('year', parseInt(year));
+   formData.append('month', parseInt(month));
+   formData.append('client_id', newClosureData.client_id);
+   formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+   fetch(window.previewPdfRoute || '/api/monthly-closure/preview-pdf', {
+      method: 'POST',
+      body: formData
+   })
+   .then(response => {
+      if (!response.ok) {
+         return response.text().then(text => {
+            console.error(text);
+            throw new Error('Erro ao gerar PDF');
+         });
+      }
+
+      const disposition = response.headers.get('Content-Disposition');
+      let filename = 'fechamento.pdf';
+
+      if (disposition && disposition.includes('filename=')) {
+         filename = disposition.split('filename=')[1].replace(/"/g, '').trim();
+      }
+
+      return response.blob().then(blob => ({ blob, filename }));
+   })
+   .then(({ blob, filename }) => {
+      if (blob.size === 0) {
+         throw new Error('PDF gerado vazio');
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      Swal.fire({
+         icon: 'success',
+         title: 'Sucesso',
+         text: 'Fechamento criado com sucesso! Realizando download do PDF...',
+         didClose: () => { 
+            location.reload(); 
+         }
+      });
+
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+   })
+   .catch(error => {
+      console.error(error);
+      Swal.fire({
+         icon: 'error',
+         title: 'Erro',
+         text: error.message
+      });
+   });
+}
+
+// Confirmar e criar o fechamento (versão antiga para download direto)
 function confirmNewClosure(payload, successMessage = 'Download iniciado com sucesso!') {
    const formData = new FormData();
 
@@ -143,7 +309,7 @@ function confirmNewClosure(payload, successMessage = 'Download iniciado com suce
    }
    // ✅ se veio year/month/client_id (criação)
    else {
-      if (!payload.year || !payload.month || !payload.client_id) {
+      if (!payload.year_month || !payload.client_id) {
          Swal.fire({
             icon: 'error',
             title: 'Erro',
@@ -152,8 +318,7 @@ function confirmNewClosure(payload, successMessage = 'Download iniciado com suce
          return;
       }
 
-      formData.append('year', payload.year);
-      formData.append('month', payload.month);
+      formData.append('year_month', payload.year_month);
       formData.append('client_id', payload.client_id);
    }
 

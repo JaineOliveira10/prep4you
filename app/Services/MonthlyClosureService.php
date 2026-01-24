@@ -130,13 +130,14 @@ class MonthlyClosureService
             ->where('client_id', $client->id)
             ->whereYear('creation_date', $year)
             ->whereMonth('creation_date', $month)
-            ->select('id', 'creation_date', 'total_items')
+            ->select('id', 'shipment_code', 'creation_date', 'total_items')
             ->selectRaw('(SELECT SUM(total_value) FROM shipment_items WHERE shipment_id = shipments.id) as value')
             ->orderBy('creation_date', 'asc')
             ->get()
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
+                    'shipment_code' => $item->shipment_code,
                     'creation_date' => \Carbon\Carbon::parse($item->creation_date)->format('d/m/Y'),
                     'total_items' => $item->total_items,
                     'value' => $item->value,
@@ -233,13 +234,14 @@ class MonthlyClosureService
             ->where('client_id', $client->id)
             ->whereYear('creation_date', $year)
             ->whereMonth('creation_date', $month)
-            ->select('id', 'creation_date', 'total_items')
+            ->select('id', 'shipment_code', 'creation_date', 'total_items')
             ->selectRaw('(SELECT SUM(total_value) FROM shipment_items WHERE shipment_id = shipments.id) as value')
             ->orderBy('creation_date', 'asc')
             ->get()
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
+                    'shipment_code' => $item->shipment_code,
                     'creation_date' => \Carbon\Carbon::parse($item->creation_date)->format('d/m/Y'),
                     'total_items' => $item->total_items,
                     'value' => $item->value,

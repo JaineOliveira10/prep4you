@@ -107,6 +107,11 @@
                                         <label class="form-label" for="pendency_reason">Motivo da Pendência <span class="text-danger">*</span></label>
                                         <textarea name="pendency_reason" id="pendency_reason" class="form-control" rows="3" placeholder="Informe o motivo da pendência" readonly>{{ old('pendency_reason', $data->pendency_reason ?? '') }}</textarea>
                                     </div>
+                                    <div class="form-group col-md-12">
+                                        <label class="form-label" for="observations">Observações (Máx. 300 caracteres)</label>
+                                        <textarea name="observations" id="observations" class="form-control" rows="3" placeholder="Digite observações sobre a remessa" maxlength="300">{{ old('observations', $data->observations ?? '') }}</textarea>
+                                        <small class="text-muted d-block mt-1"><span id="char-count">0</span>/300 caracteres</small>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -357,6 +362,16 @@
         };
         window.csrfToken = '{{ csrf_token() }}';
         window.userType = '{{ auth()->user()->type }}';
+
+        // Contador de caracteres para observações
+        const observationsInput = document.getElementById('observations');
+        if (observationsInput) {
+            observationsInput.addEventListener('input', function() {
+                document.getElementById('char-count').textContent = this.value.length;
+            });
+            // Inicializar contador ao carregar
+            document.getElementById('char-count').textContent = observationsInput.value.length;
+        }
         window.clientId = '{{ auth()->user()->client->id ?? "" }}';
     </script>
 

@@ -203,6 +203,14 @@ return new class extends Migration
             AND EXTRACT(YEAR FROM s.creation_date) = p_year
             AND EXTRACT(MONTH FROM s.creation_date) = p_month;
 
+            UPDATE shipments s
+            SET status = 'Invoice Generated'
+            WHERE s.id IN (
+                SELECT shipment_id
+                FROM monthly_closure_shipments
+                WHERE closure_client_id = v_closure_client_id
+            );
+
         END;
         $$;
 

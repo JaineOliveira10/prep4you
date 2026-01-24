@@ -51,6 +51,7 @@ class ShipmentRequest extends FormRequest
             'collection_date' => 'required|date|after_or_equal:shipment_date',
             'status' => 'required|in:Pending,In Preparation,Packed,Collected,Invoice Generated,Paid,Has Pendency',
             'pendency_reason' => 'required_if:status,Has Pendency|nullable|string|max:1000',
+            'observations' => 'nullable|string|max:300',
             'client_id' => 'required|exists:clients,id',
             'distribution_center_id' => 'required|exists:distribution_centers,id',
             'shipment_code' => 'required|string|max:20',

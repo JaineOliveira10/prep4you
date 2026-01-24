@@ -22,7 +22,8 @@ class Shipment extends Model
         'total_items',
         'error_message',
         'pendency_reason',
-        'collection_proof'
+        'collection_proof',
+        'observations'
     ];
 
     protected $casts = [

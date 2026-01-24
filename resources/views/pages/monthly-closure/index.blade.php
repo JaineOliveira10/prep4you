@@ -240,12 +240,7 @@
             </div>
             <div id="step2Footer" style="display: none;">
                <button type="button" class="btn btn-secondary" onclick="backToStep1()">Voltar</button>
-               <button type="button" class="btn btn-success" onclick="confirmNewClosure({
-                                                                        year: parseInt(newClosureData.year_month.split('-')[0]),
-                                                                        month: parseInt(newClosureData.year_month.split('-')[1]),
-                                                                        client_id: parseInt(newClosureData.client_id)
-                                                                     }, 'Fechamento criado com sucesso! Realizando download do PDF...');
-                                                                     ">Confirmar Fechamento</button>
+               <button type="button" class="btn btn-success" onclick="saveNewClosure()">Confirmar Fechamento</button>
             </div>
          </div>
       </div>

@@ -36,6 +36,41 @@ class MonthlyClosureController extends Controller
     }
 
     /**
+     * Verificar se já existe fechamento para um período e cliente
+     */
+    public function checkExisting(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'year' => 'required|integer|min:2000',
+                'month' => 'required|integer|min:1|max:12',
+                'client_id' => 'required|exists:clients,id',
+            ]);
+
+            // Verificar se existe MonthlyClosure
+            $closure = \DB::table('monthly_closures')
+                ->where('year', $validated['year'])
+                ->where('month', $validated['month'])
+                ->first();
+
+            if (!$closure) {
+                return response()->json(['exists' => false]);
+            }
+
+            // Se existe closure, verificar se tem dados para este cliente
+            $closureClient = \DB::table('monthly_closure_clients')
+                ->where('closure_id', $closure->id)
+                ->where('client_id', $validated['client_id'])
+                ->first();
+
+            return response()->json(['exists' => (bool) $closureClient]);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao verificar fechamento: ' . $e->getMessage());
+            return response()->json(['exists' => false], 500);
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

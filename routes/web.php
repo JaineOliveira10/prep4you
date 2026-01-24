@@ -45,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('monthly-closures/{closure}/details/{closureClient}', [MonthlyClosureController::class, 'details'])->name('monthly-closures.details');
         Route::post('api/monthly-closure/preview', [MonthlyClosureController::class, 'previewClosure']);
         Route::post('api/monthly-closure/preview-pdf', [MonthlyClosureController::class, 'previewPdf'])->name('monthly-closures.preview-pdf');
+        Route::post('api/monthly-closure/check-existing', [MonthlyClosureController::class, 'checkExisting']);
         Route::post('monthly-closures/counter-pdf', [MonthlyClosureController::class, 'printPdf'])->name('monthly-closures.print-pdf');
     });
 

@@ -83,6 +83,7 @@ class PreparationOrderService
         $collectionDate = $shipment->collection_date ? \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') : 'N/A';
         $collectionName = htmlspecialchars($shipment->name ?? 'N/A');
         $distributionCenter = $shipment->distributionCenter ? htmlspecialchars($shipment->distributionCenter->name) : 'N/A';
+        $observations = !empty($shipment->observations) ? htmlspecialchars($shipment->observations) : 'Nenhuma observação';
 
         // Iniciar HTML
         $html = '<!DOCTYPE html>
@@ -363,6 +364,11 @@ class PreparationOrderService
         $html .= '
             </tbody>
         </table>
+
+        <div class="section-title">Observações</div>
+        <div style="padding: 10px; background-color: #f9f9f9; border-radius:">
+            <p>' . $observations . '</p>
+        </div>
 
         <!-- RODAPÉ -->
         <div class="footer">

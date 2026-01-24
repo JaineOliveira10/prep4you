@@ -326,7 +326,7 @@
         <table class="shipments-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Código</th>
                     <th>DATA</th>
                     <th class="text-right">QTD</th>
                     <th class="text-right">VALOR</th>
@@ -335,7 +335,7 @@
             <tbody>
                 @foreach($shipments as $shipment)
                 <tr>
-                    <td>{{ $shipment['id'] }}</td>
+                    <td>{{ $shipment['shipment_code'] }}</td>
                     <td>{{ $shipment['creation_date'] }}</td>
                     <td class="text-right">{{ $shipment['total_items'] ?? 0 }}</td>
                     <td class="text-right">R$ {{ number_format($shipment['value'] ?? 0, 2, ',', '.') }}</td>
