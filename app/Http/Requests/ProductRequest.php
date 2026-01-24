@@ -21,9 +21,7 @@ class ProductRequest extends FormRequest
 
         $rules = [
             'name' => 'required|string|max:50',
-            'asin' => $productId
-                ? 'nullable|string|max:15|unique:products,asin,' . $productId
-                : 'nullable|string|max:15|unique:products,asin',
+            'asin' => 'nullable|string|max:15',
             'fsnku' => $productId
                 ? 'required|string|max:15|unique:products,fsnku,' . $productId
                 : 'required|string|max:15|unique:products,fsnku',
@@ -72,7 +70,6 @@ class ProductRequest extends FormRequest
         return [
             'name.required' => 'O nome é obrigatório.',
             'name.max' => 'O nome deve ter no máximo 50 caracteres.',
-            'asin.unique' => 'Este ASIN já está em uso.',
             'fsnku.required' => 'O FSNKU é obrigatório.',
             'fsnku.unique' => 'Este FSNKU já está em uso.',
             'type.required' => 'O tipo é obrigatório.',
