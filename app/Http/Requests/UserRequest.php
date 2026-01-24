@@ -24,6 +24,7 @@ class UserRequest extends FormRequest
                 ? 'required|min:6'
                 : 'nullable|min:6',
             'type' => 'required|in:admin,client',
+            'cnpj' => 'required|string|max:20',
             'city' => 'nullable|string|max:255',
             'uf' => 'nullable|string|size:2|in:' . implode(',', array_keys(\App\Models\Client::ESTADOS)),
             'phone' => 'nullable|string|max:20',

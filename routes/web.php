@@ -44,7 +44,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('monthly-closures/{closure}/client/{client}', [MonthlyClosureController::class, 'destroyClient'])->name('monthly-closures.destroy-client');
         Route::get('monthly-closures/{closure}/details/{closureClient}', [MonthlyClosureController::class, 'details'])->name('monthly-closures.details');
         Route::post('api/monthly-closure/preview', [MonthlyClosureController::class, 'previewClosure']);
-        Route::post('api/monthly-closure/preview-pdf', [MonthlyClosureController::class, 'previewPdf'])->name('monthly-closures.preview-pdf');        
+        Route::post('api/monthly-closure/preview-pdf', [MonthlyClosureController::class, 'previewPdf'])->name('monthly-closures.preview-pdf');
+        Route::post('monthly-closures/counter-pdf', [MonthlyClosureController::class, 'printPdf'])->name('monthly-closures.print-pdf');
     });
 
     Route::resource('shipments', ShipmentController::class)->except(['manageShipments']);

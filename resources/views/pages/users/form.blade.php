@@ -46,7 +46,7 @@
 
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="pass">Senha <span class="text-danger">*</span></label>
-                                        <input type="password" name="password" id="pass" class="form-control" placeholder="Digite sua senha" {{ !$id ? 'required' : '' }} {{ $id ? 'readonly' : '' }} >
+                                        <input type="password" name="password" id="pass" class="form-control" placeholder="Digite sua senha" {{ !$id ? 'required' : '' }} >
                                     </div>
 
                                     {{-- Tipo Usuário --}}
@@ -79,6 +79,11 @@
                                           <div class="form-group col-md-6">
                                                 <label for="client_name">Nome<span class="text-danger">*</span></label>
                                                 <input type="text" name="client_name" id="client_name" class="form-control" placeholder="Nome completo" value="{{ old('client_name', $data->client->name ?? '') }}" readonly>
+                                          </div>
+
+                                          <div class="form-group col-md-6">
+                                                <label for="cnpj">CNPJ<span class="text-danger">*</span></label>
+                                                <input type="text" name="cnpj" id="cnpj" class="form-control" placeholder="00.000.000/0000-00" value="{{ old('cnpj', $data->client->cnpj ?? '') }}" required>
                                           </div>
 
                                           <div class="form-group col-md-6">

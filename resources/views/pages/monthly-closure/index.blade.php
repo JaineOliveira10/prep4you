@@ -11,6 +11,7 @@
                <div class="card-action">
                   @if(auth()->user()->type == 'admin')
                      <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#newClosureModal">Novo Fechamento</button>
+                     <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#printClosureModal">Imprimir Fechamentos</button>
                   @endif
                </div>
             </div>
@@ -126,7 +127,6 @@
                </div>
             </div>
 
-
             <div id="step2Preview" style="display: none;">
                <div class="row mb-3">
                   <div class="col-md-6">
@@ -149,7 +149,8 @@
                   <div class="col-md-4">
                      <strong>Etiquetas Kit</strong>
                      <div id="new-closure-kit-labels"></div>
-                  </div><div class="col-md-4">
+                  </div>
+                  <div class="col-md-4">
                      <strong>Etiquetas Super Kit</strong>
                      <div id="new-closure-superkit-labels"></div>
                   </div>
@@ -217,7 +218,7 @@
                      <strong>Desconto referente às etiquetas kit</strong>
                      <div id="new-closure-kit-discount"></div>
                   </div>
-               </div>                 
+               </div>
 
                <hr>
 
@@ -239,8 +240,36 @@
             </div>
             <div id="step2Footer" style="display: none;">
                <button type="button" class="btn btn-secondary" onclick="backToStep1()">Voltar</button>
-               <button type="button" class="btn btn-success" onclick="confirmNewClosure()">Confirmar Fechamento</button>
+               <button type="button" class="btn btn-success" onclick="confirmNewClosure({
+                                                                        year: parseInt(newClosureData.year_month.split('-')[0]),
+                                                                        month: parseInt(newClosureData.year_month.split('-')[1]),
+                                                                        client_id: parseInt(newClosureData.client_id)
+                                                                     }, 'Fechamento criado com sucesso! Realizando download do PDF...');
+                                                                     ">Confirmar Fechamento</button>
             </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+<!-- Modal de Imprimir Fechamentos -->
+<div class="modal fade" id="printClosureModal" tabindex="-1" aria-labelledby="printClosureModalLabel" aria-hidden="true">
+   <div class="modal-dialog">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="printClosureModalLabel">Imprimir Fechamentos</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div class="mb-3">
+               <label for="print_year_month" class="form-label">Selecione o Período <span class="text-danger">*</span></label>
+               <input type="month" class="form-control" id="print_year_month" name="print_year_month" 
+                  value="{{ now()->format('Y-m') }}" required>
+            </div>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="printMonthlyClosures()">Gerar PDF</button>
          </div>
       </div>
    </div>
@@ -250,8 +279,10 @@
 <script>
    window.storeRoute = '{{ route("monthly-closures.store") }}';
    window.previewPdfRoute = '{{ route("monthly-closures.preview-pdf") }}';
+   window.printPdfRoute = '{{ route("monthly-closures.print-pdf") }}';
 </script>
 <script src="{{ asset('js/monthly-closure.js') }}"></script>
 @endpush
 
 </x-app-layout>
+

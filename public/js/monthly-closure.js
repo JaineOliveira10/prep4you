@@ -133,129 +133,89 @@ function backToStep1() {
 }
 
 // Confirmar e criar o fechamento
-function confirmNewClosure() {
-   if (!newClosureData.year_month || !newClosureData.client_id) {
-      Swal.fire({
-         icon: 'error',
-         title: 'Erro',
-         text: 'Dados inválidos'
-      });
-      return;
+function confirmNewClosure(payload, successMessage = 'Download iniciado com sucesso!') {
+   const formData = new FormData();
+
+   // ✅ se veio closure_id (listagem)
+   if (payload.closure_id) {
+      formData.append('closure_id', payload.closure_id);
+      formData.append('client_id', payload.client_id);
    }
-
-   // Fazer chamada POST para criar
-   fetch(window.storeRoute || '/monthly-closures', {
-      method: 'POST',
-      headers: {
-         'Content-Type': 'application/json',
-         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-      },
-      body: JSON.stringify({
-         year_month: newClosureData.year_month,
-         client_id: newClosureData.client_id
-      })
-   })
-   .then(response => {
-      // Ler o texto primeiro para ver se é HTML ou JSON
-      return response.text().then(text => {
-         try {
-            const jsonData = JSON.parse(text);
-            return { ok: response.ok, data: jsonData };
-         } catch (e) {
-            // Se não conseguir parsear como JSON, retornar o texto
-            console.error('Erro ao parsear JSON:', text);
-            throw new Error('Resposta inválida do servidor');
-         }
-      });
-   })
-   .then(result => {
-      if (!result.ok) {
-         throw new Error(result.data.error || 'Erro ao criar fechamento');
-      }
-      
-      // Fechar modal
-      const modal = bootstrap.Modal.getInstance(document.getElementById('newClosureModal'));
-      modal.hide();
-
-      // Limpar formulário
-      document.getElementById('year_month').value = '';
-      document.getElementById('closure_client_id').value = '';
-      backToStep1();
-
-      // Gerar PDF de preview e abrir em nova aba via fetch
-      const formData = new FormData();
-      formData.append('year', parseInt(newClosureData.year_month.split('-')[0]));
-      formData.append('month', parseInt(newClosureData.year_month.split('-')[1]));
-      formData.append('client_id', parseInt(newClosureData.client_id));
-      formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-
-      fetch(window.previewPdfRoute || '/api/monthly-closure/preview-pdf', {
-         method: 'POST',
-         body: formData
-      })
-      .then(response => {
-         if (!response.ok) {
-            return response.text().then(text => {
-               console.error('Erro response:', text.substring(0, 500));
-               throw new Error('Erro ao gerar PDF: HTTP ' + response.status);
-            });
-         }
-         
-         // Obter o blob do PDF
-         return response.blob().then(blob => {            
-            if (blob.size === 0) {
-               throw new Error('PDF gerado vazio');
-            }
-            
-            if (blob.type !== 'application/pdf') {
-               console.warn('Tipo de conteúdo inválido:', blob.type);
-            }
-            
-            // Criar URL do blob e abrir em nova aba
-            const url = window.URL.createObjectURL(blob);
-            const pdfWindow = window.open(url, '_blank');
-            
-            if (!pdfWindow) {
-               console.error('Não foi possível abrir a janela. Pode estar bloqueado por pop-up');
-               Swal.fire({
-                  icon: 'warning',
-                  title: 'Aviso',
-                  text: 'A janela do PDF foi bloqueada. Verifique as configurações de pop-up.'
-               });
-            }
-            
-            // Limpar URL após alguns segundos
-            setTimeout(() => window.URL.revokeObjectURL(url), 5000);
-         });
-      })
-      .catch(error => {
-         console.error('Erro ao gerar PDF:', error);
+   // ✅ se veio year/month/client_id (criação)
+   else {
+      if (!payload.year || !payload.month || !payload.client_id) {
          Swal.fire({
             icon: 'error',
             title: 'Erro',
-            text: 'Erro ao gerar PDF: ' + error.message
+            text: 'Dados insuficientes para gerar o PDF'
          });
-      });
+         return;
+      }
 
-      // Mensagem de sucesso
+      formData.append('year', payload.year);
+      formData.append('month', payload.month);
+      formData.append('client_id', payload.client_id);
+   }
+
+   formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+   fetch(window.previewPdfRoute || '/api/monthly-closure/preview-pdf', {
+      method: 'POST',
+      body: formData
+   })
+   .then(response => {
+      if (!response.ok) {
+         return response.text().then(text => {
+            console.error(text);
+            throw new Error('Erro ao gerar PDF');
+         });
+      }
+
+      const disposition = response.headers.get('Content-Disposition');
+      let filename = 'fechamento.pdf';
+
+      if (disposition && disposition.includes('filename=')) {
+         filename = disposition.split('filename=')[1].replace(/"/g, '').trim();
+      }
+
+      return response.blob().then(blob => ({ blob, filename }));
+   })
+   .then(({ blob, filename }) => {
+      if (blob.size === 0) {
+         throw new Error('PDF gerado vazio');
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
       Swal.fire({
          icon: 'success',
          title: 'Sucesso',
-         text: 'Fechamento criado com sucesso! Abrindo PDF...',
-         didClose: () => {
-            location.reload();
+         text: successMessage,
+         didClose: () => { 
+            location.reload(); 
          }
       });
+
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
    })
    .catch(error => {
-      console.error('Erro:', error);
+      console.error(error);
       Swal.fire({
          icon: 'error',
          title: 'Erro',
-         text: 'Erro ao criar fechamento: ' + error.message
+         text: error.message
       });
    });
 }
+
+
 
 function showClosureModal(year, month, clientId) {
    viewingClosureData.year = year;
@@ -371,3 +331,78 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Função para gerar PDF com todos os fechamentos do mês
+function printMonthlyClosures() {
+    const yearMonth = document.getElementById('print_year_month').value;
+    
+    if (!yearMonth) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Por favor, selecione um período'
+        });
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('year_month', yearMonth);
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+    fetch(window.printPdfRoute || '/monthly-closures/counter-pdf', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.error || 'Erro ao gerar PDF');
+            });
+        }
+
+        const disposition = response.headers.get('Content-Disposition');
+        let filename = 'fechamentos.pdf';
+
+        if (disposition && disposition.includes('filename=')) {
+            filename = disposition.split('filename=')[1].replace(/"/g, '').trim();
+        }
+
+        return response.blob().then(blob => ({ blob, filename }));
+    })
+    .then(({ blob, filename }) => {
+        if (blob.size === 0) {
+            throw new Error('PDF gerado vazio');
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Sucesso',
+            text: 'PDF gerado com sucesso!'
+        });
+
+        // Fechar o modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('printClosureModal'));
+        if (modal) {
+            modal.hide();
+        }
+
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+    })
+    .catch(error => {
+        console.error(error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: error.message || 'Erro ao gerar PDF'
+        });
+    });
+}

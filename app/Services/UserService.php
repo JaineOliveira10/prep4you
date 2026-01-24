@@ -38,6 +38,7 @@ class UserService
         if ($data['type'] === 'client') {
             $client = Client::create([
                 'name' => $data['name'],
+                'cnpj' => $data['cnpj'] ?? null,
                 'city' => $data['city'] ?? '',
                 'uf' => $data['uf'] ?? '',
                 'phone' => $data['phone'] ?? null,
@@ -49,6 +50,7 @@ class UserService
 
             $data['client'] = [
                 'name' => $client->name,
+                'cnpj' => $client->cnpj,
                 'city' => $client->city,
                 'uf' => $client->uf,
                 'phone' => $client->phone,
@@ -79,6 +81,7 @@ class UserService
         if ($data['type'] === 'client' && $user->client) {
             $user->client->update([
                 'name' => $data['name'],
+                'cnpj' => $data['cnpj'] ?? null,
                 'city' => $data['city'] ?? '',
                 'uf' => $data['uf'] ?? '',
                 'phone' => $data['phone'] ?? null,

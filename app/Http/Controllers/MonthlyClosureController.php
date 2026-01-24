@@ -229,11 +229,38 @@ class MonthlyClosureController extends Controller
     public function previewPdf(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'year' => 'required|integer|min:2000',
-                'month' => 'required|integer|min:1|max:12',
-                'client_id' => 'required|exists:clients,id',
-            ]);
+            // Suportar dois cenários:
+            // 1. closure_id (quando vem da ação de download)
+            // 2. year, month, client_id (quando vem da criação)
+            
+            $closure_id = $request->input('closure_id');
+            
+            if ($closure_id) {
+                // Cenário 1: Buscar os dados pelo closure_id
+                $closure = MonthlyClosure::find($closure_id);
+                if (!$closure) {
+                    return response()->json(['error' => 'Fechamento não encontrado'], 404);
+                }
+                
+                // Como temos múltiplos clientes, precisamos do client_id
+                $client_id = $request->input('client_id');
+                if (!$client_id) {
+                    return response()->json(['error' => 'client_id é obrigatório quando closure_id é fornecido'], 400);
+                }
+                
+                $validated = [
+                    'year' => $closure->year,
+                    'month' => $closure->month,
+                    'client_id' => $client_id,
+                ];
+            } else {
+                // Cenário 2: Validar os parâmetros normais
+                $validated = $request->validate([
+                    'year' => 'required|integer|min:2000',
+                    'month' => 'required|integer|min:1|max:12',
+                    'client_id' => 'required|exists:clients,id',
+                ]);
+            }
 
             $data = $this->monthlyClosureService->calculateClosureData(
                 $validated['year'],
@@ -267,6 +294,78 @@ class MonthlyClosureController extends Controller
                 ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
         } catch (\Exception $e) {
             \Log::error('Erro ao gerar PDF de preview: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Gerar PDF com todos os fechamentos de um mês (CNPJ, NOME, VALOR LÍQUIDO)
+     */
+    public function printPdf(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'year_month' => 'required|date_format:Y-m',
+            ]);
+
+            $parts = explode('-', $validated['year_month']);
+            $year = (int)$parts[0];
+            $month = (int)$parts[1];
+
+            // Buscar todos os fechamentos do mês
+            $closures = MonthlyClosure::where('year', $year)
+                ->where('month', $month)
+                ->with('clients')
+                ->get();
+
+            if ($closures->isEmpty()) {
+                return response()->json(['error' => 'Nenhum fechamento encontrado para este período'], 404);
+            }
+
+            // Montar dados para o PDF
+            $closureData = [];
+            $totalValue = 0;
+
+            foreach ($closures as $closure) {
+                foreach ($closure->clients as $client) {
+                    $closureData[] = [
+                        'cnpj' => $client->cnpj ?? 'N/A',
+                        'name' => $client->name,
+                        'total_net' => $client->pivot->total_net ?? 0,
+                    ];
+                    $totalValue += $client->pivot->total_net ?? 0;
+                }
+            }
+
+            // Gerar HTML para o PDF
+            $html = view('pages.monthly-closure.counter-pdf', [
+                'closures' => $closureData,
+                'total_value' => $totalValue,
+                'year_month' => \Carbon\Carbon::createFromDate($year, $month, 1)->format('m/Y'),
+            ])->render();
+
+            // Configurar dompdf
+            $options = new Options();
+            $options->set('isPhpEnabled', false);
+            $options->set('isRemoteEnabled', false);
+            $options->set('tempDir', storage_path('framework/dompdf'));
+            $options->set('fontDir', resource_path('fonts'));
+            $options->set('fontCache', storage_path('framework/fonts'));
+            $options->set('chroot', base_path());
+            $options->set('logOutputFile', storage_path('logs/dompdf.log'));
+
+            $dompdf = new Dompdf($options);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->loadHtml($html);
+            $dompdf->render();
+
+            $filename = "fechamentos_" . str_replace('/', '-', \Carbon\Carbon::createFromDate($year, $month, 1)->format('m/Y')) . ".pdf";
+            return response($dompdf->output(), 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        } catch (\Exception $e) {
+            \Log::error('Erro ao gerar PDF de fechamentos: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
         }
