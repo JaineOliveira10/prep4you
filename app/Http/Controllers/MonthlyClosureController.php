@@ -161,15 +161,66 @@ class MonthlyClosureController extends Controller
             $closure = MonthlyClosure::find((int)$closureId);
 
             if (!$closure) {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Fechamento não encontrado'
+                    ], 404);
+                }
                 return redirect()->back()
                                ->with('error', 'Fechamento não encontrado');
             }
 
-            $closure->clients()->detach((int)$clientId);
+            \DB::beginTransaction();
 
-            return redirect()->route('monthly-closures.index')
-                           ->with('success', 'Cliente removido do fechamento com sucesso!');
+            try {
+                // Atualizar remessas para status "Collected" antes de remover a relação
+                $updated = \DB::table('shipments')
+                    ->where('client_id', (int)$clientId)
+                    ->whereYear('creation_date', $closure->year)
+                    ->whereMonth('creation_date', $closure->month)
+                    ->update(['status' => 'Collected']);
+
+                \Log::info('Remessas atualizadas ao remover cliente do fechamento', [
+                    'closure_id' => $closureId,
+                    'client_id' => $clientId,
+                    'year' => $closure->year,
+                    'month' => $closure->month,
+                    'updated_count' => $updated
+                ]);
+
+                // Remover a relação cliente-fechamento
+                $closure->clients()->detach((int)$clientId);
+
+                \DB::commit();
+
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Fechamento excluído com sucesso!'
+                    ]);
+                }
+
+                return redirect()->route('monthly-closures.index')
+                               ->with('success', 'Cliente removido do fechamento com sucesso!');
+            } catch (\Exception $e) {
+                \DB::rollBack();
+                throw $e;
+            }
         } catch (\Exception $e) {
+            \Log::error('Erro ao remover cliente do fechamento', [
+                'closure_id' => $closureId,
+                'client_id' => $clientId,
+                'error' => $e->getMessage()
+            ]);
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao excluir fechamento: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()
                            ->with('error', 'Erro ao remover cliente: ' . $e->getMessage());
         }

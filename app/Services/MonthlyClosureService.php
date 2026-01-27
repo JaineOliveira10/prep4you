@@ -126,24 +126,7 @@ class MonthlyClosureService
             : '';
 
         // Buscar remessas incluídas
-        $shipments = \DB::table('shipments')
-            ->where('client_id', $client->id)
-            ->whereYear('creation_date', $year)
-            ->whereMonth('creation_date', $month)
-            ->select('id', 'shipment_code', 'creation_date', 'total_items')
-            ->selectRaw('(SELECT SUM(total_value) FROM shipment_items WHERE shipment_id = shipments.id) as value')
-            ->orderBy('creation_date', 'asc')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'shipment_code' => $item->shipment_code,
-                    'creation_date' => \Carbon\Carbon::parse($item->creation_date)->format('d/m/Y'),
-                    'total_items' => $item->total_items,
-                    'value' => $item->value,
-                ];
-            })
-            ->toArray();
+        $shipments = $this->getShipmentsForClosure($client->id, $year, $month);
 
         return [
             'year' => (int)$year,
@@ -230,24 +213,7 @@ class MonthlyClosureService
         $totalNet = $totalGross - $totalDiscount;
 
         // Buscar remessas incluídas
-        $shipments = \DB::table('shipments')
-            ->where('client_id', $client->id)
-            ->whereYear('creation_date', $year)
-            ->whereMonth('creation_date', $month)
-            ->select('id', 'shipment_code', 'creation_date', 'total_items')
-            ->selectRaw('(SELECT SUM(total_value) FROM shipment_items WHERE shipment_id = shipments.id) as value')
-            ->orderBy('creation_date', 'asc')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'shipment_code' => $item->shipment_code,
-                    'creation_date' => \Carbon\Carbon::parse($item->creation_date)->format('d/m/Y'),
-                    'total_items' => $item->total_items,
-                    'value' => $item->value,
-                ];
-            })
-            ->toArray();
+        $shipments = $this->getShipmentsForClosure($client->id, $year, $month);
 
         return [
             'year' => (int)$year,
@@ -283,5 +249,30 @@ class MonthlyClosureService
             'year_month' => $data['year_month'] ?? '',
             'client_id' => (int)($data['client_id'] ?? 0),
         ];
+    }
+
+    /**
+     * Buscar remessas formatadas para um cliente em um período
+     */
+    private function getShipmentsForClosure(int $clientId, int $year, int $month): array
+    {
+        return \DB::table('shipments')
+            ->where('client_id', $clientId)
+            ->whereYear('creation_date', $year)
+            ->whereMonth('creation_date', $month)
+            ->select('id', 'shipment_code', 'creation_date', 'total_items')
+            ->selectRaw('(SELECT SUM(total_value) FROM shipment_items WHERE shipment_id = shipments.id) as value')
+            ->orderBy('creation_date', 'asc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'shipment_code' => $item->shipment_code,
+                    'creation_date' => \Carbon\Carbon::parse($item->creation_date)->format('d/m/Y'),
+                    'total_items' => $item->total_items,
+                    'value' => $item->value,
+                ];
+            })
+            ->toArray();
     }
 }
