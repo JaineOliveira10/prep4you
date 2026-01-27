@@ -571,3 +571,106 @@ function printMonthlyClosures() {
         });
     });
 }
+// Função para visualizar fechamento
+function viewClosureDetails(data) {
+   const { closure_id, client_id, year, month } = data;
+
+   if (!closure_id || !client_id || !year || !month) {
+      Swal.fire({
+         icon: 'error',
+         title: 'Erro',
+         text: 'Dados insuficientes para visualizar o fechamento'
+      });
+      return;
+   }
+
+   // Mostrar loading
+   document.getElementById('viewClosureLoadingMessage').style.display = 'block';
+   document.getElementById('viewClosureContent').style.display = 'none';
+
+   // Abrir modal
+   const modal = new bootstrap.Modal(document.getElementById('viewClosureModal'));
+   modal.show();
+
+   // Buscar dados do fechamento
+   fetch(`/api/monthly-closure/preview`, {
+      method: 'POST',
+      headers: {
+         'Content-Type': 'application/json',
+         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      },
+      body: JSON.stringify({
+         year: parseInt(year),
+         month: parseInt(month),
+         client_id: parseInt(client_id)
+      })
+   })
+   .then(response => response.json())
+   .then(data => {
+      if (data.error) {
+         throw new Error(data.error);
+      }
+
+      // Obter nome do cliente
+      const clientSelect = document.getElementById('closure_client_id');
+      let clientName = 'N/A';
+      if (clientSelect) {
+         const clientOption = Array.from(clientSelect.options).find(opt => opt.value === client_id.toString());
+         if (clientOption) {
+            clientName = clientOption.text;
+         }
+      } else {
+         // Se não encontrar o select, usar dados da página
+         clientName = data.client_name || 'N/A';
+      }
+
+      // Preencher modal com dados
+      document.getElementById('view-closure-month').textContent = `${month}/${year}`;
+      document.getElementById('view-closure-client').textContent = clientName;
+      document.getElementById('view-closure-simple-labels').textContent = data.total_simple_labels || 0;
+      document.getElementById('view-closure-kit-labels').textContent = data.total_kit_labels || 0;
+      document.getElementById('view-closure-superkit-labels').textContent = data.total_superkit_labels || 0;
+      document.getElementById('view-closure-unit-simple').textContent = 'R$ ' + parseFloat(data.unit_price_simple || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-unit-kit').textContent = 'R$ ' + parseFloat(data.unit_price_kit || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-simple-net').textContent = 'R$ ' + parseFloat(data.total_simple_net || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-kit-net').textContent = 'R$ ' + parseFloat(data.total_kit_net || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-superkit-value').textContent = 'R$ ' + parseFloat(data.total_superkit_value || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-price-range').textContent = data.price_range || '-';
+      document.getElementById('view-closure-simple-discount').textContent = 'R$ ' + parseFloat(data.total_discount_simple || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-kit-discount').textContent = 'R$ ' + parseFloat(data.total_discount_kit || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-gross').textContent = 'R$ ' + parseFloat(data.total_gross || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-discount').textContent = 'R$ ' + parseFloat(data.total_discount || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-net').textContent = 'R$ ' + parseFloat(data.total_net || 0).toFixed(2).replace('.', ',');
+
+      // Preencher remessas
+      let shipmentsHtml = '';
+      if (data.shipments && data.shipments.length > 0) {
+         shipmentsHtml = '<table class="table table-sm table-striped"><thead><tr><th>ID Remessa</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
+         data.shipments.forEach(shipment => {
+            shipmentsHtml += `<tr>
+               <td>${shipment.shipment_code}</td>
+               <td>${shipment.creation_date}</td>
+               <td>${shipment.total_items || 0}</td>
+               <td>R$ ${parseFloat(shipment.value || 0).toFixed(2).replace('.', ',')}</td>
+            </tr>`;
+         });
+         shipmentsHtml += '</tbody></table>';
+      } else {
+         shipmentsHtml = '<p class="text-muted">Nenhuma remessa encontrada</p>';
+      }
+      document.getElementById('view-closure-shipments').innerHTML = shipmentsHtml;
+
+      // Mostrar conteúdo
+      document.getElementById('viewClosureLoadingMessage').style.display = 'none';
+      document.getElementById('viewClosureContent').style.display = 'block';
+   })
+   .catch(error => {
+      console.error('Erro:', error);
+      document.getElementById('viewClosureLoadingMessage').style.display = 'none';
+      Swal.fire({
+         icon: 'error',
+         title: 'Erro',
+         text: 'Erro ao carregar visualização: ' + error.message
+      });
+   });
+}

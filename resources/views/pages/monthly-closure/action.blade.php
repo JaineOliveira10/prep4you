@@ -1,4 +1,17 @@
 <div class="flex align-items-center gap-2">
+   <button type="button" 
+      class="btn btn-sm btn-icon btn-info" 
+      data-bs-toggle="tooltip" 
+      title="Visualizar fechamento"
+      onclick="viewClosureDetails({ closure_id: {{ $closure->id }}, client_id: {{ $client->id }}, year: {{ $closure->year }}, month: {{ $closure->month }} })">
+      <span class="btn-inner">
+         <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5C6.63636 5 2.15455 8.35227 1 13.2329C2.15455 18.1136 6.63636 21.466 12 21.466C17.3636 21.466 21.8455 18.1136 23 13.2329C21.8455 8.35227 17.3636 5 12 5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M12 16.9545C14.2831 16.9545 16.1364 15.1011 16.1364 12.8182C16.1364 10.5351 14.2831 8.68182 12 8.68182C9.71683 8.68182 7.86364 10.5351 7.86364 12.8182C7.86364 15.1011 9.71683 16.9545 12 16.9545Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+         </svg>
+      </span>
+   </button>
+
    <a href="#" 
       onclick="confirmNewClosure({ closure_id: {{ $closure->id }}, client_id: {{ $client->id }} }, 'Download do PDF iniciado!'); return false;"
       class="btn btn-sm btn-icon btn-success" 

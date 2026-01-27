@@ -247,6 +247,128 @@
    </div>
 </div>
 
+<!-- Modal de Visualizar Fechamento -->
+<div class="modal fade" id="viewClosureModal" tabindex="-1" aria-labelledby="viewClosureModalLabel" aria-hidden="true">
+   <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+         <div class="modal-header">
+            <h5 class="modal-title" id="viewClosureModalLabel">Visualizar Fechamento</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+         </div>
+         <div class="modal-body">
+            <div id="viewClosureLoadingMessage" style="display: none;" class="text-center py-4">
+               <div class="spinner-border" role="status">
+                  <span class="visually-hidden">Carregando...</span>
+               </div>
+               <p class="mt-2">Carregando dados do fechamento...</p>
+            </div>
+
+            <div id="viewClosureContent">
+               <div class="row mb-3">
+                  <div class="col-md-6">
+                     <strong>Ano/Mês</strong>
+                     <div id="view-closure-month"></div>
+                  </div>
+                  <div class="col-md-6">
+                     <strong>Cliente</strong>
+                     <div id="view-closure-client"></div>
+                  </div>
+               </div>
+
+               <hr>
+
+               <div class="row mb-3">
+                  <div class="col-md-4">
+                     <strong>Etiquetas Simples</strong>
+                     <div id="view-closure-simple-labels"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Etiquetas Kit</strong>
+                     <div id="view-closure-kit-labels"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Etiquetas Super Kit</strong>
+                     <div id="view-closure-superkit-labels"></div>
+                  </div>
+               </div>
+
+               <div class="row mb-3">
+                  <div class="col-md-4">
+                     <strong>Unitário Simples</strong>
+                     <div id="view-closure-unit-simple"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Unitário Kit</strong>
+                     <div id="view-closure-unit-kit"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Unitário Super Kit</strong>
+                     <div id="view-closure-unit-superkit">-</div>
+                  </div>
+               </div>
+
+               <div class="row mb-3">
+                  <div class="col-md-4">
+                     <strong>Valor Simples</strong>
+                     <div id="view-closure-simple-net"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Valor Kit</strong>
+                     <div id="view-closure-kit-net"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Valor Super Kit</strong>
+                     <div id="view-closure-superkit-value"></div>
+                  </div>
+               </div>
+
+               <hr>
+
+               <div class="row mb-3">
+                  <div class="col-md-4">
+                     <strong>Valor Bruto</strong>
+                     <div id="view-closure-gross" class="h5"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Desconto</strong>
+                     <div id="view-closure-discount" class="h5 text-danger"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Valor Líquido</strong>
+                     <div id="view-closure-net" class="h5 text-success"></div>
+                  </div>
+               </div>
+
+               <hr>
+
+               <div class="row mb-3">
+                  <div class="col-md-4">
+                     <strong>Faixa de Preço</strong>
+                     <div id="view-closure-price-range"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Desconto referente às etiquetas simples</strong>
+                     <div id="view-closure-simple-discount"></div>
+                  </div>
+                  <div class="col-md-4">
+                     <strong>Desconto referente às etiquetas kit</strong>
+                     <div id="view-closure-kit-discount"></div>
+                  </div>
+               </div>
+
+               <hr>
+
+               <strong>Remessas Incluídas:</strong>
+               <div id="view-closure-shipments" class="mt-2"></div>
+            </div>
+         </div>
+         <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+         </div>
+      </div>
+   </div>
+</div>
+
 <!-- Modal de Imprimir Fechamentos -->
 <div class="modal fade" id="printClosureModal" tabindex="-1" aria-labelledby="printClosureModalLabel" aria-hidden="true">
    <div class="modal-dialog">
