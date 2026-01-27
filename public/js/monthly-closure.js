@@ -11,6 +11,20 @@ let viewingClosureData = {
    client_id: null
 };
 
+/**
+ * Formata número no padrão português-brasileiro (com separador de milhar)
+ * Exemplo: 1000 → "1.000,00"
+ */
+function formatarMoeda(valor) {
+   if (!valor && valor !== 0) return '0,00';
+   
+   const num = parseFloat(valor);
+   return num.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+   });
+}
+
 function previewNewClosure() {
    const yearMonthInput = document.getElementById('year_month');
    const clientIdSelect = document.getElementById('closure_client_id');
@@ -19,11 +33,11 @@ function previewNewClosure() {
    yearMonth = yearMonth ? yearMonth.trim() : '';
    const clientId = clientIdSelect.value.trim();
 
-   if (!yearMonth || !clientId || clientId === '') {
+   if (!yearMonth) {
       Swal.fire({
          icon: 'warning',
          title: 'Validação',
-         text: 'Por favor selecione ano/mês e cliente'
+         text: 'Por favor selecione ano/mês'
       });
       return;
    }
@@ -31,39 +45,43 @@ function previewNewClosure() {
    // Armazenar dados
    newClosureData = {
       year_month: yearMonth,
-      client_id: parseInt(clientId),
-      closure_id: null
+      client_id: clientId ? parseInt(clientId) : null,
+      closure_id: null,
+      clients: [] // Array para armazenar múltiplos clientes
    };
 
    // Mostrar loading
    document.getElementById('loadingMessage').style.display = 'block';
    document.getElementById('step2Preview').style.display = 'none';
 
-   // Verificar se já existe fechamento para este período e cliente
-   checkExistingClosure(yearMonth, parseInt(clientId))
-      .then(exists => {
-         if (exists) {
-            document.getElementById('loadingMessage').style.display = 'none';
-            Swal.fire({
-               icon: 'warning',
-               title: 'Fechamento Existente',
-               text: 'Já existe um fechamento para este cliente neste período. É necessário excluir o fechamento anterior antes de criar um novo.',
-               showCancelButton: true,
-               confirmButtonText: 'Ir para Listagem',
-               cancelButtonText: 'Cancelar'
-            }).then((result) => {
-               if (result.isConfirmed) {
-                  // Fechar modal e redirecionar para listagem
-                  const modal = bootstrap.Modal.getInstance(document.getElementById('newClosureModal'));
-                  modal.hide();
-               }
-            });
-            return;
-         }
-         
-         // Continuar com o preview
-         loadClosurePreview(yearMonth);
-      });
+   // Se tem cliente específico, verificar se já existe
+   if (newClosureData.client_id) {
+      checkExistingClosure(yearMonth, newClosureData.client_id)
+         .then(exists => {
+            if (exists) {
+               document.getElementById('loadingMessage').style.display = 'none';
+               Swal.fire({
+                  icon: 'warning',
+                  title: 'Fechamento Existente',
+                  text: 'Já existe um fechamento para este cliente neste período. É necessário excluir o fechamento anterior antes de criar um novo.',
+                  showCancelButton: true,
+                  confirmButtonText: 'Ir para Listagem',
+                  cancelButtonText: 'Cancelar'
+               }).then((result) => {
+                  if (result.isConfirmed) {
+                     const modal = bootstrap.Modal.getInstance(document.getElementById('newClosureModal'));
+                     modal.hide();
+                  }
+               });
+               return;
+            }
+            
+            loadClosurePreview(yearMonth);
+         });
+   } else {
+      // Se não tem cliente, carregar para todos
+      loadClosurePreview(yearMonth);
+   }
 }
 
 function checkExistingClosure(yearMonth, clientId) {
@@ -91,12 +109,10 @@ function checkExistingClosure(yearMonth, clientId) {
 
 function loadClosurePreview(yearMonth) {
    const clientIdSelect = document.getElementById('closure_client_id');
-   const clientName = clientIdSelect.options[clientIdSelect.selectedIndex].text;
    const clientId = newClosureData.client_id;
-
-   // Buscar dados da procedure sem criar ainda
    const [year, month] = yearMonth.split('-');
 
+   // Buscar dados de um ou múltiplos clientes
    fetch(`/api/monthly-closure/preview`, {
       method: 'POST',
       headers: {
@@ -106,7 +122,7 @@ function loadClosurePreview(yearMonth) {
       body: JSON.stringify({
          year: parseInt(year),
          month: parseInt(month),
-         client_id: parseInt(clientId)
+         client_id: clientId
       })
    })
    .then(response => response.json())
@@ -115,50 +131,35 @@ function loadClosurePreview(yearMonth) {
          throw new Error(data.error);
       }
 
-      if (!data.shipments || data.shipments.length === 0) {
+      // Se é um cliente único, a resposta é um objeto
+      // Se é múltiplos clientes, a resposta é um array ou objeto com múltiplas entradas
+      let closures = [];
+      
+      if (Array.isArray(data)) {
+         closures = data;
+      } else if (data.shipments) {
+         // É um único cliente
+         closures = [data];
+      } else if (data.closures) {
+         // Múltiplos clientes
+         closures = data.closures;
+      }
+
+      if (!closures || closures.length === 0) {
          document.getElementById('loadingMessage').style.display = 'none';
          Swal.fire({
             icon: 'warning',
             title: 'Sem Remessas',
-            text: 'O cliente não possui remessas neste período. Não é possível criar fechamento sem remessas.'
+            text: 'Nenhum cliente possui remessas neste período. Não é possível criar fechamento sem remessas.'
          });
          return;
       }
 
-      document.getElementById('new-closure-month').textContent = `${month}/${year}`;
-      document.getElementById('new-closure-client').textContent = clientName;
-      document.getElementById('new-closure-simple-labels').textContent = data.total_simple_labels || 0;
-      document.getElementById('new-closure-kit-labels').textContent = data.total_kit_labels || 0;
-      document.getElementById('new-closure-superkit-labels').textContent = data.total_superkit_labels || 0;
-      document.getElementById('new-closure-unit-simple').textContent = 'R$ ' + parseFloat(data.unit_price_simple || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-unit-kit').textContent = 'R$ ' + parseFloat(data.unit_price_kit || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-simple-net').textContent = 'R$ ' + parseFloat(data.total_simple_net || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-kit-net').textContent = 'R$ ' + parseFloat(data.total_kit_net || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-superkit-value').textContent = 'R$ ' + parseFloat(data.total_superkit_value || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-price-range').textContent = data.price_range || '-';
-      document.getElementById('new-closure-simple-discount').textContent = 'R$ ' + parseFloat(data.total_discount_simple || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-kit-discount').textContent = 'R$ ' + parseFloat(data.total_discount_kit || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-gross').textContent = 'R$ ' + parseFloat(data.total_gross || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-discount').textContent = 'R$ ' + parseFloat(data.total_discount || 0).toFixed(2).replace('.', ',');
-      document.getElementById('new-closure-net').textContent = 'R$ ' + parseFloat(data.total_net || 0).toFixed(2).replace('.', ',');
+      // Armazenar dados dos clientes
+      newClosureData.clients = closures;
 
-      // Preencher remessas
-      let shipmentsHtml = '';
-      if (data.shipments && data.shipments.length > 0) {
-         shipmentsHtml = '<table class="table table-sm table-striped"><thead><tr><th>ID Remessa</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
-         data.shipments.forEach(shipment => {
-            shipmentsHtml += `<tr>
-               <td>${shipment.shipment_code}</td>
-               <td>${shipment.creation_date}</td>
-               <td>${shipment.total_items || 0}</td>
-               <td>R$ ${parseFloat(shipment.value || 0).toFixed(2).replace('.', ',')}</td>
-            </tr>`;
-         });
-         shipmentsHtml += '</tbody></table>';
-      } else {
-         shipmentsHtml = '<p class="text-muted">Nenhuma remessa encontrada</p>';
-      }
-      document.getElementById('new-closure-shipments').innerHTML = shipmentsHtml;
+      // Renderizar preview
+      renderClosuresPreview(closures, year, month);
 
       // Trocar para step 2
       document.getElementById('loadingMessage').style.display = 'none';
@@ -178,6 +179,206 @@ function loadClosurePreview(yearMonth) {
    });
 }
 
+function renderClosuresPreview(closures, year, month) {
+   document.getElementById('new-closure-month').textContent = `${month}/${year}`;
+   
+   const container = document.getElementById('closuresContainer');
+   container.innerHTML = '';
+
+   // Se há múltiplos clientes, mostrar em formato de tabela
+   if (closures.length > 1) {
+      let tableHtml = `
+         <div class="table-responsive">
+         <table class="table table-striped table-bordered">
+            <thead>
+               <tr>
+                  <th rowspan="2" class="align-middle">Cliente</th>
+                  <th colspan="2" class="text-center">Simples</th>
+                  <th colspan="2" class="text-center">Kit</th>
+                  <th colspan="2" class="text-center">Super Kit</th>
+                  <th rowspan="2" class="text-end align-middle">Bruto R$</th>
+                  <th rowspan="2" class="text-end align-middle">Desconto R$</th>
+                  <th rowspan="2" class="text-end align-middle">Líquido R$</th>
+               </tr>
+               <tr>
+                  <th class="text-center">Qtd</th>
+                  <th class="text-center">Total R$</th>
+                  <th class="text-center">Qtd</th>
+                  <th class="text-center">Total R$</th>
+                  <th class="text-center">Qtd</th>
+                  <th class="text-center">Total R$</th>
+               </tr>
+            </thead>
+            <tbody>
+      `;
+
+      closures.forEach((closureData) => {
+         const clientName = closureData.client_name || closureData.client || 'Desconhecido';
+         
+         tableHtml += `
+            <tr>
+               <td><strong>${clientName}</strong></td>
+               <td class="text-center">${closureData.total_simple_labels || 0}</td>
+               <td class="text-center">R$ ${formatarMoeda(closureData.total_simple_net || 0)}</td>
+               <td class="text-center">${closureData.total_kit_labels || 0}</td>
+               <td class="text-center">R$ ${formatarMoeda(closureData.total_kit_net || 0)}</td>
+               <td class="text-center">${closureData.total_superkit_labels || 0}</td>
+               <td class="text-center">R$ ${formatarMoeda(closureData.total_superkit_value || 0)}</td>
+               <td class="text-end"><strong>R$ ${formatarMoeda(closureData.total_gross || 0)}</strong></td>
+               <td class="text-end text-danger"><strong>R$ ${formatarMoeda(closureData.total_discount || 0)}</strong></td>
+               <td class="text-end text-success"><strong>R$ ${formatarMoeda(closureData.total_net || 0)}</strong></td>
+            </tr>
+         `;
+      });
+
+      tableHtml += `
+            </tbody>
+         </table>
+         </div>
+      `;
+
+      // Calcular total líquido
+      let totalLiquido = 0;
+      closures.forEach((closure) => {
+         totalLiquido += parseFloat(closure.total_net || 0);
+      });
+
+      // Adicionar totalizador
+      tableHtml += `
+         <div class="mt-3 p-3 rounded border">
+            <div class="row">
+               <div class="col-md-9 text-end">
+                  <h5 class="mb-0"><strong>Total Líquido:</strong></h5>
+               </div>
+               <div class="col-md-3 text-end">
+                  <h5 class="mb-0 text-success"><strong>R$ ${formatarMoeda(totalLiquido)}</strong></h5>
+               </div>
+            </div>
+         </div>
+      `;
+
+      container.innerHTML = tableHtml;
+   } else {
+      // Se há apenas um cliente, mostrar com detalhes completos
+      const closureData = closures[0];
+      const clientName = closureData.client_name || closureData.client || 'Desconhecido';
+      
+      const closureHtml = `
+         <div class="closure-card mb-4 p-3 border rounded">
+            <h5 class="mb-3">
+               <strong>${clientName}</strong>
+            </h5>
+
+            <div class="row mb-3">
+               <div class="col-md-4">
+                  <strong>Etiquetas Simples</strong>
+                  <div>${closureData.total_simple_labels || 0}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Etiquetas Kit</strong>
+                  <div>${closureData.total_kit_labels || 0}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Etiquetas Super Kit</strong>
+                  <div>${closureData.total_superkit_labels || 0}</div>
+               </div>
+            </div>
+
+            <div class="row mb-3">
+               <div class="col-md-4">
+                  <strong>Unitário Simples</strong>
+                  <div>R$ ${formatarMoeda(closureData.unit_price_simple || 0)}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Unitário Kit</strong>
+                  <div>R$ ${formatarMoeda(closureData.unit_price_kit || 0)}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Unitário Super Kit</strong>
+                  <div>-</div>
+               </div>
+            </div>
+
+            <div class="row mb-3">
+               <div class="col-md-4">
+                  <strong>Valor Simples</strong>
+                  <div>R$ ${formatarMoeda(closureData.total_simple_net || 0)}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Valor Kit</strong>
+                  <div>R$ ${formatarMoeda(closureData.total_kit_net || 0)}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Valor Super Kit</strong>
+                  <div>R$ ${formatarMoeda(closureData.total_superkit_value || 0)}</div>
+               </div>
+            </div>
+
+            <hr>
+
+            <div class="row mb-3">
+               <div class="col-md-4">
+                  <strong>Valor Bruto</strong>
+                  <div class="h5">R$ ${formatarMoeda(closureData.total_gross || 0)}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Desconto</strong>
+                  <div class="h5 text-danger">R$ ${formatarMoeda(closureData.total_discount || 0)}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Valor Líquido</strong>
+                  <div class="h5 text-success">R$ ${formatarMoeda(closureData.total_net || 0)}</div>
+               </div>
+            </div>
+
+            <hr>
+
+            <div class="row mb-3">
+               <div class="col-md-4">
+                  <strong>Faixa de Preço</strong>
+                  <div>${closureData.price_range || '-'}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Desconto Simples</strong>
+                  <div>R$ ${formatarMoeda(closureData.total_discount_simple || 0)}</div>
+               </div>
+               <div class="col-md-4">
+                  <strong>Desconto Kit</strong>
+                  <div>R$ ${formatarMoeda(closureData.total_discount_kit || 0)}</div>
+               </div>
+            </div>
+
+            <hr>
+
+            <strong>Remessas Incluídas:</strong>
+            ${renderShipments(closureData.shipments)}
+         </div>
+      `;
+      
+      container.innerHTML = closureHtml;
+   }
+}
+
+function renderShipments(shipments) {
+   if (!shipments || shipments.length === 0) {
+      return '<p class="text-muted mt-2">Nenhuma remessa encontrada</p>';
+   }
+
+   let html = '<table class="table table-sm table-striped mt-2"><thead><tr><th>ID Remessa</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
+   
+   shipments.forEach(shipment => {
+      html += `<tr>
+         <td>${shipment.shipment_code}</td>
+         <td>${shipment.creation_date}</td>
+         <td>${shipment.total_items || 0}</td>
+         <td>R$ ${formatarMoeda(shipment.value || 0)}</td>
+      </tr>`;
+   });
+   
+   html += '</tbody></table>';
+   return html;
+}
+
 // Voltar para step 1
 function backToStep1() {
    document.getElementById('step1Selection').style.display = 'block';
@@ -188,11 +389,11 @@ function backToStep1() {
 
 // Salvar o novo fechamento (executar procedure)
 function saveNewClosure() {
-   // Usar dados armazenados em newClosureData
    const yearMonth = newClosureData.year_month;
    const clientId = newClosureData.client_id;
+   const clients = newClosureData.clients;
 
-   if (!yearMonth || !clientId) {
+   if (!yearMonth || !clients || clients.length === 0) {
       Swal.fire({
          icon: 'error',
          title: 'Erro',
@@ -201,12 +402,46 @@ function saveNewClosure() {
       return;
    }
 
+   // Mostrar progresso
+   Swal.fire({
+      title: 'Processando',
+      html: 'Criando fechamentos e gerando PDFs...<br><div class="progress mt-3"><div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%"></div></div>',
+      allowOutsideClick: false,
+      didOpen: () => {
+         Swal.showLoading();
+      }
+   });
+
+   // Salvar todos os fechamentos
+   saveAllClosures(0, clients);
+}
+
+function saveAllClosures(index, clients) {
+   if (index >= clients.length) {
+      // Todos salvos, agora gerar PDFs
+      downloadAllClosuresPdfs(0, clients);
+      return;
+   }
+
+   const closureData = clients[index];
+   const [year, month] = newClosureData.year_month.split('-');
+   const clientId = closureData.client_id || closureData.id;
+
+   if (!clientId) {
+      console.error('Client ID não encontrado para o closure', closureData);
+      Swal.fire({
+         icon: 'error',
+         title: 'Erro',
+         text: 'Client ID inválido para: ' + (closureData.client_name || closureData.client || 'Desconhecido')
+      });
+      return;
+   }
+
    const formData = new FormData();
-   formData.append('year_month', yearMonth);
+   formData.append('year_month', newClosureData.year_month);
    formData.append('client_id', clientId);
    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
-   // Salvar no banco (executar procedure)
    fetch(window.storeRoute || '/monthly-closures', {
       method: 'POST',
       body: formData
@@ -220,11 +455,16 @@ function saveNewClosure() {
       return response.json();
    })
    .then(data => {
-      // Sucesso ao salvar, agora fazer download do PDF
-      downloadNewClosurePdf();
+      // Atualizar progresso
+      const progress = Math.round(((index + 1) / clients.length) * 50);
+      document.getElementById('progressBar').style.width = progress + '%';
+      
+      // Próximo cliente
+      saveAllClosures(index + 1, clients);
    })
    .catch(error => {
       console.error(error);
+      Swal.hideLoading();
       Swal.fire({
          icon: 'error',
          title: 'Erro',
@@ -233,13 +473,28 @@ function saveNewClosure() {
    });
 }
 
-// Fazer download do PDF após salvar
-function downloadNewClosurePdf() {
+function downloadAllClosuresPdfs(index, clients) {
+   if (index >= clients.length) {
+      // Todos os PDFs foram baixados
+      Swal.fire({
+         icon: 'success',
+         title: 'Sucesso',
+         text: 'Todos os fechamentos foram criados com sucesso!',
+         didClose: () => { 
+            location.reload(); 
+         }
+      });
+      return;
+   }
+
+   const closureData = clients[index];
    const [year, month] = newClosureData.year_month.split('-');
+   const clientId = closureData.client_id;
+
    const formData = new FormData();
    formData.append('year', parseInt(year));
    formData.append('month', parseInt(month));
-   formData.append('client_id', newClosureData.client_id);
+   formData.append('client_id', clientId);
    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
    fetch(window.previewPdfRoute || '/api/monthly-closure/preview-pdf', {
@@ -268,33 +523,35 @@ function downloadNewClosurePdf() {
          throw new Error('PDF gerado vazio');
       }
 
+      // Baixar arquivo
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
       a.click();
       a.remove();
-
-      Swal.fire({
-         icon: 'success',
-         title: 'Sucesso',
-         text: 'Fechamento criado com sucesso! Realizando download do PDF...',
-         didClose: () => { 
-            location.reload(); 
-         }
-      });
-
+      
       setTimeout(() => URL.revokeObjectURL(url), 5000);
+
+      // Atualizar progresso
+      const progress = 50 + Math.round(((index + 1) / clients.length) * 50);
+      document.getElementById('progressBar').style.width = progress + '%';
+
+      // Próximo PDF
+      downloadAllClosuresPdfs(index + 1, clients);
    })
    .catch(error => {
-      console.error(error);
+      console.error('Erro ao gerar PDF:', error);
+      Swal.hideLoading();
       Swal.fire({
-         icon: 'error',
-         title: 'Erro',
-         text: error.message
+         icon: 'warning',
+         title: 'Aviso',
+         text: 'Fechamento criado, mas houve erro ao gerar PDF: ' + error.message
       });
+      
+      // Tentar próximo mesmo com erro
+      downloadAllClosuresPdfs(index + 1, clients);
    });
 }
 
@@ -391,6 +648,8 @@ function showClosureModal(year, month, clientId) {
 }
 
 function deleteClosureConfirm(closureId, clientId) {
+   console.log('Deletando closure:', closureId, 'client:', clientId);
+   
    Swal.fire({
       icon: 'warning',
       title: 'Excluir Fechamento',
@@ -400,8 +659,63 @@ function deleteClosureConfirm(closureId, clientId) {
       cancelButtonText: 'Cancelar'
    }).then((result) => {
       if (result.isConfirmed) {
-         const formId = 'delete-closure-' + closureId + '-' + clientId;
-         document.getElementById(formId).submit();
+         // Mostrar loading
+         Swal.fire({
+            title: 'Processando',
+            html: 'Excluindo fechamento e atualizando remessas...',
+            allowOutsideClick: false,
+            didOpen: () => {
+               Swal.showLoading();
+            }
+         });
+
+         const url = `/monthly-closures/${closureId}`;
+         console.log('URL DELETE:', url);
+
+         // Fazer chamada AJAX para delete usando POST com _method
+         fetch(url, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'Accept': 'application/json',
+               'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+               'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+               _method: 'DELETE'
+            })
+         })
+         .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+               return response.text().then(text => {
+                  console.error('Erro:', text);
+                  throw new Error('Erro ao excluir fechamento: ' + response.status);
+               });
+            }
+            return response.json();
+         })
+         .then(data => {
+            console.log('Resposta do servidor:', data);
+            Swal.hideLoading();
+            Swal.fire({
+               icon: 'success',
+               title: 'Sucesso',
+               text: 'Fechamento excluído com sucesso! Remessas retornadas ao status "Coletado"',
+               didClose: () => {
+                  location.reload();
+               }
+            });
+         })
+         .catch(error => {
+            console.error('Erro ao deletar:', error);
+            Swal.hideLoading();
+            Swal.fire({
+               icon: 'error',
+               title: 'Erro',
+               text: 'Erro ao excluir fechamento: ' + error.message
+            });
+         });
       }
    });
 }
@@ -630,17 +944,17 @@ function viewClosureDetails(data) {
       document.getElementById('view-closure-simple-labels').textContent = data.total_simple_labels || 0;
       document.getElementById('view-closure-kit-labels').textContent = data.total_kit_labels || 0;
       document.getElementById('view-closure-superkit-labels').textContent = data.total_superkit_labels || 0;
-      document.getElementById('view-closure-unit-simple').textContent = 'R$ ' + parseFloat(data.unit_price_simple || 0).toFixed(2).replace('.', ',');
-      document.getElementById('view-closure-unit-kit').textContent = 'R$ ' + parseFloat(data.unit_price_kit || 0).toFixed(2).replace('.', ',');
-      document.getElementById('view-closure-simple-net').textContent = 'R$ ' + parseFloat(data.total_simple_net || 0).toFixed(2).replace('.', ',');
-      document.getElementById('view-closure-kit-net').textContent = 'R$ ' + parseFloat(data.total_kit_net || 0).toFixed(2).replace('.', ',');
-      document.getElementById('view-closure-superkit-value').textContent = 'R$ ' + parseFloat(data.total_superkit_value || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-unit-simple').textContent = 'R$ ' + formatarMoeda(data.unit_price_simple || 0);
+      document.getElementById('view-closure-unit-kit').textContent = 'R$ ' + formatarMoeda(data.unit_price_kit || 0);
+      document.getElementById('view-closure-simple-net').textContent = 'R$ ' + formatarMoeda(data.total_simple_net || 0);
+      document.getElementById('view-closure-kit-net').textContent = 'R$ ' + formatarMoeda(data.total_kit_net || 0);
+      document.getElementById('view-closure-superkit-value').textContent = 'R$ ' + formatarMoeda(data.total_superkit_value || 0);
       document.getElementById('view-closure-price-range').textContent = data.price_range || '-';
-      document.getElementById('view-closure-simple-discount').textContent = 'R$ ' + parseFloat(data.total_discount_simple || 0).toFixed(2).replace('.', ',');
-      document.getElementById('view-closure-kit-discount').textContent = 'R$ ' + parseFloat(data.total_discount_kit || 0).toFixed(2).replace('.', ',');
-      document.getElementById('view-closure-gross').textContent = 'R$ ' + parseFloat(data.total_gross || 0).toFixed(2).replace('.', ',');
-      document.getElementById('view-closure-discount').textContent = 'R$ ' + parseFloat(data.total_discount || 0).toFixed(2).replace('.', ',');
-      document.getElementById('view-closure-net').textContent = 'R$ ' + parseFloat(data.total_net || 0).toFixed(2).replace('.', ',');
+      document.getElementById('view-closure-simple-discount').textContent = 'R$ ' + formatarMoeda(data.total_discount_simple || 0);
+      document.getElementById('view-closure-kit-discount').textContent = 'R$ ' + formatarMoeda(data.total_discount_kit || 0);
+      document.getElementById('view-closure-gross').textContent = 'R$ ' + formatarMoeda(data.total_gross || 0);
+      document.getElementById('view-closure-discount').textContent = 'R$ ' + formatarMoeda(data.total_discount || 0);
+      document.getElementById('view-closure-net').textContent = 'R$ ' + formatarMoeda(data.total_net || 0);;
 
       // Preencher remessas
       let shipmentsHtml = '';
@@ -651,7 +965,7 @@ function viewClosureDetails(data) {
                <td>${shipment.shipment_code}</td>
                <td>${shipment.creation_date}</td>
                <td>${shipment.total_items || 0}</td>
-               <td>R$ ${parseFloat(shipment.value || 0).toFixed(2).replace('.', ',')}</td>
+               <td>R$ ${formatarMoeda(shipment.value || 0)}</td>
             </tr>`;
          });
          shipmentsHtml += '</tbody></table>';

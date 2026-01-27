@@ -117,9 +117,9 @@
                </div>
 
                <div class="mb-3">
-                  <label for="closure_client_id" class="form-label">Cliente <span class="text-danger">*</span></label>
-                  <select class="form-select" id="closure_client_id" name="client_id" required>
-                     <option value="">Selecione um cliente</option>
+                  <label for="closure_client_id" class="form-label">Cliente <small class="text-muted">(Opcional - deixe em branco para gerar para todos os clientes)</small></label>
+                  <select class="form-select" id="closure_client_id" name="client_id">
+                     <option value="">Gerar para todos os clientes com remessas</option>
                      @foreach($clients as $client)
                         <option value="{{ $client->id }}">{{ $client->name }}</option>
                      @endforeach
@@ -129,101 +129,17 @@
 
             <div id="step2Preview" style="display: none;">
                <div class="row mb-3">
-                  <div class="col-md-6">
+                  <div class="col-md-12">
                      <strong>Ano/Mês</strong>
-                     <div id="new-closure-month"></div>
-                  </div>
-                  <div class="col-md-6">
-                     <strong>Cliente</strong>
-                     <div id="new-closure-client"></div>
+                     <div id="new-closure-month" class="mb-3"></div>
                   </div>
                </div>
 
                <hr>
 
-               <div class="row mb-3">
-                  <div class="col-md-4">
-                     <strong>Etiquetas Simples</strong>
-                     <div id="new-closure-simple-labels"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Etiquetas Kit</strong>
-                     <div id="new-closure-kit-labels"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Etiquetas Super Kit</strong>
-                     <div id="new-closure-superkit-labels"></div>
-                  </div>
-               </div>
-
-               <div class="row mb-3">
-                  <div class="col-md-4">
-                     <strong>Unitário Simples</strong>
-                     <div id="new-closure-unit-simple"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Unitário Kit</strong>
-                     <div id="new-closure-unit-kit"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Unitário Super Kit</strong>
-                     <div id="new-closure-unit-superkit">-</div>
-                  </div>
-               </div>
-
-               <div class="row mb-3">
-                  <div class="col-md-4">
-                     <strong>Valor Simples</strong>
-                     <div id="new-closure-simple-net"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Valor Kit</strong>
-                     <div id="new-closure-kit-net"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Valor Super Kit</strong>
-                     <div id="new-closure-superkit-value"></div>
-                  </div>
-               </div>
+               <div id="closuresContainer"></div>
 
                <hr>
-
-               <div class="row mb-3">
-                  <div class="col-md-4">
-                     <strong>Valor Bruto</strong>
-                     <div id="new-closure-gross" class="h5"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Desconto</strong>
-                     <div id="new-closure-discount" class="h5 text-danger"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Valor Líquido</strong>
-                     <div id="new-closure-net" class="h5 text-success"></div>
-                  </div>
-               </div>
-
-               <hr>
-
-               <div class="row mb-3">
-                  <div class="col-md-4">
-                     <strong>Faixa de Preço</strong>
-                     <div id="new-closure-price-range"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Desconto referente às etiquetas simples</strong>
-                     <div id="new-closure-simple-discount"></div>
-                  </div>
-                  <div class="col-md-4">
-                     <strong>Desconto referente às etiquetas kit</strong>
-                     <div id="new-closure-kit-discount"></div>
-                  </div>
-               </div>
-
-               <hr>
-
-               <strong>Remessas Incluídas:</strong>
-               <div id="new-closure-shipments" class="mt-2"></div>
             </div>
 
             <div id="loadingMessage" style="display: none;" class="text-center py-4">
@@ -391,6 +307,26 @@
       </div>
    </div>
 </div>
+
+@push('css')
+<style>
+   /* Tornar modais scrolláveis com conteúdo grande */
+   #newClosureModal .modal-body,
+   #viewClosureModal .modal-body {
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+   }
+   
+   /* Garantir que tabelas em modais sejam responsivas */
+   #closuresContainer .table {
+      margin-bottom: 0;
+   }
+   
+   #closuresContainer {
+      overflow-x: auto;
+   }
+</style>
+@endpush
 
 @push('scripts')
 <script>

@@ -78,7 +78,7 @@ class MonthlyClosureController extends Controller
         try {
             $validated = $request->validate([
                 'year_month' => 'required|date_format:Y-m',
-                'client_id' => 'required|exists:clients,id',
+                'client_id' => 'required|integer|exists:clients,id',
             ]);
 
             \Log::info('Iniciando criação de fechamento', $validated);
@@ -112,13 +112,41 @@ class MonthlyClosureController extends Controller
             $success = $this->monthlyClosureService->delete((int)$id);
 
             if ($success) {
+                // Se for AJAX, retornar JSON
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Fechamento deletado com sucesso! Remessas retornadas ao status "Coletado"'
+                    ]);
+                }
+                
+                // Senão, retornar redirect
                 return redirect()->route('monthly-closures.index')
                                ->with('success', 'Fechamento deletado com sucesso!');
             } else {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Fechamento não encontrado'
+                    ], 404);
+                }
+                
                 return redirect()->back()
                                ->with('error', 'Fechamento não encontrado');
             }
         } catch (\Exception $e) {
+            \Log::error('Erro ao deletar fechamento', [
+                'id' => $id,
+                'error' => $e->getMessage()
+            ]);
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Erro ao deletar fechamento: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return redirect()->back()
                            ->with('error', 'Erro ao deletar fechamento: ' . $e->getMessage());
         }
@@ -242,20 +270,61 @@ class MonthlyClosureController extends Controller
             $validated = $request->validate([
                 'year' => 'required|integer|min:2000',
                 'month' => 'required|integer|min:1|max:12',
-                'client_id' => 'required|exists:clients,id',
+                'client_id' => 'nullable|exists:clients,id',
             ]);
 
-            $data = $this->monthlyClosureService->calculateClosureData(
-                $validated['year'],
-                $validated['month'],
-                $validated['client_id']
-            );
+            $year = $validated['year'];
+            $month = $validated['month'];
+            $clientId = $validated['client_id'] ?? null;
 
-            return response()->json($data);
+            if ($clientId) {
+                // Um cliente específico
+                $data = $this->monthlyClosureService->calculateClosureData($year, $month, $clientId);
+                $data['client_id'] = $clientId;
+                return response()->json($data);
+            } else {
+                // Todos os clientes com remessas neste período
+                $closures = $this->getClientsWithShipments($year, $month);
+                
+                if (empty($closures)) {
+                    return response()->json(['error' => 'Nenhum cliente com remessas neste período'], 400);
+                }
+
+                // Processar cada cliente
+                $closuresData = [];
+                foreach ($closures as $clientId) {
+                    try {
+                        $data = $this->monthlyClosureService->calculateClosureData($year, $month, $clientId);
+                        // Garantir que client_id está nos dados
+                        $data['client_id'] = $clientId;
+                        $closuresData[] = $data;
+                    } catch (\Exception $e) {
+                        \Log::warning("Erro ao processar cliente $clientId: " . $e->getMessage());
+                        continue;
+                    }
+                }
+
+                return response()->json($closuresData);
+            }
         } catch (\Exception $e) {
             \Log::error('Erro em previewClosure: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Obter clientes que possuem remessas em um período específico
+     */
+    private function getClientsWithShipments(int $year, int $month): array
+    {
+        $clients = \DB::table('shipments')
+            ->whereYear('creation_date', $year)
+            ->whereMonth('creation_date', $month)
+            ->distinct()
+            ->pluck('client_id')
+            ->toArray();
+
+        return $clients;
     }
 
     /**
