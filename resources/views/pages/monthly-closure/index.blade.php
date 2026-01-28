@@ -112,8 +112,8 @@
          <div class="modal-body">
             <div id="step1Selection">
                <div class="mb-3">
-                  <label for="year_month" class="form-label">Ano/Mês <span class="text-danger">*</span></label>
-                  <input type="month" class="form-control" id="year_month" name="year_month" required onchange="document.getElementById('year_month').setAttribute('data-value', this.value); console.log('Input mudou para:', this.value);">
+                  <label for="modal_year_month" class="form-label">Ano/Mês <span class="text-danger">*</span></label>
+                  <input type="month" class="form-control" id="modal_year_month" name="modal_year_month" required>
                </div>
 
                <div class="mb-3">

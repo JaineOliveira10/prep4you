@@ -26,7 +26,7 @@ function formatarMoeda(valor) {
 }
 
 function previewNewClosure() {
-   const yearMonthInput = document.getElementById('year_month');
+   const yearMonthInput = document.getElementById('modal_year_month');
    const clientIdSelect = document.getElementById('closure_client_id');
    
    let yearMonth = yearMonthInput.value || yearMonthInput.getAttribute('data-value');
@@ -558,8 +558,6 @@ function downloadAllClosuresPdfs(index, clients) {
 
 
 function deleteClosureConfirm(closureId, clientId) {
-   console.log('Deletando cliente do closure:', closureId, 'client:', clientId);
-   
    Swal.fire({
       icon: 'warning',
       title: 'Excluir Fechamento',
@@ -580,7 +578,6 @@ function deleteClosureConfirm(closureId, clientId) {
          });
 
          const url = `/monthly-closures/${closureId}/client/${clientId}`;
-         console.log('URL DELETE:', url);
 
          // Fazer chamada AJAX para delete usando DELETE direto
          fetch(url, {
@@ -593,29 +590,25 @@ function deleteClosureConfirm(closureId, clientId) {
             }
          })
          .then(response => {
-            console.log('Response status:', response.status);
             if (!response.ok) {
                return response.text().then(text => {
-                  console.error('Erro:', text);
                   throw new Error('Erro ao excluir fechamento: ' + response.status);
                });
             }
             return response.json();
          })
          .then(data => {
-            console.log('Resposta do servidor:', data);
             Swal.hideLoading();
             Swal.fire({
                icon: 'success',
                title: 'Sucesso',
-               text: 'Fechamento excluído com sucesso! Remessas retornadas ao status "Coletado"',
+               text: 'Fechamento excluído com sucesso!',
                didClose: () => {
                   location.reload();
                }
             });
          })
          .catch(error => {
-            console.error('Erro ao deletar:', error);
             Swal.hideLoading();
             Swal.fire({
                icon: 'error',
@@ -704,7 +697,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initializeTooltips, 500);
     
     // Garantir que o input de month comece vazio
-    const yearMonthInput = document.getElementById('year_month');
+    const yearMonthInput = document.getElementById('modal_year_month');
     if (yearMonthInput) {
         yearMonthInput.value = '';
     }
