@@ -12,18 +12,18 @@
       </span>
    </button>
 
-   <button type="button" 
+   <a href="#" 
+      onclick="confirmNewClosure({ closure_id: {{ $closure->id }}, client_id: {{ $client->id }} }, 'Download do PDF iniciado!'); return false;"
       class="btn btn-sm btn-icon btn-success" 
       data-bs-toggle="tooltip" 
-      title="Baixar PDF"
-      onclick="viewClosureDetails({ closure_id: {{ $closure->id }}, client_id: {{ $client->id }}, year: {{ $closure->year }}, month: {{ $closure->month }} })">
+      title="Baixar PDF">
       <span class="btn-inner">
          <svg width="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M8.5 13L12 16.5M12 16.5L15.5 13M12 16.5V3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
             <path d="M2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C10.3431 21.5 8.75407 21.1143 7.36687 20.4057C6.51962 20.0181 5.52477 20.2707 5.22561 21.0272C4.90181 21.8567 5.45543 22.8127 6.38694 23.1272C8.17127 23.8137 10.0502 24.1429 12 24.1429" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
          </svg>
       </span>
-   </button>
+   </a>
 
    @if(auth()->user()->type == 'admin')
    <button type="button" 

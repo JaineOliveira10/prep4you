@@ -555,7 +555,97 @@ function downloadAllClosuresPdfs(index, clients) {
    });
 }
 
+// Confirmar e criar o fechamento (versão antiga para download direto)
+function confirmNewClosure(payload, successMessage = 'Download iniciado com sucesso!') {
+   const formData = new FormData();
 
+   // ✅ se veio closure_id (listagem)
+   if (payload.closure_id) {
+      formData.append('closure_id', payload.closure_id);
+      formData.append('client_id', payload.client_id);
+   }
+   // ✅ se veio year/month/client_id (criação)
+   else {
+      if (!payload.year_month || !payload.client_id) {
+         Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: 'Dados insuficientes para gerar o PDF'
+         });
+         return;
+      }
+
+      formData.append('year_month', payload.year_month);
+      formData.append('client_id', payload.client_id);
+   }
+
+   formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+   fetch(window.previewPdfRoute || '/api/monthly-closure/preview-pdf', {
+      method: 'POST',
+      body: formData
+   })
+   .then(response => {
+      if (!response.ok) {
+         return response.text().then(text => {
+            console.error(text);
+            throw new Error('Erro ao gerar PDF');
+         });
+      }
+
+      const disposition = response.headers.get('Content-Disposition');
+      let filename = 'fechamento.pdf';
+
+      if (disposition && disposition.includes('filename=')) {
+         filename = disposition.split('filename=')[1].replace(/"/g, '').trim();
+      }
+
+      return response.blob().then(blob => ({ blob, filename }));
+   })
+   .then(({ blob, filename }) => {
+      if (blob.size === 0) {
+         throw new Error('PDF gerado vazio');
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      Swal.fire({
+         icon: 'success',
+         title: 'Sucesso',
+         text: successMessage,
+         didClose: () => { 
+            location.reload(); 
+         }
+      });
+
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+   })
+   .catch(error => {
+      console.error(error);
+      Swal.fire({
+         icon: 'error',
+         title: 'Erro',
+         text: error.message
+      });
+   });
+}
+
+
+
+function showClosureModal(year, month, clientId) {
+   viewingClosureData.year = year;
+   viewingClosureData.month = month;
+   viewingClosureData.client_id = clientId;
+
+   openClosurePdf();
+}
 
 function deleteClosureConfirm(closureId, clientId) {
    Swal.fire({
