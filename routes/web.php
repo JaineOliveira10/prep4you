@@ -47,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('api/monthly-closure/preview-pdf', [MonthlyClosureController::class, 'previewPdf'])->name('monthly-closures.preview-pdf');
         Route::post('api/monthly-closure/check-existing', [MonthlyClosureController::class, 'checkExisting']);
         Route::post('monthly-closures/counter-pdf', [MonthlyClosureController::class, 'printPdf'])->name('monthly-closures.print-pdf');
+        Route::post('api/monthly-closure/perform-payment', [MonthlyClosureController::class, 'performPayment'])->name('monthly-closures.perform-payment');
+        Route::post('api/monthly-closure/refund-payment', [MonthlyClosureController::class, 'refundPayment'])->name('monthly-closures.refund-payment');
     });
 
     Route::resource('shipments', ShipmentController::class)->except(['manageShipments']);

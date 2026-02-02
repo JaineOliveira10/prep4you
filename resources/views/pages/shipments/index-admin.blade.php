@@ -157,8 +157,10 @@
                                    <span class="badge bg-success">Coletado</span>
                               @elseif($shipment->status == 'Invoice Generated')      
                                    <span class="badge bg-secondary">Gerado Fatura</span>
+                              @elseif($shipment->status == 'Paid')
+                                    <span class="badge bg-success">Pago</span>
                               @else
-                                   <span class="badge bg-light text-dark">{{ $shipment->status }}</span>
+                                 <span class="badge bg-light text-dark">{{ $shipment->status }}</span>
                                @endif
                            </td>
                            <td>{{ $shipment->distributionCenter ? $shipment->distributionCenter->acronym : 'N/A' }}</td>

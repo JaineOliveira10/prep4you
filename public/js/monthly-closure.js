@@ -196,17 +196,17 @@ function renderClosuresPreview(closures, year, month) {
                   <th colspan="2" class="text-center">Simples</th>
                   <th colspan="2" class="text-center">Kit</th>
                   <th colspan="2" class="text-center">Super Kit</th>
-                  <th rowspan="2" class="text-end align-middle">Bruto R$</th>
-                  <th rowspan="2" class="text-end align-middle">Desconto R$</th>
-                  <th rowspan="2" class="text-end align-middle">Líquido R$</th>
+                  <th rowspan="2" class="text-end align-middle">Bruto</th>
+                  <th rowspan="2" class="text-end align-middle">Desc.</th>
+                  <th rowspan="2" class="text-end align-middle">Líquido</th>
                </tr>
                <tr>
                   <th class="text-center">Qtd</th>
-                  <th class="text-center">Total R$</th>
+                  <th class="text-center">Total</th>
                   <th class="text-center">Qtd</th>
-                  <th class="text-center">Total R$</th>
+                  <th class="text-center">Total</th>
                   <th class="text-center">Qtd</th>
-                  <th class="text-center">Total R$</th>
+                  <th class="text-center">Total</th>
                </tr>
             </thead>
             <tbody>
@@ -217,16 +217,16 @@ function renderClosuresPreview(closures, year, month) {
          
          tableHtml += `
             <tr>
-               <td><strong>${clientName}</strong></td>
-               <td class="text-center">${closureData.total_simple_labels || 0}</td>
-               <td class="text-center">R$ ${formatarMoeda(closureData.total_simple_net || 0)}</td>
-               <td class="text-center">${closureData.total_kit_labels || 0}</td>
-               <td class="text-center">R$ ${formatarMoeda(closureData.total_kit_net || 0)}</td>
-               <td class="text-center">${closureData.total_superkit_labels || 0}</td>
-               <td class="text-center">R$ ${formatarMoeda(closureData.total_superkit_value || 0)}</td>
-               <td class="text-end"><strong>R$ ${formatarMoeda(closureData.total_gross || 0)}</strong></td>
-               <td class="text-end text-danger"><strong>R$ ${formatarMoeda(closureData.total_discount || 0)}</strong></td>
-               <td class="text-end text-success"><strong>R$ ${formatarMoeda(closureData.total_net || 0)}</strong></td>
+               <td style="white-space: normal;"><strong>${clientName}</strong></td>
+               <td class="text-end">${closureData.total_simple_labels || 0}</td>
+               <td class="text-end">${formatarMoeda(closureData.total_simple_net || 0)}</td>
+               <td class="text-end">${closureData.total_kit_labels || 0}</td>
+               <td class="text-end">${formatarMoeda(closureData.total_kit_net || 0)}</td>
+               <td class="text-end">${closureData.total_superkit_labels || 0}</td>
+               <td class="text-end">${formatarMoeda(closureData.total_superkit_value || 0)}</td>
+               <td class="text-end text-info"><strong>${formatarMoeda(closureData.total_gross || 0)}</strong></td>
+               <td class="text-end text-danger"><strong>${formatarMoeda(closureData.total_discount || 0)}</strong></td>
+               <td class="text-end text-success"><strong>${formatarMoeda(closureData.total_net || 0)}</strong></td>
             </tr>
          `;
       });
@@ -237,15 +237,41 @@ function renderClosuresPreview(closures, year, month) {
          </div>
       `;
 
-      // Calcular total líquido
+      // Calcular totais
       let totalLiquido = 0;
       closures.forEach((closure) => {
          totalLiquido += parseFloat(closure.total_net || 0);
       });
 
+      let totalBruto = 0;
+      closures.forEach((closure) => {
+         totalBruto += parseFloat(closure.total_gross || 0);
+      });
+
+      let totalDesconto = 0;
+      closures.forEach((closure) => {
+         totalDesconto += parseFloat(closure.total_discount || 0);
+      });
+
       // Adicionar totalizador
       tableHtml += `
          <div class="mt-3 p-3 rounded border">
+            <div class="row mb-2">
+               <div class="col-md-9 text-end">
+                  <h5 class="mb-0"><strong>Total Bruto:</strong></h5>
+               </div>
+               <div class="col-md-3 text-end">
+                  <h5 class="mb-0 text-info"><strong>R$ ${formatarMoeda(totalBruto)}</strong></h5>
+               </div>
+            </div>
+            <div class="row mb-2">
+               <div class="col-md-9 text-end">
+                  <h5 class="mb-0"><strong>Total Desconto:</strong></h5>
+               </div>
+               <div class="col-md-3 text-end">
+                  <h5 class="mb-0 text-danger"><strong>R$ ${formatarMoeda(totalDesconto)}</strong></h5>
+               </div>
+            </div>
             <div class="row">
                <div class="col-md-9 text-end">
                   <h5 class="mb-0"><strong>Total Líquido:</strong></h5>
@@ -364,14 +390,14 @@ function renderShipments(shipments) {
       return '<p class="text-muted mt-2">Nenhuma remessa encontrada</p>';
    }
 
-   let html = '<table class="table table-sm table-striped mt-2"><thead><tr><th>ID Remessa</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
+   let html = '<table class="table table-sm table-bordered table-striped mt-2"><thead><tr><th>ID Remessa</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
    
    shipments.forEach(shipment => {
       html += `<tr>
-         <td>${shipment.shipment_code}</td>
-         <td>${shipment.creation_date}</td>
-         <td>${shipment.total_items || 0}</td>
-         <td>R$ ${formatarMoeda(shipment.value || 0)}</td>
+         <td class="px-4">${shipment.shipment_code}</td>
+         <td class="px-4">${shipment.creation_date}</td>
+         <td class="text-end px-4">${shipment.total_items || 0}</td>
+         <td class="text-end px-4">R$ ${formatarMoeda(shipment.value || 0)}</td>
       </tr>`;
    });
    
@@ -949,13 +975,13 @@ function viewClosureDetails(data) {
       // Preencher remessas
       let shipmentsHtml = '';
       if (data.shipments && data.shipments.length > 0) {
-         shipmentsHtml = '<table class="table table-sm table-striped"><thead><tr><th>ID Remessa</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
+         shipmentsHtml = '<table class="table table-sm table-bordered table-striped"><thead><tr><th>ID Remessa</th><th>Data</th><th>Qtd</th><th>Valor</th></tr></thead><tbody>';
          data.shipments.forEach(shipment => {
             shipmentsHtml += `<tr>
-               <td>${shipment.shipment_code}</td>
-               <td>${shipment.creation_date}</td>
-               <td>${shipment.total_items || 0}</td>
-               <td>R$ ${formatarMoeda(shipment.value || 0)}</td>
+               <td class="px-4">${shipment.shipment_code}</td>
+               <td class="px-4">${shipment.creation_date}</td>
+               <td class="text-end px-4">${shipment.total_items || 0}</td>
+               <td class="text-end px-4">R$ ${formatarMoeda(shipment.value || 0)}</td>
             </tr>`;
          });
          shipmentsHtml += '</tbody></table>';
@@ -976,5 +1002,162 @@ function viewClosureDetails(data) {
          title: 'Erro',
          text: 'Erro ao carregar visualização: ' + error.message
       });
+   });
+}
+
+/**
+ * Verifica se o fechamento está pago (paid_flag) antes de permitir deletar
+ */
+function checkPaidFlagAndDelete(closureId, clientId, isPaid) {
+   if (isPaid) {
+      Swal.fire({
+         icon: 'error',
+         title: 'Ação não permitida',
+         text: 'Você não pode excluir um fechamento que já foi pago.',
+         confirmButtonText: 'Ok'
+      });
+      return;
+   }
+   
+   deleteClosureConfirm(closureId, clientId);
+}
+
+/**
+ * Realizar pagamento do fechamento
+ */
+function performPayment(closureId, clientId) {
+   Swal.fire({
+      icon: 'question',
+      title: 'Realizar Pagamento',
+      text: 'Deseja marcar este fechamento como pago? Todas as remessas serão atualizadas para status "Pago".',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, realizar pagamento',
+      cancelButtonText: 'Cancelar'
+   }).then((result) => {
+      if (result.isConfirmed) {
+         // Mostrar loading
+         Swal.fire({
+            title: 'Processando',
+            html: 'Atualizando status do fechamento e remessas...',
+            allowOutsideClick: false,
+            didOpen: () => {
+               Swal.showLoading();
+            }
+         });
+
+         // Fazer requisição
+         fetch(window.performPaymentRoute, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+               closure_id: closureId,
+               client_id: clientId
+            })
+         })
+         .then(response => response.json())
+         .then(data => {
+            Swal.close();
+            if (data.success) {
+               Swal.fire({
+                  icon: 'success',
+                  title: 'Sucesso',
+                  text: data.message,
+                  confirmButtonText: 'Ok'
+               }).then(() => {
+                  location.reload();
+               });
+            } else {
+               Swal.fire({
+                  icon: 'error',
+                  title: 'Erro',
+                  text: data.error || 'Erro ao realizar pagamento',
+                  confirmButtonText: 'Ok'
+               });
+            }
+         })
+         .catch(error => {
+            Swal.close();
+            console.error('Erro:', error);
+            Swal.fire({
+               icon: 'error',
+               title: 'Erro',
+               text: 'Erro ao realizar pagamento',
+               confirmButtonText: 'Ok'
+            });
+         });
+      }
+   });
+}
+
+/**
+ * Estornar pagamento do fechamento
+ */
+function refundPayment(closureId, clientId) {
+   Swal.fire({
+      icon: 'warning',
+      title: 'Estornar Pagamento',
+      text: 'Deseja estornar este pagamento? As remessas voltarão para status "Gerado Fatura".',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, estornar',
+      cancelButtonText: 'Cancelar'
+   }).then((result) => {
+      if (result.isConfirmed) {
+         // Mostrar loading
+         Swal.fire({
+            title: 'Processando',
+            html: 'Estornando pagamento e atualizando remessas...',
+            allowOutsideClick: false,
+            didOpen: () => {
+               Swal.showLoading();
+            }
+         });
+
+         // Fazer requisição
+         fetch(window.refundPaymentRoute, {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json',
+               'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+               closure_id: closureId,
+               client_id: clientId
+            })
+         })
+         .then(response => response.json())
+         .then(data => {
+            Swal.close();
+            if (data.success) {
+               Swal.fire({
+                  icon: 'success',
+                  title: 'Sucesso',
+                  text: data.message,
+                  confirmButtonText: 'Ok'
+               }).then(() => {
+                  location.reload();
+               });
+            } else {
+               Swal.fire({
+                  icon: 'error',
+                  title: 'Erro',
+                  text: data.error || 'Erro ao estornar pagamento',
+                  confirmButtonText: 'Ok'
+               });
+            }
+         })
+         .catch(error => {
+            Swal.close();
+            console.error('Erro:', error);
+            Swal.fire({
+               icon: 'error',
+               title: 'Erro',
+               text: 'Erro ao estornar pagamento',
+               confirmButtonText: 'Ok'
+            });
+         });
+      }
    });
 }

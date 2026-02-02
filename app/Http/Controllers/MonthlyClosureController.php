@@ -23,7 +23,7 @@ class MonthlyClosureController extends Controller
      */
     public function index(Request $request)
     {
-        $yearMonth = $request->filled('year_month') ? $request->year_month : null;
+        $yearMonth = $request->filled('year_month') ? $request->year_month : now()->format('Y-m');
         $clientId = $request->filled('client_id') ? (int)$request->client_id : null;
 
         $closures = $this->monthlyClosureService->getClosures($yearMonth, $clientId);
@@ -436,16 +436,29 @@ class MonthlyClosureController extends Controller
             $options->set('chroot', base_path());
             $options->set('logOutputFile', storage_path('logs/dompdf.log'));
             
+            // Adicionar charset UTF-8 no HTML
+            if (strpos($html, '<head>') !== false) {
+                $html = str_replace(
+                    '<head>',
+                    '<head><meta charset="UTF-8">',
+                    $html
+                );
+            } else {
+                $html = '<?xml version="1.0" encoding="UTF-8"?>' . $html;
+            }
+            
             $dompdf = new Dompdf($options);
             $dompdf->setPaper('A4', 'portrait');
-            $dompdf->loadHtml($html);
+            $dompdf->loadHtml($html, 'UTF-8');
             $dompdf->render();
             
             \Log::info('PDF gerado com sucesso');
             
-            $filename = "fechamento_" . $data['client_name'] . "_" . str_replace('/', '-', $data['year_month']) . ".pdf";
+            // Sanitizar nome do cliente removendo acentos
+            $clientName = \Illuminate\Support\Str::slug($data['client_name'], '-');
+            $filename = "fechamento_" . $clientName . "_" . str_replace('/', '-', $data['year_month']) . ".pdf";
             return response($dompdf->output(), 200)
-                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Type', 'application/pdf; charset=utf-8')
                 ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
         } catch (\Exception $e) {
             \Log::error('Erro ao gerar PDF de preview: ' . $e->getMessage());
@@ -500,6 +513,17 @@ class MonthlyClosureController extends Controller
                 'year_month' => \Carbon\Carbon::createFromDate($year, $month, 1)->format('m/Y'),
             ])->render();
 
+            // Adicionar charset UTF-8 no HTML
+            if (strpos($html, '<head>') !== false) {
+                $html = str_replace(
+                    '<head>',
+                    '<head><meta charset="UTF-8">',
+                    $html
+                );
+            } else {
+                $html = '<?xml version="1.0" encoding="UTF-8"?>' . $html;
+            }
+
             // Configurar dompdf
             $options = new Options();
             $options->set('isPhpEnabled', false);
@@ -512,17 +536,67 @@ class MonthlyClosureController extends Controller
 
             $dompdf = new Dompdf($options);
             $dompdf->setPaper('A4', 'portrait');
-            $dompdf->loadHtml($html);
+            $dompdf->loadHtml($html, 'UTF-8');
             $dompdf->render();
 
             $filename = "fechamentos_" . str_replace('/', '-', \Carbon\Carbon::createFromDate($year, $month, 1)->format('m/Y')) . ".pdf";
             return response($dompdf->output(), 200)
-                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Type', 'application/pdf; charset=utf-8')
                 ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
         } catch (\Exception $e) {
             \Log::error('Erro ao gerar PDF de fechamentos: ' . $e->getMessage());
             \Log::error('Stack trace: ' . $e->getTraceAsString());
             return response()->json(['error' => 'Erro ao gerar PDF: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Realizar pagamento do fechamento - marca remessas como "Pago" e seta paid_flag para true
+     */
+    public function performPayment(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'closure_id' => 'required|integer|exists:monthly_closures,id',
+                'client_id' => 'required|integer|exists:clients,id',
+            ]);
+
+            $this->monthlyClosureService->performPayment($validated['closure_id'], $validated['client_id']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pagamento realizado com sucesso!'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Validação falhou', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao realizar pagamento: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+    /**
+     * Estornar pagamento do fechamento - volta remessas para "Gerado Fatura" e seta paid_flag para false
+     */
+    public function refundPayment(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'closure_id' => 'required|integer|exists:monthly_closures,id',
+                'client_id' => 'required|integer|exists:clients,id',
+            ]);
+
+            $this->monthlyClosureService->refundPayment($validated['closure_id'], $validated['client_id']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pagamento estornado com sucesso!'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Validação falhou', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao estornar pagamento: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 400);
         }
     }
 }

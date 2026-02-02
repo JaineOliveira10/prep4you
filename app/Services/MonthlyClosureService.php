@@ -275,4 +275,82 @@ class MonthlyClosureService
             })
             ->toArray();
     }
+
+    /**
+     * Realizar pagamento do fechamento - marca remessas como "Pago" e seta paid_flag para true
+     */
+    public function performPayment(int $closureId, int $clientId): void
+    {
+        // Obter o fechamento e verificar se já foi pago
+        $closure = \App\Models\MonthlyClosure::findOrFail($closureId);
+        $closureClient = $closure->clients()->where('client_id', $clientId)->first();
+
+        if (!$closureClient) {
+            throw new \Exception('Fechamento não encontrado para este cliente');
+        }
+
+        if ($closureClient->pivot->paid_flag) {
+            throw new \Exception('Este fechamento já foi marcado como pago');
+        }
+
+        // Atualizar remessas associadas para status "Pago"
+        \DB::table('shipments')
+            ->where('client_id', $clientId)
+            ->whereIn('id', function ($query) use ($closureId, $clientId) {
+                $query->select('shipment_id')
+                    ->from('monthly_closure_shipments')
+                    ->whereIn('closure_client_id', function ($subQuery) use ($closureId, $clientId) {
+                        $subQuery->select('id')
+                            ->from('monthly_closure_clients')
+                            ->where('closure_id', $closureId)
+                            ->where('client_id', $clientId);
+                    });
+            })
+            ->update(['status' => 'Paid']);
+
+        // Atualizar paid_flag na tabela pivô
+        \DB::table('monthly_closure_clients')
+            ->where('closure_id', $closureId)
+            ->where('client_id', $clientId)
+            ->update(['paid_flag' => true]);
+    }
+
+    /**
+     * Estornar pagamento do fechamento - volta remessas para "Gerado Fatura" e seta paid_flag para false
+     */
+    public function refundPayment(int $closureId, int $clientId): void
+    {
+        // Obter o fechamento e verificar se foi pago
+        $closure = \App\Models\MonthlyClosure::findOrFail($closureId);
+        $closureClient = $closure->clients()->where('client_id', $clientId)->first();
+
+        if (!$closureClient) {
+            throw new \Exception('Fechamento não encontrado para este cliente');
+        }
+
+        if (!$closureClient->pivot->paid_flag) {
+            throw new \Exception('Este fechamento ainda não foi marcado como pago');
+        }
+
+        // Atualizar remessas associadas de volta para status "Gerado Fatura"
+        \DB::table('shipments')
+            ->where('client_id', $clientId)
+            ->whereIn('id', function ($query) use ($closureId, $clientId) {
+                $query->select('shipment_id')
+                    ->from('monthly_closure_shipments')
+                    ->whereIn('closure_client_id', function ($subQuery) use ($closureId, $clientId) {
+                        $subQuery->select('id')
+                            ->from('monthly_closure_clients')
+                            ->where('closure_id', $closureId)
+                            ->where('client_id', $clientId);
+                    });
+            })
+            ->update(['status' => 'Invoice Generated']);
+
+        // Atualizar paid_flag na tabela pivô
+        \DB::table('monthly_closure_clients')
+            ->where('closure_id', $closureId)
+            ->where('client_id', $clientId)
+            ->update(['paid_flag' => false]);
+    }
 }

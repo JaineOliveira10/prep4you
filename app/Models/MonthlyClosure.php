@@ -20,7 +20,8 @@ class MonthlyClosure extends Model
                     ->withPivot('total_simple_labels', 'total_kit_labels', 'total_superkit_labels',
                                'unit_price_simple', 'unit_price_kit',
                                'total_simple_value', 'total_kit_value', 'total_superkit_value',
-                               'total_gross', 'total_discount', 'total_net')
+                               'total_gross', 'total_discount', 'total_net',
+                               'paid_flag')
                     ->withTimestamps();
     }
 }

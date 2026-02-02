@@ -55,6 +55,7 @@
                         <tr class="ligth">
                            <th>Ano/Mês</th>
                            <th>Cliente</th>
+                           <th>Pago?</th>
                            <th class="text-end">Valor Bruto</th>
                            <th class="text-end">Desconto</th>
                            <th class="text-end">Valor Líquido</th>
@@ -69,6 +70,7 @@
                                  <tr>
                                     <td>{{ \Carbon\Carbon::createFromDate($closure->year, $closure->month, 1)->format('m/Y') }}</td>
                                     <td>{{ $client->name ?? 'N/A' }}</td>
+                                    <td>{{ $client->pivot->paid_flag == false ? 'Não' : 'Sim' }}</td>
                                     <td class="text-end">R$ {{ number_format($client->pivot->total_gross, 2, ',', '.') }}</td>
                                     <td class="text-end">R$ {{ number_format($client->pivot->total_discount, 2, ',', '.') }}</td>
                                     <td class="text-end"><strong>R$ {{ number_format($client->pivot->total_net, 2, ',', '.') }}</strong></td>
@@ -333,6 +335,8 @@
    window.storeRoute = '{{ route("monthly-closures.store") }}';
    window.previewPdfRoute = '{{ route("monthly-closures.preview-pdf") }}';
    window.printPdfRoute = '{{ route("monthly-closures.print-pdf") }}';
+   window.performPaymentRoute = '{{ route("monthly-closures.perform-payment") }}';
+   window.refundPaymentRoute = '{{ route("monthly-closures.refund-payment") }}';
 </script>
 <script src="{{ asset('js/monthly-closure.js') }}"></script>
 @endpush
