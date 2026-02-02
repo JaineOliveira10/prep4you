@@ -297,17 +297,42 @@
         </div>
 
         <hr>
+        <!-- QR CODE PIX -->
+        @if($total_net > 0 && !empty($qr_code_url ?? null))
+        <div style="margin-top: 20px; margin-bottom: 20px;">
+            <div style="display: table; width: 100%;">
+                <!-- Coluna Esquerda - Texto -->
+                <div style="display: table-cell; width: 55%; vertical-align: middle; padding: 20px;">
+                    <div style="font-size: 13pt; font-weight: bold; margin-bottom: 15px; text-align: center;">
+                        Realize o pagamento diretamente pelo QRCODE
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 10pt; color: #666; margin-bottom: 10px;">Ou via chave PIX (CNPJ)</div>
+                        <div style="font-size: 16pt; font-weight: bold; color: #1e3a8a; margin-bottom: 10px;">
+                            62.001.080/0001-57
+                        </div>
+                        <div style="font-size: 11pt; color: #666;">
+                            Valor: <span style="font-weight: bold; color: #2e7d32; font-size: 13pt;">R$ {{ number_format($total_net, 2, ',', '.') }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Coluna Direita - QR Code -->
+                <div style="display: table-cell; width: 45%; vertical-align: middle; text-align: center; padding: 20px;">
+                    <img src="{{ $qr_code_url }}" alt="QR Code PIX" style="width: 180px; height: 180px; border: 1px solid #ddd; padding: 5px; background-color: white;">
+                </div>
+            </div>
+        </div>
+        @endif
 
-        <!-- FAIXA DE PREÇO -->
+        <hr>
+
         <div class="row">
             <div class="col" style="width: 100%;">
                 <div class="col-label">Faixa de Preço</div>
                 <div class="col-value">{{ $price_range }}</div>
             </div>
-        </div>
-
-        <!-- DESCONTOS POR TIPO -->
-        <div class="row">
             <div class="col">
                 <div class="col-label">Desconto referente às etiquetas simples</div>
                 <div class="col-value">R$ {{ number_format($total_discount_simple, 2, ',', '.') }}</div>

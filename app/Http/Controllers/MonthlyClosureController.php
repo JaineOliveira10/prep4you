@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\MonthlyClosure;
 use App\Services\MonthlyClosureService;
+use App\Services\PixQrCodeService;
 use Illuminate\Http\Request;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -422,6 +423,17 @@ class MonthlyClosureController extends Controller
                 $validated['month'],
                 $validated['client_id']
             );
+
+            // Gerar QR Code com a chave PIX e valor líquido
+            try {
+                $pixQrCodeService = new PixQrCodeService();
+                $qrCodeUrl = $pixQrCodeService->generatePixQrCode($data['total_net']);
+                $data['qr_code_url'] = $qrCodeUrl;
+                \Log::info('QR Code gerado para PDF', ['valor' => $data['total_net']]);
+            } catch (\Exception $e) {
+                \Log::error('Erro ao gerar QR Code PIX', ['error' => $e->getMessage()]);
+                $data['qr_code_url'] = '';
+            }
 
             $html = view('pages.monthly-closure.pdf', $data)->render();
             \Log::info('HTML renderizado', ['tamanho' => strlen($html)]);
