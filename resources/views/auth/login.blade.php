@@ -28,7 +28,7 @@
                               </div>
                               <div class="col-lg-12">
                                  <div class="form-group">
-                                    <label for="password" class="form-label">Password</label>
+                                    <label for="password" class="form-label">Senha</label>
                                     <input class="form-control" type="password" placeholder="********"  name="password" value="{{ env('IS_DEMO') ? 'password' : '' }}" required autocomplete="current-password">
                                  </div>
                               </div>
