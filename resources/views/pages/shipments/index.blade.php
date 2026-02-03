@@ -95,7 +95,7 @@
                   <table id="product-list-table" class="table table-striped" role="grid" data-toggle="data-table">
                      <thead>
                         <tr class="ligth">
-                           <th>ID Remessa</th>
+                           <th>ID Remessa <br> Nome Remessa</th>
                            <th>Qtd<br>Vr Total</th>
                            <th>Remessa</th>
                            <th>Coleta</th>
@@ -108,7 +108,9 @@
                      <tbody>
                         @foreach($shipments as $shipment)
                         <tr>
-                           <td>{{ $shipment->shipment_code ? $shipment->shipment_code : 'N/A' }}</td>
+                           <td>{{ $shipment->shipment_code ? $shipment->shipment_code : 'N/A' }} 
+                              <br> {{ $shipment->name ? $shipment->name : 'N/A' }}
+                           </td>
                            <td class="text-end">{{ number_format($shipment->total_items, 0, ',', '.') }}<br>{{ number_format($shipment->total_value, 2, ',', '.') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->shipment_date)->format('d/m/Y') }}</td>
                            <td>{{ \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') }}</td>
