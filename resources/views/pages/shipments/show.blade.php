@@ -170,7 +170,7 @@
                <div class="row">
                   <div class="col-12">
                      <h6 class="text-primary border-bottom pb-2 mb-3">Observações</h6>
-                     <div class="bg-info bg-opacity-10 p-3 border-start border-5 border-info">
+                     <div class="bg-secondary bg-opacity-10 p-3 border-start border-5 border-primary">
                         <p class="mb-0">{{ $shipment->observations }}</p>
                      </div>
                   </div>
