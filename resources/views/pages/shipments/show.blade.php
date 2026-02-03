@@ -73,7 +73,7 @@
                   </div>
                   <div class="col-md-6">
                      <div class="mb-3">
-                        <label class="form-label fw-bold text-muted">Código da Remessa</label>
+                        <label class="form-label fw-bold text-muted">ID da Remessa</label>
                         <p class="mb-0">{{ $shipment->shipment_code }}</p>
                      </div>
                   </div>
