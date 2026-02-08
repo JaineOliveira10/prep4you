@@ -70,7 +70,7 @@
                                  <tr>
                                     <td>{{ \Carbon\Carbon::createFromDate($closure->year, $closure->month, 1)->format('m/Y') }}</td>
                                     <td>{{ $client->name ?? 'N/A' }}</td>
-                                    <td>{{ $client->pivot->paid_flag == false ? 'Não' : 'Sim' }}</td>
+                                    <td>{!! $client->pivot->paid_flag == false ?  '<span class="badge bg-danger">Não</span>' : '<span class="badge bg-success">Sim</span>' !!}</td>
                                     <td class="text-end">R$ {{ number_format($client->pivot->total_gross, 2, ',', '.') }}</td>
                                     <td class="text-end">R$ {{ number_format($client->pivot->total_discount, 2, ',', '.') }}</td>
                                     <td class="text-end"><strong>R$ {{ number_format($client->pivot->total_net, 2, ',', '.') }}</strong></td>
