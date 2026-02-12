@@ -118,13 +118,13 @@ class MonthlyClosureController extends Controller
                 if (request()->expectsJson()) {
                     return response()->json([
                         'success' => true,
-                        'message' => 'Fechamento deletado com sucesso! Remessas retornadas ao status "Coletado"'
+                        'message' => 'Fechamento deletado com sucesso! Remessas retornadas ao status anterior'
                     ]);
                 }
                 
                 // Senão, retornar redirect
                 return redirect()->route('monthly-closures.index')
-                               ->with('success', 'Fechamento deletado com sucesso!');
+                               ->with('success', 'Fechamento deletado com sucesso! Remessas retornadas ao status anterior');
             } else {
                 if (request()->expectsJson()) {
                     return response()->json([
@@ -176,19 +176,32 @@ class MonthlyClosureController extends Controller
             \DB::beginTransaction();
 
             try {
-                // Atualizar remessas para status "Collected" antes de remover a relação
-                $updated = \DB::table('shipments')
-                    ->where('client_id', (int)$clientId)
-                    ->whereYear('creation_date', $closure->year)
-                    ->whereMonth('creation_date', $closure->month)
-                    ->update(['status' => 'Collected']);
+                // Buscar dados das remessas com status antigo
+                $shipmentStatuses = \DB::table('monthly_closure_shipments')
+                    ->join('monthly_closure_clients', 'monthly_closure_clients.id', '=', 'monthly_closure_shipments.closure_client_id')
+                    ->where('monthly_closure_clients.closure_id', $closureId)
+                    ->where('monthly_closure_clients.client_id', (int)$clientId)
+                    ->select('monthly_closure_shipments.shipment_id', 'monthly_closure_shipments.old_status')
+                    ->get()
+                    ->keyBy('shipment_id');
 
-                \Log::info('Remessas atualizadas ao remover cliente do fechamento', [
+                \Log::info('Dados de status antigo recuperados para destroyClient', [
                     'closure_id' => $closureId,
                     'client_id' => $clientId,
-                    'year' => $closure->year,
-                    'month' => $closure->month,
-                    'updated_count' => $updated
+                    'shipment_count' => $shipmentStatuses->count()
+                ]);
+
+                // Restaurar status antigo das remessas
+                foreach ($shipmentStatuses as $shipmentId => $data) {
+                    \DB::table('shipments')
+                        ->where('id', $shipmentId)
+                        ->update(['status' => $data->old_status]);
+                }
+
+                \Log::info('Remessas restauradas para status antigo ao remover cliente', [
+                    'closure_id' => $closureId,
+                    'client_id' => $clientId,
+                    'updated_count' => $shipmentStatuses->count()
                 ]);
 
                 // Remover a relação cliente-fechamento
