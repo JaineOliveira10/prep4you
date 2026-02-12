@@ -38,7 +38,7 @@ class ShipmentController extends Controller
             if (request('client_id')) {
                 $query->where('client_id', request('client_id'));
             }
-            $clients = Client::all();
+            $clients = Client::orderBy('name', 'asc')->get();
         }
         
         if (request('status')) {
@@ -80,7 +80,7 @@ class ShipmentController extends Controller
             if (request('client_id')) {
                 $query->where('client_id', request('client_id'));
             }
-            $clients = Client::all();
+            $clients = Client::orderBy('name', 'asc')->get();
         }
         
         if (request('status')) {
@@ -185,12 +185,15 @@ class ShipmentController extends Controller
      */
     public function destroy(string $id)
     {
-        if (auth()->user()->type != 'client') {
-            abort(403, 'Apenas clientes podem excluir remessas.');
-        }
-        
         $shipment = $this->shipmentService->findById($id);
         
+        // Admin pode deletar qualquer remessa
+        if (auth()->user()->type === 'admin') {
+            $this->shipmentService->delete($id);
+            return redirect()->route('shipments.index')->with('success', 'Remessa excluída com sucesso!');
+        }
+        
+        // Client só pode deletar suas próprias remessas
         if ($shipment->client_id != auth()->user()->client_id) {
             abort(403, 'Você não pode excluir esta remessa.');
         }

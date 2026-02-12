@@ -37,18 +37,22 @@ function downloadPreparationOrder(event, id) {
 /**
  * Verifica permissões de status antes de permitir deleção
  */
-function checkStatusAndDelete(event, id, status) {
+function checkStatusAndDelete(event, id, status, userType) {
+
     event.preventDefault();
-    const allowedStatuses = ['Pending', 'Apresenta Errors'];
-    
-    if (!allowedStatuses.includes(status)) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Ação não permitida',
-            text: `Você só pode excluir remessas com status "Pendente" ou "Apresenta Erros".`,
-            confirmButtonText: 'Ok'
-        });
-        return;
+
+    if(userType === 'client') { 
+        const allowedStatuses = ['Pending', 'Apresenta Errors'];
+        
+        if (!allowedStatuses.includes(status)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Ação não permitida',
+                text: `Você só pode excluir remessas com status "Pendente" ou "Apresenta Erros".`,
+                confirmButtonText: 'Ok'
+            });
+            return;
+        }
     }
     
     confirmDelete('shipments-delete-' + id, 'Deseja realmente excluir esta remessa?');

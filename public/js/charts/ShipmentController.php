@@ -40,7 +40,8 @@ class ShipmentController extends Controller
             if (request('client_id')) {
                 $query->where('client_id', request('client_id'));
             }
-            $clients = Client::all();
+            $clients = Client::orderBy('name', 'asc')->get();
+
         }
         
         // Filtro por status
@@ -84,7 +85,7 @@ class ShipmentController extends Controller
             if (request('client_id')) {
                 $query->where('client_id', request('client_id'));
             }
-            $clients = Client::all();
+            $clients = Client::orderBy('name', 'asc')->get();
         }
         
         if (request('status')) {

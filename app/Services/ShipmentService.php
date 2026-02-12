@@ -421,7 +421,8 @@ class ShipmentService
         }
         
         $shipments = $shipments->paginate(10);
-        $clients = Client::all();
+        $clients = Client::orderBy('name', 'asc')->get();
+
         
         return view('shipments.index', compact('shipments', 'clients'));
     }

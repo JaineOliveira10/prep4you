@@ -24,7 +24,7 @@ class ProductController extends Controller
         $products = [];
         
         if (auth()->user()->type == 'admin') {
-            $clients = Client::all();
+            $clients = Client::orderBy('name', 'asc')->get();
             $products = $this->productService->getByClient($request->client_id);
         } else {
             $clients = Client::where('id', auth()->user()->client_id)->get();

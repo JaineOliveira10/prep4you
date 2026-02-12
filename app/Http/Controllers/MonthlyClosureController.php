@@ -28,7 +28,8 @@ class MonthlyClosureController extends Controller
         $clientId = $request->filled('client_id') ? (int)$request->client_id : null;
 
         $closures = $this->monthlyClosureService->getClosures($yearMonth, $clientId);
-        $clients = Client::all();
+        $clients = Client::orderBy('name', 'asc')->get();
+
 
         return view('pages.monthly-closure.index', [
             'closures' => $closures,
