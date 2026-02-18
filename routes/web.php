@@ -43,7 +43,6 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('monthly-closures/{closure}/client/{client}', [MonthlyClosureController::class, 'destroyClient'])->name('monthly-closures.destroy-client');
         Route::get('monthly-closures/{closure}/details/{closureClient}', [MonthlyClosureController::class, 'details'])->name('monthly-closures.details');
         Route::post('api/monthly-closure/preview', [MonthlyClosureController::class, 'previewClosure']);
-        Route::post('api/monthly-closure/preview-pdf', [MonthlyClosureController::class, 'previewPdf'])->name('monthly-closures.preview-pdf');
         Route::post('api/monthly-closure/check-existing', [MonthlyClosureController::class, 'checkExisting']);
         Route::post('monthly-closures/counter-pdf', [MonthlyClosureController::class, 'printPdf'])->name('monthly-closures.print-pdf');
         Route::post('api/monthly-closure/perform-payment', [MonthlyClosureController::class, 'performPayment'])->name('monthly-closures.perform-payment');
@@ -62,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('shipments/{shipment}/update-status', [ShipmentController::class, 'updateStatus'])->name('shipments.update-status');
     Route::get('shipments/{shipment}/download-proof', [ShipmentController::class, 'downloadCollectionProof'])->name('shipments.download-proof');
     Route::get('shipments/{shipment}/download-preparation-order', [ShipmentController::class, 'downloadPreparationOrder'])->name('shipments.download-preparation-order');
+    Route::post('api/monthly-closure/preview-pdf', [MonthlyClosureController::class, 'previewPdf'])->name('monthly-closures.preview-pdf');
 
     Route::middleware(['restrict.admin'])->group(function () {
         Route::get('/products/create', [ProductController::class, 'create'])->name('products.create');

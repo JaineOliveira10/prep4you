@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\MonthlyClosureClient;
 
 class MonthlyClosure extends Model
 {
@@ -13,6 +14,12 @@ class MonthlyClosure extends Model
         'year',
         'month',
     ];
+
+    public function closureClient()
+    {
+        return $this->hasOne(MonthlyClosureClient::class, 'closure_id');
+    }
+
 
     public function clients()
     {
@@ -24,4 +31,13 @@ class MonthlyClosure extends Model
                                'paid_flag')
                     ->withTimestamps();
     }
+
+    public function scopeUnpaidByClient($query, $clientId)
+    {
+        return $query->whereHas('clients', function ($q) use ($clientId) {
+            $q->where('client_id', $clientId)
+            ->where('paid_flag', false);
+        });
+    }
+
 }

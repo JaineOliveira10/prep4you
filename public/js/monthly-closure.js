@@ -582,7 +582,7 @@ function downloadAllClosuresPdfs(index, clients) {
 }
 
 // Confirmar e criar o fechamento (versão antiga para download direto)
-function confirmNewClosure(payload, successMessage = 'Download iniciado com sucesso!') {
+window.confirmNewClosure = function(payload, successMessage = 'Download iniciado com sucesso!') {
    const formData = new FormData();
 
    // ✅ se veio closure_id (listagem)

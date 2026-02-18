@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Shipment;
+use App\Models\MonthlyClosure;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Http\Request;
 
@@ -22,9 +24,26 @@ class DashboardController extends Controller
             ->where('status', 'Has Pendency')
             ->count();
 
-        $unpaidClosures = 0;
+       
+        $unpaidClosuresList = MonthlyClosure::unpaidByClient($client)
+            ->with(['closureClient' => function ($q) use ($client) {
+                $q->where('client_id', $client)
+                ->where('paid_flag', false);
+            }])
+            ->orderByDesc('year')
+            ->orderByDesc('month')
+            ->get();
 
 
-        return view('dashboards.dashboard', compact('productsWithoutPhoto', 'remessesWithIssues', 'unpaidClosures'));
+        $unpaidClosures = $unpaidClosuresList->count();
+
+        $totalNetUnpaid = DB::table('monthly_closure_clients')
+            ->where('client_id', $client)
+            ->where('paid_flag', false)
+            ->sum('total_net');
+
+
+
+        return view('dashboards.dashboard', compact('productsWithoutPhoto', 'remessesWithIssues', 'unpaidClosures', 'unpaidClosuresList', 'totalNetUnpaid', 'client'));
     }
 }
