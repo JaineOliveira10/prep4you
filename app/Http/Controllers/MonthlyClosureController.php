@@ -191,11 +191,13 @@ class MonthlyClosureController extends Controller
                     'shipment_count' => $shipmentStatuses->count()
                 ]);
 
-                // Restaurar status antigo das remessas
+                // Restaurar status antigo das remessas (apenas se old_status não for NULL)
                 foreach ($shipmentStatuses as $shipmentId => $data) {
-                    \DB::table('shipments')
-                        ->where('id', $shipmentId)
-                        ->update(['status' => $data->old_status]);
+                    if ($data->old_status) {
+                        \DB::table('shipments')
+                            ->where('id', $shipmentId)
+                            ->update(['status' => $data->old_status]);
+                    }
                 }
 
                 \Log::info('Remessas restauradas para status antigo ao remover cliente', [
