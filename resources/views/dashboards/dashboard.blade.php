@@ -1,4 +1,62 @@
-<x-app-layout :assets="$assets ?? []">   <div class="row mb-4">
+<x-app-layout :assets="$assets ?? []">
+   <!-- Modal: Alerta de Fatura Vencida -->
+   @if($hasOverdueInvoices && $firstOverdueInvoice)
+   <div class="modal fade" id="overdueInvoiceModal" tabindex="-1" aria-labelledby="overdueInvoiceLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+         <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-danger text-white">
+               <div class="d-flex align-items-center gap-2">
+                  <div class="rounded-circle bg-white text-danger d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px; font-size: 18px;">
+                     !
+                  </div>
+                  <div>
+                     <h5 class="modal-title mb-0" id="overdueInvoiceLabel">Fatura em Atraso</h5>
+                     <small class="opacity-75">Atenção necessária</small>
+                  </div>
+               </div>
+               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               <div class="alert alert-danger border-0 d-flex align-items-center" role="alert">
+                  <div class="me-2" style="font-size: 20px;">⚠️</div>
+                  <div>
+                     <strong>Há Uma Fatura em Atraso Vencida em {{ \Carbon\Carbon::parse($firstOverdueInvoice->due_date)->format('d/m/Y') }}.</strong>
+                  </div>
+               </div>
+               <div class="row g-3">
+                  <div class="col-md-6">
+                     <div class="p-3 border rounded-3 h-100">
+                        <div class="text-muted small mb-1">Período do fechamento</div>
+                        <div class="fw-bold" style="font-size: 1.05rem;">
+                           {{ str_pad($firstOverdueInvoice->monthlyClosure->month, 2, '0', STR_PAD_LEFT) }}/{{ $firstOverdueInvoice->monthlyClosure->year }}
+                        </div>
+                     </div>
+                  </div>
+                  <div class="col-md-6">
+                     <div class="p-3 border rounded-3 h-100">
+                        <div class="text-muted small mb-1">Valor da fatura</div>
+                        <div class="fw-bold text-danger" style="font-size: 1.05rem;">
+                           R$ {{ number_format($firstOverdueInvoice->total_net, 2, ',', '.') }}
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            <div class="modal-footer bg-light">
+               <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fechar</button>
+               <button type="button" class="btn btn-danger" onclick="confirmNewClosure(
+                           { closure_id: {{ $firstOverdueInvoice->closure_id }}, client_id: {{ $client }} },
+                           'Download do PDF iniciado!'
+                        ); return false;">
+                  Clique Aqui Para Baixar a Fatura
+               </button>
+            </div>
+         </div>
+      </div>
+   </div>
+   @endif
+
+   <div class="row mb-4">
       @if(auth()->user()->type === 'client')
       <!-- Card: Produtos sem Foto -->
       @if(isset($productsWithoutPhoto) && $productsWithoutPhoto > 0)
@@ -101,5 +159,14 @@
    @endif
 
    <script src="{{ asset('js/monthly-closure.js') }}"></script>
+
+   @if($hasOverdueInvoices && $firstOverdueInvoice)
+   <script>
+      document.addEventListener('DOMContentLoaded', function() {
+         const modal = new bootstrap.Modal(document.getElementById('overdueInvoiceModal'));
+         modal.show();
+      });
+   </script>
+   @endif
 
 </x-app-layout>

@@ -6,7 +6,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Shipment;
 use App\Models\MonthlyClosure;
+use App\Models\MonthlyClosureClient;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 use Illuminate\Http\Request;
 
@@ -41,9 +43,18 @@ class DashboardController extends Controller
             ->where('client_id', $client)
             ->where('paid_flag', false)
             ->sum('total_net');
+            
+        $overdueInvoices = MonthlyClosureClient::where('client_id', $client)
+            ->where('paid_flag', false)
+            ->whereNotNull('due_date')
+            ->where('due_date', '<', Carbon::today())
+            ->with('monthlyClosure')
+            ->orderBy('due_date')
+            ->get();
 
+        $hasOverdueInvoices = $overdueInvoices->count() > 0;
+        $firstOverdueInvoice = $overdueInvoices->first();
 
-
-        return view('dashboards.dashboard', compact('productsWithoutPhoto', 'remessesWithIssues', 'unpaidClosures', 'unpaidClosuresList', 'totalNetUnpaid', 'client'));
+        return view('dashboards.dashboard', compact('productsWithoutPhoto', 'remessesWithIssues', 'unpaidClosures', 'unpaidClosuresList', 'totalNetUnpaid', 'client', 'hasOverdueInvoices', 'firstOverdueInvoice', 'overdueInvoices'));
     }
 }
