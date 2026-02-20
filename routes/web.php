@@ -14,6 +14,11 @@ use App\Http\Controllers\ManualController;
 use App\Http\Controllers\MonthlyClosureController;
 use App\Http\Controllers\DashboardController;
 
+
+Route::get('/', function () {
+    return view('pages.landing-page.index');
+});
+
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
@@ -21,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::middleware(['restrict.client'])->group(function () {
 
