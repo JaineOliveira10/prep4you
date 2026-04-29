@@ -76,6 +76,7 @@ class ProductRequest extends FormRequest
             'kit_units.required' => 'O número de unidades é obrigatório para kits.',
             'unit_price.required' => 'O preço unitário é obrigatório para super kits.',
             'client_id.required' => 'O cliente é obrigatório.',
+            'photo.max' => 'O arquivo de foto deve ter no máximo 2MB.',
         ];
     }
 }

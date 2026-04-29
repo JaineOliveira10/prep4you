@@ -14,6 +14,7 @@ class UserRequest extends FormRequest
     public function rules()
     {
         $id = $this->route('user');
+        $isAdmin = $this->input('type') === 'admin';
 
         return [
             'first_name' => 'required|string|max:255',
@@ -24,7 +25,7 @@ class UserRequest extends FormRequest
                 ? 'required|min:6'
                 : 'nullable|min:6',
             'type' => 'required|in:admin,client',
-            'cnpj' => 'required|string|max:20',
+            'cnpj' => $isAdmin ? 'nullable|string|max:20' : 'required|string|max:20',
             'city' => 'nullable|string|max:255',
             'uf' => 'nullable|string|size:2|in:' . implode(',', array_keys(\App\Models\Client::ESTADOS)),
             'phone' => 'nullable|string|max:20',
