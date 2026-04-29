@@ -337,6 +337,7 @@ class ShipmentService
             $totalItems = 0;
             $totalValue = 0;
             $items = [];
+            $productsWithoutPhoto = [];
             
             foreach ($productsData as $productData) {
                 $product = \App\Models\Product::where('client_id', $clientId)
@@ -344,6 +345,15 @@ class ShipmentService
                     ->first();
                     
                 if ($product) {
+                    // Validar se o produto tem imagem
+                    if (!$product->photo) {
+                        $productsWithoutPhoto[] = [
+                            'name' => $product->name,
+                            'fsnku' => $product->fsnku
+                        ];
+                        continue;
+                    }
+                    
                     $quantity = intval($productData['qtd'] ?? 0);
                     
                     $priceResult = $this->getProductPrice($product->id, $clientId, $quantity);
@@ -357,6 +367,23 @@ class ShipmentService
                     
                     $totalItems += $quantity;
                     $totalValue += $quantity * $unitPrice;
+                }
+            }
+            
+            // Se há produtos sem foto, retornar erro
+            if (!empty($productsWithoutPhoto)) {
+                if (count($productsWithoutPhoto) === 1) {
+                    return [
+                        'error' => "O produto '{$productsWithoutPhoto[0]['name']}' (FSNKU: {$productsWithoutPhoto[0]['fsnku']}) não possui imagem. Por favor, adicione uma imagem antes de importar.",
+                        'code' => 422
+                    ];
+                } else {
+                    return [
+                        'error' => 'Não foi possível dar continuidade à importação desta remessa. Insira imagens para os produtos listados abaixo para prosseguir.',
+                        'products_without_photo' => $productsWithoutPhoto,
+                        'total_without_photo' => count($productsWithoutPhoto),
+                        'code' => 422
+                    ];
                 }
             }
 

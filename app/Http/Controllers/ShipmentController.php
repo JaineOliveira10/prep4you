@@ -391,10 +391,18 @@ class ShipmentController extends Controller
             );
 
             if (isset($result['error'])) {
-                return response()->json([
+                $response = [
                     'success' => false,
                     'error' => $result['error']
-                ], $result['code'] ?? 422);
+                ];
+                
+                // Incluir lista de produtos sem foto se existir
+                if (isset($result['products_without_photo'])) {
+                    $response['products_without_photo'] = $result['products_without_photo'];
+                    $response['total_without_photo'] = $result['total_without_photo'] ?? count($result['products_without_photo']);
+                }
+                
+                return response()->json($response, $result['code'] ?? 422);
             }
 
             return response()->json([

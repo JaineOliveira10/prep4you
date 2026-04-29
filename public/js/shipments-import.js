@@ -445,11 +445,31 @@ document.getElementById('createBtn').addEventListener('click', function () {
             }, 1000);
         } else {
             const errorMessage = response.data.error || response.data.message || 'Erro ao criar remessa';
-            document.getElementById('resultSection').innerHTML = `
+            let errorHtml = `
                 <div class="alert alert-danger">
                     <h6>${errorMessage}</h6>
-                </div>
             `;
+            
+            // Mostrar lista de produtos sem foto se existir
+            if (response.data.products_without_photo && response.data.products_without_photo.length > 0) {
+                errorHtml += `
+                    <div style="margin-top: 15px;">
+                        <strong>Produtos sem imagens:</strong>
+                        <ul style="margin-top: 10px; margin-bottom: 0;">
+                `;
+                
+                response.data.products_without_photo.forEach(product => {
+                    errorHtml += `<li>${product.name} <span style="color: #999;">(FSNKU: ${product.fsnku})</span></li>`;
+                });
+                
+                errorHtml += `
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            errorHtml += `</div>`;
+            document.getElementById('resultSection').innerHTML = errorHtml;
             document.getElementById('resultSection').style.display = 'block';
         }
     })
