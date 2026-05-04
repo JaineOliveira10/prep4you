@@ -427,6 +427,60 @@ class ShipmentController extends Controller
     }
 
     /**
+     * Upload product photo during import
+     */
+    public function uploadProductPhoto(Request $request)
+    {
+        try {
+            $request->validate([
+                'product_id' => 'required|integer|exists:products,id',
+                'photo' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+            ]);
+
+            $product = \App\Models\Product::find($request->product_id);
+
+            // Verificar se o produto pertence ao cliente logado (se não for admin)
+            if (auth()->user()->type !== 'admin' && $product->client_id !== auth()->user()->client_id) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Não autorizado'
+                ], 403);
+            }
+
+            // Deletar foto antiga se existir
+            if ($product->photo_path) {
+                \Storage::disk('public')->delete($product->photo_path);
+            }
+
+            // Fazer upload da nova foto
+            $photoPath = $request->file('photo')->store('products', 'public');
+
+            // Atualizar produto com photo_path
+            $product->photo_path = $photoPath;
+            $product->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto adicionada com sucesso!',
+                'photo_path' => $photoPath,
+                'product_id' => $product->id
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => collect($e->errors())->flatten()->first() ?? 'Erro na validação'
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao fazer upload de foto: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'success' => false,
+                'error' => 'Erro ao fazer upload: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Update shipment status
      */
     public function updateStatus(Request $request, string $id)

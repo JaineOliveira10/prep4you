@@ -219,4 +219,37 @@ class ProductController extends Controller
             ]
         ]);
     }
+
+    public function getByFsnku(Request $request)
+    {
+        try {
+            $request->validate([
+                'fsnku' => 'required|string'
+            ]);
+
+            $product = Product::where('fsnku', $request->fsnku)
+                ->where('client_id', auth()->user()->client_id)
+                ->first();
+
+            if (!$product) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Produto não encontrado'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'id' => $product->id,
+                'name' => $product->name,
+                'fsnku' => $product->fsnku
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

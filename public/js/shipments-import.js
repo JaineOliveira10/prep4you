@@ -455,15 +455,40 @@ document.getElementById('createBtn').addEventListener('click', function () {
                 errorHtml += `
                     <div style="margin-top: 15px;">
                         <strong>Produtos sem imagens:</strong>
-                        <ul style="margin-top: 10px; margin-bottom: 0;">
+                        <div id="photosUploadSection" style="margin-top: 10px;">
                 `;
                 
                 response.data.products_without_photo.forEach(product => {
-                    errorHtml += `<li>${product.name} <span style="color: #999;">(FSNKU: ${product.fsnku})</span></li>`;
+                    errorHtml += `
+                        <div style="margin-bottom: 15px; padding: 10px; background: #fff3cd; border-radius: 4px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <strong>${product.name}</strong><br>
+                                    <small style="color: #666;">FSNKU: ${product.fsnku}</small>
+                                </div>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="file" 
+                                           class="form-control product-photo-input" 
+                                           data-product-fsnku="${product.fsnku}"
+                                           accept="image/*"
+                                           style="width: 200px;">
+                                    <div class="photo-preview-${product.fsnku}" 
+                                         style="width: 60px; height: 60px; border: 1px solid #ddd; border-radius: 4px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #999; flex-shrink: 0;">
+                                        Sem foto
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="upload-status-${product.fsnku}" style="margin-top: 8px; font-size: 0.85rem;"></div>
+                        </div>
+                    `;
                 });
                 
                 errorHtml += `
-                        </ul>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button id="uploadPhotosBtn" class="btn btn-warning btn-sm">Enviar Imagens</button>
+                            <button id="tryAgainBtn" class="btn btn-primary btn-sm" style="display:none; margin-left: 10px;">Tentar Novamente</button>
+                        </div>
                     </div>
                 `;
             }
@@ -471,6 +496,11 @@ document.getElementById('createBtn').addEventListener('click', function () {
             errorHtml += `</div>`;
             document.getElementById('resultSection').innerHTML = errorHtml;
             document.getElementById('resultSection').style.display = 'block';
+            
+            // Adicionar event listeners para upload das fotos
+            if (response.data.products_without_photo) {
+                setupPhotoUpload(response.data.products_without_photo);
+            }
         }
     })
     .catch(error => {
@@ -488,6 +518,127 @@ document.getElementById('createBtn').addEventListener('click', function () {
         this.textContent = 'Criar Remessa';
     });
 });
+
+// Configurar upload de fotos dos produtos
+function setupPhotoUpload(productsWithoutPhoto) {
+    const uploadBtn = document.getElementById('uploadPhotosBtn');
+    const tryAgainBtn = document.getElementById('tryAgainBtn');
+    
+    if (!uploadBtn) return;
+    
+    // Adicionar event listeners para preview de imagens
+    const inputs = document.querySelectorAll('.product-photo-input');
+    inputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const fsnku = this.dataset.productFsnku;
+            const previewDiv = document.querySelector(`.photo-preview-${fsnku}`);
+            
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    previewDiv.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 3px;">`;
+                };
+                
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                previewDiv.innerHTML = 'Sem foto';
+            }
+        });
+    });
+    
+    uploadBtn.addEventListener('click', async function() {
+        const inputs = document.querySelectorAll('.product-photo-input');
+        let uploadCount = 0;
+        let totalToUpload = 0;
+        
+        // Contar quantas imagens têm
+        inputs.forEach(input => {
+            if (input.files.length > 0) {
+                totalToUpload++;
+            }
+        });
+        
+        if (totalToUpload === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atenção',
+                text: 'Selecione pelo menos uma imagem para fazer upload'
+            });
+            return;
+        }
+        
+        uploadBtn.disabled = true;
+        uploadBtn.textContent = 'Enviando (' + uploadCount + '/' + totalToUpload + ')...';
+        
+        for (const input of inputs) {
+            if (input.files.length === 0) continue;
+            
+            const fsnku = input.dataset.productFsnku;
+            const statusDiv = document.querySelector(`.upload-status-${fsnku}`);
+            
+            try {
+                // Primeiro buscar o ID do produto pelo FSNKU
+                const productRes = await fetch(window.shipmentRoutes.getProductByFsnku, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': window.csrfToken,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ fsnku: fsnku })
+                });
+                
+                const productData = await productRes.json();
+                if (!productData.success || !productData.id) {
+                    statusDiv.innerHTML = '<span style="color: red;">❌ Erro: Produto não encontrado</span>';
+                    continue;
+                }
+                
+                // Agora fazer o upload com o ID correto
+                const uploadFormData = new FormData();
+                uploadFormData.append('photo', input.files[0]);
+                uploadFormData.append('product_id', productData.id);
+                uploadFormData.append('_token', window.csrfToken);
+                
+                const uploadRes = await fetch(window.shipmentRoutes.uploadPhoto, {
+                    method: 'POST',
+                    body: uploadFormData,
+                    headers: { 'X-CSRF-TOKEN': window.csrfToken }
+                });
+                
+                const uploadResult = await uploadRes.json();
+                
+                console.log('Upload result:', uploadResult);
+                
+                if (uploadResult.success) {
+                    statusDiv.innerHTML = '<span style="color: green;">✓ Imagem enviada com sucesso!</span>';
+                    uploadCount++;
+                    uploadBtn.textContent = 'Enviando (' + uploadCount + '/' + totalToUpload + ')...';
+                } else {
+                    const errorMsg = uploadResult.error || 'Erro no upload';
+                    statusDiv.innerHTML = '<span style="color: red;">❌ ' + errorMsg + '</span>';
+                    console.error('Upload error for', fsnku, ':', errorMsg);
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<span style="color: red;">❌ Erro: ' + error.message + '</span>';
+            }
+        }
+        
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'Enviar Imagens';
+        
+        if (uploadCount === totalToUpload) {
+            document.getElementById('photosUploadSection').innerHTML = `
+                <div style="padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 4px; margin-top: 15px;">
+                    <h6 style="color: #155724; margin-bottom: 10px;">✓ Todas as imagens foram enviadas com sucesso!</h6>
+                    <p style="color: #155724; margin-bottom: 0;">Clique no botão <strong>"Criar Remessa"</strong> novamente para continuar.</p>
+                </div>
+            `;
+            document.getElementById('uploadPhotosBtn').style.display = 'none';
+            document.getElementById('tryAgainBtn').style.display = 'none';
+        }
+    });
+}
 
 // Reset modal
 document.getElementById('importModal').addEventListener('hidden.bs.modal', function () {

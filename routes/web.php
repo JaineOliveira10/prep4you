@@ -60,6 +60,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/shipments/get-product-price', [ShipmentController::class, 'getProductPrice'])->name('shipments.get-product-price');
     Route::post('shipments/import', [ShipmentController::class, 'import'])->name('shipments.import');
     Route::post('shipments/preview', [ShipmentController::class, 'preview'])->name('shipments.preview');
+    Route::post('shipments/upload-photo', [ShipmentController::class, 'uploadProductPhoto'])->name('shipments.upload-photo');
     Route::post('shipments/{shipment}/pdf', [ShipmentPdfController::class, 'upload'])->name('shipments.pdf.upload');
     Route::get('shipment-pdfs/{pdf}/view', [ShipmentPdfController::class, 'view'])->name('shipments.pdf.view');
     Route::delete('shipment-pdfs/{pdf}', [ShipmentPdfController::class, 'destroy'])->name('shipments.pdf.destroy');
@@ -78,6 +79,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('products', ProductController::class)->except(['create', 'store', 'destroy']);
     Route::get('/products/{product}/json', [ProductController::class, 'getJson'])->name('products.json');
+    Route::post('/products/get-by-fsnku', [ProductController::class, 'getByFsnku'])->name('products.get-by-fsnku');
 
     Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
     Route::patch('/users/{user}/update-password', [UserController::class, 'updatePassword'])->name('users.update-password');

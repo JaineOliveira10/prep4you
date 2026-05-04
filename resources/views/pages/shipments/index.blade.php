@@ -224,6 +224,8 @@
         import: '{{ route("shipments.import") }}',
         registerProduct: '{{ route("products.store.ajax") }}',
         getProductPrice: '{{ route("shipments.get-product-price") }}',
+        uploadPhoto: '{{ route("shipments.upload-photo") }}',
+        getProductByFsnku: '{{ route("products.get-by-fsnku") }}',
     };
     window.csrfToken = '{{ csrf_token() }}';
 
