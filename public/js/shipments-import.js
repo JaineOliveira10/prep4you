@@ -464,7 +464,8 @@ document.getElementById('createBtn').addEventListener('click', function () {
                             <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                                 <div style="flex: 1;">
                                     <strong>${product.name}</strong><br>
-                                    <small style="color: #666;">FSNKU: ${product.fsnku}</small>
+                                    <small style="color: #666;">FSNKU: ${product.fsnku}</small><br>
+                                    <small style="color: #666;">SKU: ${product.sku}</small>
                                 </div>
                                 <div style="display: flex; gap: 10px; align-items: center;">
                                     <input type="file" 

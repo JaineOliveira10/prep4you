@@ -242,7 +242,8 @@ class ProductController extends Controller
                 'success' => true,
                 'id' => $product->id,
                 'name' => $product->name,
-                'fsnku' => $product->fsnku
+                'fsnku' => $product->fsnku,
+                'sku' => $product->sku
             ]);
 
         } catch (\Exception $e) {

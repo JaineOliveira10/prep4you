@@ -349,7 +349,8 @@ class ShipmentService
                     if (!$product->photo_path) {
                         $productsWithoutPhoto[] = [
                             'name' => $product->name,
-                            'fsnku' => $product->fsnku
+                            'fsnku' => $product->fsnku,
+                            'sku' => $product->sku
                         ];
                         continue;
                     }
