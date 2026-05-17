@@ -23,6 +23,12 @@ return [
         'price_table_id' => 'tabela de preço',
     ],
     'custom' => [
+        'photo' => [
+            'required' => 'A imagem é obrigatória.',
+            'image' => 'O arquivo deve ser uma imagem válida.',
+            'mimes' => 'A imagem deve estar nos formatos: JPEG, PNG, JPG ou GIF.',
+            'max' => 'A imagem não pode ser maior que 2MB.',
+        ],
         'name' => [
             'required' => 'O nome é obrigatório.',
             'unique' => 'Já existe uma tabela de preços com este nome.',
