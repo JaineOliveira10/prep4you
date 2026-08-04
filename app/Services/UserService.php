@@ -59,7 +59,10 @@ class UserService
             ];
         }
 
-        return $this->userRepository->create($data);
+        $user = $this->userRepository->create($data);
+        $user->sendEmailVerificationNotification();
+
+        return $user;
     }
 
     public function update($id, array $data)
@@ -70,14 +73,21 @@ class UserService
             unset($data['first_name']);
         }
 
+        $user = $this->userRepository->find($id);
+
         if (isset($data['password']) && $data['password']) {
             $data['password'] = Hash::make($data['password']);
         } else {
             unset($data['password']);
         }
 
-        $user = $this->userRepository->find($id);
-        
+        $shouldSendVerification = false;
+
+        if (isset($data['email']) && $user->email !== $data['email']) {
+            $data['email_verified_at'] = null;
+            $shouldSendVerification = true;
+        }
+
         if ($data['type'] === 'client' && $user->client) {
             $user->client->update([
                 'name' => $data['name'],
@@ -90,7 +100,13 @@ class UserService
             ]);
         }
 
-        return $this->userRepository->update($id, $data);
+        $updatedUser = $this->userRepository->update($id, $data);
+
+        if ($shouldSendVerification) {
+            $updatedUser->sendEmailVerificationNotification();
+        }
+
+        return $updatedUser;
     }
 
     public function delete($id)
