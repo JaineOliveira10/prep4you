@@ -29,6 +29,7 @@
                                     </td>
                                 </tr>
                             </table>
+                            <p><strong>Senha para o primeiro acesso:</strong> 123456</p>
                             <p style="margin:0 0 16px;font-size:16px;line-height:1.7;color:#475569;">
                                 Se você não criou uma conta, nenhuma ação adicional é necessária.
                             </p>
@@ -38,7 +39,7 @@
                             <p style="word-break:break-all;font-size:12px;line-height:1.7;color:#475569;margin-top:12px;">
                                 <a href="{{ $url }}" style="text-decoration:none;">{{ $url }}</a>
                             </p>
-                        </td>
+                       </td>
                     </tr>
                     <tr>
                         <td style="background:#f8fafc;padding:24px 48px;color:#475569;font-size:14px;">
