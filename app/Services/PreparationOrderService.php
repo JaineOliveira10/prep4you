@@ -318,7 +318,7 @@ class PreparationOrderService
             $product = $item->product;
             
             $fsku = htmlspecialchars($item->fsnku ?? $product->fsnku ?? '-');
-            $productName = htmlspecialchars($item->name ?? $product->name ?? '-');
+            $productName = htmlspecialchars($product->name ?? $item->name ?? '-');
             $quantity = $item->quantity ?? 0;
             $type = strtolower($item->type ?? 'simples');
             $kitUnits = $item->kit_units ?? 0;
