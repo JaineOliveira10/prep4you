@@ -343,9 +343,9 @@ class PreparationOrderService
             // Construir imagem
             $imageHtml = '-';
             if ($product && $product->photo_path) {
-                $base64Image = $this->getImageAsBase64($product->photo_path);
-                if ($base64Image !== '-') {
-                    $imageHtml = '<img src="' . $base64Image . '" alt="Imagem do produto" class="product-image">';
+                $imageSrc = $this->getImageSrc($product->photo_path);
+                if ($imageSrc !== '-') {
+                    $imageHtml = '<img src="' . $imageSrc . '" alt="Imagem do produto" class="product-image">';
                 }
             }
 
@@ -382,9 +382,10 @@ class PreparationOrderService
     }
 
     /**
-     * Converter imagem para base64 para embedar no PDF
+     * Obter src da imagem para o PDF: gera thumbnail reduzido em disco e retorna caminho file://
+     * Isso evita embutir grandes base64 na memória, reduzindo uso de RAM.
      */
-    private function getImageAsBase64(string $photoPath): string
+    private function getImageSrc(string $photoPath): string
     {
         try {
             if (!Storage::disk('public')->exists($photoPath)) {
@@ -392,18 +393,78 @@ class PreparationOrderService
             }
 
             $fullPath = Storage::disk('public')->path($photoPath);
-            
+
             if (!file_exists($fullPath)) {
                 return '-';
             }
 
-            $imageData = file_get_contents($fullPath);
-            $mimeType = mime_content_type($fullPath);
-            $base64 = base64_encode($imageData);
+            // Diretório de thumbs dentro de storage/app/public
+            $thumbDir = storage_path('app/public/preparation_thumbs');
+            if (!is_dir($thumbDir)) {
+                mkdir($thumbDir, 0755, true);
+            }
 
-            return 'data:' . $mimeType . ';base64,' . $base64;
+            $hash = md5($photoPath);
+            $ext = pathinfo($fullPath, PATHINFO_EXTENSION) ?: 'jpg';
+            $thumbPath = $thumbDir . DIRECTORY_SEPARATOR . $hash . '.' . $ext;
+
+            // Se thumb já existe e é mais novo que o original, usar
+            if (!file_exists($thumbPath) || filemtime($thumbPath) < filemtime($fullPath)) {
+                // Criar thumbnail com largura máxima 150px mantendo proporção
+                $maxWidth = 150;
+                $info = getimagesize($fullPath);
+                if (!$info) {
+                    return 'file://' . $fullPath;
+                }
+
+                [$width, $height] = [$info[0], $info[1]];
+                $ratio = $width / $height;
+                $newWidth = $width > $maxWidth ? $maxWidth : $width;
+                $newHeight = (int) round($newWidth / $ratio);
+
+                $srcImage = imagecreatefromstring(file_get_contents($fullPath));
+                if (!$srcImage) {
+                    return 'file://' . $fullPath;
+                }
+
+                $thumb = imagecreatetruecolor($newWidth, $newHeight);
+                // Preserve transparency for PNG/GIF
+                if (in_array($info['mime'] ?? '', ['image/png', 'image/gif'])) {
+                    imagecolortransparent($thumb, imagecolorallocatealpha($thumb, 0, 0, 0, 127));
+                    imagealphablending($thumb, false);
+                    imagesavealpha($thumb, true);
+                }
+
+                imagecopyresampled($thumb, $srcImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+                // Salvar thumb conforme extensão
+                $saved = false;
+                switch (strtolower($ext)) {
+                    case 'png':
+                        $saved = imagepng($thumb, $thumbPath, 6);
+                        break;
+                    case 'gif':
+                        $saved = imagegif($thumb, $thumbPath);
+                        break;
+                    default:
+                        // jpeg
+                        $saved = imagejpeg($thumb, $thumbPath, 75);
+                }
+
+                imagedestroy($srcImage);
+                imagedestroy($thumb);
+
+                if (!$saved) {
+                    // fallback para usar imagem original
+                    return 'file://' . $fullPath;
+                }
+            }
+
+            // Retornar caminho file:// para dompdf carregar do filesystem (chroot permite base_path)
+            return 'file://' . $thumbPath;
+
         } catch (\Exception $e) {
-            \Log::warning('Erro ao converter imagem para base64: ' . $e->getMessage());
+            \Log::warning('Erro ao gerar thumbnail da imagem: ' . $e->getMessage());
             return '-';
         }
     }
