@@ -377,17 +377,21 @@ class ShipmentController extends Controller
             $request->validate([
                 'tsv_file' => 'required|file|mimes:tsv,txt',
                 'shipment_date' => 'required|date',
-                'collection_date' => 'nullable|date'
+                'collection_date' => 'nullable|date',
+                'number_boxes' => 'required|integer|min:1'
             ]);
 
             $productsData = json_decode($request->input('products_data'), true) ?? [];
+
+            $numberBoxes = $request->input('number_boxes');
 
             $result = $this->shipmentService->importFromTsv(
                 $request->file('tsv_file'),
                 auth()->user()->client->id,
                 $request->input('shipment_date'),
                 $productsData,
-                $request->input('collection_date')
+                $request->input('collection_date'),
+                $numberBoxes
             );
 
             if (isset($result['error'])) {

@@ -180,6 +180,9 @@
 
                      <label for="collectionDate" class="form-label my-2">Data da Coleta <span class="text-danger">*</span></label>
                      <input type="date" class="form-control" id="collectionDate" name="collection_date" required>
+
+                     <label for="numberBoxes" class="form-label my-2">Número de Caixas <span class="text-danger">*</span></label>
+                     <input type="number" class="form-control" id="numberBoxes" name="number_boxes" required>
                   </div>
                   <div id="previewData" class="mt-4"></div>
                   <div id="totalsContainer" class="row mt-3 mx-3" style="display: none;">

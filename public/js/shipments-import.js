@@ -384,6 +384,18 @@ document.getElementById('createBtn').addEventListener('click', function () {
         return;
     }
 
+    // Validar número de caixas (pegar valor do input)
+    const numberBoxesEl = document.getElementById('numberBoxes');
+    const numberBoxes = numberBoxesEl ? parseInt(numberBoxesEl.value, 10) : NaN;
+    if (!numberBoxes || numberBoxes <= 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atenção',
+            text: 'O número de caixas é obrigatório'
+        });
+        return;
+    }
+
     const formData = new FormData();
     formData.append('tsv_file', document.getElementById('tsvFile').files[0]);
     formData.append('shipment_date', shipmentDate);
@@ -391,6 +403,7 @@ document.getElementById('createBtn').addEventListener('click', function () {
         formData.append('collection_date', collectionDate);
     }
     formData.append('products_data', JSON.stringify(currentTsvData.products));
+    formData.append('number_boxes', numberBoxes);
 
     this.disabled = true;
     this.textContent = 'Criando...';

@@ -20,6 +20,7 @@ class Shipment extends Model
         'creation_date',
         'total_value',
         'total_items',
+        'number_boxes',
         'error_message',
         'pendency_reason',
         'collection_proof',

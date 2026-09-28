@@ -45,6 +45,7 @@ class ShipmentService
             'client_id' => $data['client_id'],
             'distribution_center_id' => $data['distribution_center_id'],
             'shipment_code' => $data['shipment_code'] ?? null,
+            'number_boxes' => isset($data['number_boxes']) ? (int)$data['number_boxes'] : null,
             'observations' => $data['observations'] ?? null,
             'imported_flag' => $data['imported_flag'] ?? false,
             'creation_date' => $data['creation_date'],
@@ -116,6 +117,7 @@ class ShipmentService
             'name' => $data['name'],
             'client_id' => $data['client_id'],
             'distribution_center_id' => $data['distribution_center_id'],
+            'number_boxes' => isset($data['number_boxes']) ? (int)$data['number_boxes'] : $currentShipment->number_boxes,
             'shipment_code' => $data['shipment_code'] ?? null,
             'observations' => $data['observations'] ?? null,
             'imported_flag' => $currentShipment->imported_flag,
@@ -309,7 +311,7 @@ class ShipmentService
     }
 
     
-    public function importFromTsv($file, $clientId, $shipmentDate = null, $productsData = [], $collectionDate = null)
+    public function importFromTsv($file, $clientId, $shipmentDate = null, $productsData = [], $collectionDate = null, $numberBoxes = null)
     {
         try {
             $fileHandle = fopen($file->getRealPath(), 'r');
@@ -388,6 +390,7 @@ class ShipmentService
                 'distribution_center_id' => $dc->id,
                 'shipment_date' => $shipmentDate ?: now()->format('Y-m-d'),
                 'collection_date' => $collectionDate,
+                'number_boxes' => $numberBoxes,
                 'status' => 'Pending',
                 'creation_date' => now()->format('Y-m-d'),
                 'total_value' => $totalValue,

@@ -79,6 +79,12 @@
                                     </div>
                                 </div>
                                 <div class="row">
+                                    <div class="form-group col-md-12">
+                                        <label class="form-label" for="number_boxes">Número de Caixas <span class="text-danger">*</span></label>
+                                        <input type="number" name="number_boxes" id="number_boxes" class="form-control" value="{{ old('number_boxes', $data->number_boxes ?? '') }}" min="1" required>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="form-group col-md-6">
                                         <label class="form-label" for="distribution_center_id">Centro de Distribuição <span class="text-danger">*</span></label>
                                         <select name="distribution_center_id" id="distribution_center_id" class="form-select" required>

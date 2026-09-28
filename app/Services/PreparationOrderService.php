@@ -83,6 +83,7 @@ class PreparationOrderService
         $collectionDate = $shipment->collection_date ? \Carbon\Carbon::parse($shipment->collection_date)->format('d/m/Y') : 'N/A';
         $collectionName = htmlspecialchars($shipment->name ?? 'N/A');
         $distributionCenter = $shipment->distributionCenter ? htmlspecialchars($shipment->distributionCenter->name) : 'N/A';
+        $numberBoxes = $shipment->number_boxes ?? 'N/A';
         $observations = !empty($shipment->observations) ? htmlspecialchars($shipment->observations) : 'Nenhuma observação';
 
         // Iniciar HTML
@@ -290,6 +291,10 @@ class PreparationOrderService
             <div>
                 <span class="label">Nome da Coleta</span>
                 <span class="value">' . $collectionName . '</span>
+            </div>
+            <div>
+                <span class="label">Número de Caixas</span>
+                <span class="value">' . $numberBoxes . '</span>
             </div>
             <div>
                 <span class="label">Centro de Distribuição</span>
